@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Maintenance {{ object.job_number }}{% endblock %}
+{% block content %}
+<h1 class="page-header">Job {{ object.job_number }}</h1>
+<div class="row">
+<div class="col-md-6"><div class="card mb-3"><div class="card-body">
+    <p><strong>Machine:</strong> {{ object.machine }}</p>
+    <p><strong>Type:</strong> {{ object.maintenance_type }}</p>
+    <p><strong>Status:</strong> {{ object.status }}</p>
+    <p><strong>Fault:</strong> {{ object.fault_description }}</p>
+    <p><strong>Repair:</strong> {{ object.repair_description|default:"—" }}</p>
+    <p><strong>Root Cause:</strong> {{ object.root_cause|default:"—" }}</p>
+    <p><strong>Technician:</strong> {{ object.technician|default:"—" }}</p>
+    <p><strong>Previous Repair:</strong> {{ object.previous_repair_date|date:"Y-m-d H:i"|default:"—" }}</p>
+    <p><strong>Days Since Previous Repair:</strong> {{ object.days_since_previous_repair|default:"—" }}</p>
+</div></div></div>
+<div class="col-md-6"><div class="card mb-3"><div class="card-header">Materials Used</div><div class="card-body">
+    <h6>Oil</h6>{% for u in oil_used %}<p>{{ u.material }}: {{ u.quantity_used }} {{ u.unit }}</p>{% empty %}<p class="text-muted">None</p>{% endfor %}
+    <h6>Grease</h6>{% for u in grease_used %}<p>{{ u.material }}: {{ u.quantity_used }} {{ u.unit }}</p>{% empty %}<p class="text-muted">None</p>{% endfor %}
+    <h6>Spare Items</h6>{% for u in spare_items %}<p>{{ u.material }}: {{ u.quantity_used }} {{ u.unit }}</p>{% empty %}<p class="text-muted">None</p>{% endfor %}
+    <a href="{% url 'maintenance:material_create' %}?job_id={{ object.pk }}" class="btn btn-save btn-sm mt-2">+ Add Material</a>
+</div></div></div>
+</div>
+<a href="{% url 'maintenance:edit' object.pk %}" class="btn btn-primary btn-lg-action">Edit</a>
+{% if not object.is_cancelled %}<a href="{% url 'maintenance:cancel' object.pk %}" class="btn btn-cancel-record btn-lg-action ms-2">Cancel</a>{% endif %}
+{% endblock %}

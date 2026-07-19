@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Lot {{ lot.lot_number }}{% endblock %}
+{% block content %}
+<h1 class="page-header">Production Lot: {{ lot.lot_number }}</h1>
+<div class="row mb-4">
+    <div class="col-md-6"><div class="card"><div class="card-body">
+        <p><strong>Vendor:</strong> {{ lot.vendor }}</p><p><strong>Cloth Type:</strong> {{ lot.cloth_type }}</p>
+        <p><strong>Initial Metres:</strong> {{ lot.initial_metres }}</p><p><strong>Current Metres:</strong> {{ lot.current_metres }}</p>
+        <p><strong>Stage:</strong> {{ lot.current_stage }}</p><p><strong>Status:</strong> {{ lot.status }}</p>
+    </div></div></div>
+    <div class="col-md-6"><div class="card"><div class="card-body">
+        <p><strong>Total Metre Loss:</strong> {{ total_metre_loss }}</p>
+        <p><strong>Shrinkage:</strong> {{ shrinkage_percentage|floatformat:2 }}%</p>
+        {% if can_complete_dyeing %}
+        <form method="post" action="{% url 'production:complete_dyeing' lot.pk %}">{% csrf_token %}
+            <button type="submit" class="btn btn-save btn-lg-action">Complete Dyeing Stage</button>
+        </form>
+        {% endif %}
+    </div></div></div>
+</div>
+<h3>Stage Summary</h3>
+<div class="card mb-3"><div class="table-responsive"><table class="table mb-0">
+    <thead><tr><th>Stage</th><th>Input m</th><th>Output m</th><th>Loss m</th><th>Loss %</th></tr></thead>
+    <tbody>
+    <tr><td>Singeing</td><td>{{ singeing.input_metres }}</td><td>{{ singeing.output_metres }}</td><td>{{ singeing.loss_metres }}</td><td>{{ singeing.loss_percentage|floatformat:2 }}%</td></tr>
+    <tr><td>Dyeing</td><td>{{ dyeing.input_metres }}</td><td>{{ dyeing.output_metres }}</td><td>{{ dyeing.loss_metres }}</td><td>{{ dyeing.loss_percentage|floatformat:2 }}%</td></tr>
+    <tr><td>Six Chamber</td><td>{{ six_chamber.input_metres }}</td><td>{{ six_chamber.output_metres }}</td><td>{{ six_chamber.loss_metres }}</td><td>{{ six_chamber.loss_percentage|floatformat:2 }}%</td></tr>
+    <tr><td>Calender</td><td>{{ calender.input_metres }}</td><td>{{ calender.output_metres }}</td><td>{{ calender.loss_metres }}</td><td>{{ calender.loss_percentage|floatformat:2 }}%</td></tr>
+    <tr><td>Comfort</td><td>{{ comfort.input_metres }}</td><td>{{ comfort.output_metres }}</td><td>{{ comfort.loss_metres }}</td><td>{{ comfort.loss_percentage|floatformat:2 }}%</td></tr>
+    </tbody>
+</table></div></div>
+{% if dyeing_materials %}
+<h3>Dyeing Materials Used</h3>
+<div class="card mb-3"><table class="table mb-0"><thead><tr><th>Material</th><th>Batch</th><th>Qty</th></tr></thead>
+<tbody>{% for u in dyeing_materials %}<tr><td>{{ u.material }}</td><td>{{ u.dyeing_batch.batch_number }}</td><td>{{ u.quantity_used }} {{ u.unit }}</td></tr>{% endfor %}</tbody></table></div>
+{% endif %}
+{% if finished_stock %}
+<h3>Finished Stock</h3>
+<div class="card"><div class="card-body"><p><strong>Final Metres:</strong> {{ finished_stock.final_metres }}</p><p><strong>Grade:</strong> {{ finished_stock.quality_grade }}</p></div></div>
+{% endif %}
+{% endblock %}

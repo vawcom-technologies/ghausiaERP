@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Receiving Spreadsheet - Textile Factory ERP{% endblock %}
+{% block content %}
+<div class="page-header-block d-flex flex-wrap justify-content-between align-items-start gap-3">
+    <div>
+        <h1 class="page-title">Cloth Receiving Spreadsheet</h1>
+        <p class="page-subtitle">Enter multiple lots at once — paste from Excel with Ctrl+V / Cmd+V</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'receiving:export_template' %}" class="btn btn-outline-primary">
+            <i class="bi bi-download me-1"></i> Excel Template
+        </a>
+        <a href="{% url 'receiving:import' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-upload me-1"></i> Import Excel
+        </a>
+        <a href="{% url 'receiving:list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<div class="sheet-hint">
+    <i class="bi bi-info-circle me-1"></i>
+    <strong>Tip:</strong> Leave <em>Lot / Palli Number</em> blank to auto-generate (e.g. LOT-2026-0001). Type vendor name manually — new vendors are created automatically.
+</div>
+
+<form method="post" data-sheet-entry data-row-template="sheet-row-template">
+    {% csrf_token %}
+    <div class="sheet-toolbar">
+        <button type="button" class="btn btn-primary" data-sheet-add-row>
+            <i class="bi bi-plus-lg me-1"></i> Add Row
+        </button>
+        <button type="submit" class="btn btn-save">
+            <i class="bi bi-check-lg me-1"></i> Save All Rows
+        </button>
+    </div>
+    <div class="sheet-wrap">
+        <table class="table sheet-table">
+            <thead>
+                <tr>
+                    <th>Lot / Palli No.</th>
+                    <th>Date</th>
+                    <th>Vendor</th>
+                    <th>Challan</th>
+                    <th>Cloth Type</th>
+                    <th>Rolls</th>
+                    <th>Vendor m</th>
+                    <th>Factory m</th>
+                    <th>Vendor wt</th>
+                    <th>Factory wt</th>
+                    <th>Rejected m</th>
+                    <th>Remarks</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody data-sheet-body>
+                {% for i in row_range %}
+                <tr>
+                    <td><input type="text" name="lot_number" class="form-control" placeholder="Auto if blank"></td>
+                    <td><input type="date" name="receipt_date" class="form-control" value="{{ today }}"></td>
+                    <td><input type="text" name="vendor_name" class="form-control" list="vendor-suggestions" placeholder="Type vendor"></td>
+                    <td><input type="text" name="challan" class="form-control"></td>
+                    <td>
+                        <select name="cloth_type" class="form-select">
+                            <option value="">—</option>
+                            {% for ct in cloth_types %}
+                            <option value="{{ ct.name }}">{{ ct.name }} ({{ ct.code }})</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td><input type="number" name="rolls" class="form-control" min="0" value="0"></td>
+                    <td><input type="text" name="vendor_metres" class="form-control" inputmode="decimal"></td>
+                    <td><input type="text" name="factory_metres" class="form-control" inputmode="decimal"></td>
+                    <td><input type="text" name="vendor_weight" class="form-control" inputmode="decimal" value="0"></td>
+                    <td><input type="text" name="factory_weight" class="form-control" inputmode="decimal" value="0"></td>
+                    <td><input type="text" name="rejected_metres" class="form-control" inputmode="decimal" value="0"></td>
+                    <td><input type="text" name="remarks" class="form-control"></td>
+                    <td class="sheet-row-actions"><button type="button" class="btn btn-sm btn-outline-danger" data-sheet-remove-row title="Remove row">&times;</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="mt-3">
+        <button type="submit" class="btn btn-save btn-lg-action">
+            <i class="bi bi-check-lg me-1"></i> Save All Rows
+        </button>
+    </div>
+</form>
+
+<datalist id="vendor-suggestions">
+    {% for v in vendors %}
+    <option value="{{ v.name }}"></option>
+    {% endfor %}
+</datalist>
+
+<template id="sheet-row-template">
+    <tr>
+        <td><input type="text" name="lot_number" class="form-control" placeholder="Auto if blank"></td>
+        <td><input type="date" name="receipt_date" class="form-control" value="{{ today }}"></td>
+        <td><input type="text" name="vendor_name" class="form-control" list="vendor-suggestions" placeholder="Type vendor"></td>
+        <td><input type="text" name="challan" class="form-control"></td>
+        <td>
+            <select name="cloth_type" class="form-select">
+                <option value="">—</option>
+                {% for ct in cloth_types %}
+                <option value="{{ ct.name }}">{{ ct.name }} ({{ ct.code }})</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td><input type="number" name="rolls" class="form-control" min="0" value="0"></td>
+        <td><input type="text" name="vendor_metres" class="form-control" inputmode="decimal"></td>
+        <td><input type="text" name="factory_metres" class="form-control" inputmode="decimal"></td>
+        <td><input type="text" name="vendor_weight" class="form-control" inputmode="decimal" value="0"></td>
+        <td><input type="text" name="factory_weight" class="form-control" inputmode="decimal" value="0"></td>
+        <td><input type="text" name="rejected_metres" class="form-control" inputmode="decimal" value="0"></td>
+        <td><input type="text" name="remarks" class="form-control"></td>
+        <td class="sheet-row-actions"><button type="button" class="btn btn-sm btn-outline-danger" data-sheet-remove-row title="Remove row">&times;</button></td>
+    </tr>
+</template>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/sheet_entry.js' %}"></script>
+{% endblock %}

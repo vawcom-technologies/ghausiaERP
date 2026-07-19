@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Electricity Meters{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between page-header"><h1>Electricity Meters</h1><a href="{% url 'electricity:meter_create' %}" class="btn btn-save btn-lg-action">+ Add Meter</a></div>
+<div class="card"><table class="table mb-0"><thead><tr><th>Name</th><th>Number</th><th>Department</th><th>Multiplier</th></tr></thead>
+<tbody>{% for obj in objects %}<tr><td>{{ obj.name }}</td><td>{{ obj.meter_number }}</td><td>{{ obj.department }}</td><td>{{ obj.multiplier }}</td></tr>{% empty %}<tr><td colspan="4" class="text-center">No meters.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

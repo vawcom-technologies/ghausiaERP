@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Transaction {{ object.transaction_number }}{% endblock %}
+{% block content %}
+<h1>{{ object.transaction_number }}</h1>
+<div class="card"><div class="card-body">
+    <p><strong>Material:</strong> {{ object.material }}</p><p><strong>Type:</strong> {{ object.transaction_type }}</p>
+    <p><strong>Date:</strong> {{ object.transaction_date }}</p><p><strong>In:</strong> {{ object.quantity_in }} | <strong>Out:</strong> {{ object.quantity_out }}</p>
+</div></div>
+{% endblock %}

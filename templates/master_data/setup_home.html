@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Basic Setup - Textile Factory ERP{% endblock %}
+{% block content %}
+<div class="page-header-block">
+    <h1 class="page-title">Basic Setup</h1>
+    <p class="page-subtitle">Configure master data used throughout the factory ERP</p>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'master_data:vendor_list' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-truck"></i></div>
+            <div class="nav-card-title">Vendors</div>
+            <p class="nav-card-desc">Suppliers who deliver grey cloth</p>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'master_data:clothtype_list' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-layers"></i></div>
+            <div class="nav-card-title">Cloth Types</div>
+            <p class="nav-card-desc">Fabric varieties and their codes</p>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'master_data:employee_list' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-people"></i></div>
+            <div class="nav-card-title">Employees</div>
+            <p class="nav-card-desc">Staff who operate machines and processes</p>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'master_data:machine_list' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-gear-wide-connected"></i></div>
+            <div class="nav-card-title">Machines</div>
+            <p class="nav-card-desc">Production and processing equipment</p>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'master_data:material_list' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-box-seam"></i></div>
+            <div class="nav-card-title">Materials</div>
+            <p class="nav-card-desc">Dyes, chemicals, and consumables</p>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'electricity:meter_list' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-lightning-charge"></i></div>
+            <div class="nav-card-title">Electricity Meters</div>
+            <p class="nav-card-desc">Meters tracked for daily readings</p>
+        </a>
+    </div>
+</div>
+{% endblock %}

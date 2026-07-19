@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Process Entry{% endblock %}
+{% block content %}
+<h1 class="page-header">{{ object }}</h1>
+<div class="card"><div class="card-body">
+    <p><strong>Lot:</strong> {{ object.production_lot.lot_number }}</p>
+    <p><strong>Date:</strong> {{ object.process_date }}</p>
+    <p><strong>Input Metres:</strong> {{ object.input_metres }}</p>
+    <p><strong>Output Metres:</strong> {{ object.output_metres }}</p>
+    <p><strong>Loss:</strong> {{ object.input_metres|add:"-"|default:"" }}{% widthratio object.input_metres 1 1 as inp %}{{ object.input_metres|floatformat:3 }} - {{ object.output_metres|floatformat:3 }} m</p>
+    {% if object.is_cancelled %}<span class="badge badge-cancelled">Cancelled</span>{% endif %}
+</div></div>
+{% endblock %}

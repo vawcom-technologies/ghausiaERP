@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Stock Overview{% endblock %}
+{% block content %}
+<h1 class="page-header">Current Material Stock</h1>
+<div class="card"><table class="table mb-0"><thead><tr><th>Material</th><th>Category</th><th>Stock</th><th>Minimum</th></tr></thead>
+<tbody>{% for item in materials %}<tr><td>{{ item.material.name }}</td><td>{{ item.material.category }}</td><td>{{ item.stock }} {{ item.material.unit }}</td><td>{{ item.material.minimum_stock }}</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

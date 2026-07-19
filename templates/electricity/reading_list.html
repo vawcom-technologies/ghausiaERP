@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Electricity Readings{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between page-header"><h1>Electricity Readings</h1><a href="{% url 'electricity:reading_create' %}" class="btn btn-save btn-lg-action">+ New Reading</a></div>
+<div class="card"><table class="table mb-0"><thead><tr><th>Date</th><th>Meter</th><th>Opening</th><th>Closing</th><th>Units</th><th>Entered By</th><th></th></tr></thead>
+<tbody>{% for obj in objects %}<tr><td>{{ obj.reading_date }}</td><td>{{ obj.meter }}</td><td>{{ obj.opening_reading }}</td><td>{{ obj.closing_reading }}</td><td>{{ obj.units_consumed }}</td><td>{{ obj.entered_by }}</td>
+<td><a href="{% url 'electricity:reading_detail' obj.pk %}" class="btn btn-sm btn-primary">View</a></td></tr>{% empty %}<tr><td colspan="7" class="text-center">No readings.</td></tr>{% endfor %}</tbody></table></div>
+{% include "includes/pagination.html" %}
+{% endblock %}

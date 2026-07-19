@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Lot {{ object.production_lot_number }} - Textile Factory ERP{% endblock %}
+{% block content %}
+<div class="page-header-block d-flex flex-wrap justify-content-between align-items-start gap-3">
+    <div>
+        <h1 class="page-title">
+            Lot / Palli: {{ object.production_lot_number }}
+            {% if object.is_cancelled %}<span class="badge badge-cancelled ms-2">Cancelled</span>{% endif %}
+        </h1>
+        <p class="page-subtitle">Cloth receiving details for this production lot</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'receiving:edit' object.pk %}" class="btn btn-primary btn-lg-action">
+            <i class="bi bi-pencil me-1"></i> Edit
+        </a>
+        {% if not object.is_cancelled %}
+        <a href="{% url 'receiving:cancel' object.pk %}" class="btn btn-cancel-record btn-lg-action">
+            <i class="bi bi-x-circle me-1"></i> Cancel Record
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><i class="bi bi-info-circle me-2"></i>Receiving Details</div>
+    <div class="card-body">
+        <div class="detail-grid">
+            <div class="detail-item">
+                <div class="detail-label">Vendor</div>
+                <div class="detail-value">{{ object.vendor }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Challan Number</div>
+                <div class="detail-value">{{ object.vendor_challan_number|default:"—" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Cloth Type</div>
+                <div class="detail-value">{{ object.cloth_type }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Receiving Date</div>
+                <div class="detail-value">{{ object.receipt_date }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Vendor Metres</div>
+                <div class="detail-value">{{ object.vendor_metres }} m</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Factory Metres</div>
+                <div class="detail-value">{{ object.factory_measured_metres }} m</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Accepted Metres</div>
+                <div class="detail-value">{{ object.accepted_metres }} m</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Metre Difference</div>
+                <div class="detail-value">{{ object.metre_difference }} m</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

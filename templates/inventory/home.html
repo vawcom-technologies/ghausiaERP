@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Inventory - Textile Factory ERP{% endblock %}
+{% block content %}
+<div class="page-header-block">
+    <h1 class="page-title">Material Transactions</h1>
+    <p class="page-subtitle">Record purchases, adjustments, and view current stock levels</p>
+</div>
+
+<h2 class="section-heading"><i class="bi bi-cart-plus me-2"></i>Purchases</h2>
+<div class="row g-3 mb-4">
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'inventory:purchase_sheet' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-table"></i></div>
+            <div class="nav-card-title">Purchase Spreadsheet</div>
+            <p class="nav-card-desc">Enter multiple purchases at once, like Excel</p>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'inventory:purchase_create' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-plus-circle"></i></div>
+            <div class="nav-card-title">Single Purchase</div>
+            <p class="nav-card-desc">Record one material purchase with full details</p>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'inventory:purchase_export_template' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-download"></i></div>
+            <div class="nav-card-title">Download Excel Template</div>
+            <p class="nav-card-desc">Get a blank template for offline entry</p>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'inventory:purchase_import' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-upload"></i></div>
+            <div class="nav-card-title">Import Excel</div>
+            <p class="nav-card-desc">Upload a filled template to import purchases</p>
+        </a>
+    </div>
+</div>
+
+<h2 class="section-heading"><i class="bi bi-box-seam me-2"></i>Stock Management</h2>
+<div class="row g-3 mb-4">
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'inventory:adjustment_in_create' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-arrow-down-circle"></i></div>
+            <div class="nav-card-title">Adjustment In</div>
+            <p class="nav-card-desc">Add stock without a purchase record</p>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'inventory:adjustment_out_create' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-arrow-up-circle"></i></div>
+            <div class="nav-card-title">Adjustment Out</div>
+            <p class="nav-card-desc">Remove stock for corrections or losses</p>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'inventory:stock_overview' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-clipboard-data"></i></div>
+            <div class="nav-card-title">Current Stock</div>
+            <p class="nav-card-desc">View on-hand quantities for all materials</p>
+        </a>
+    </div>
+</div>
+
+<a href="{% url 'inventory:transaction_list' %}" class="btn btn-primary btn-lg-action">
+    <i class="bi bi-clock-history me-1"></i> View Transaction History
+</a>
+{% endblock %}

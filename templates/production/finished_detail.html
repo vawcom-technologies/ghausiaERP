@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Finished Stock Detail{% endblock %}
+{% block content %}
+<h1>Finished Stock - {{ object.production_lot.lot_number }}</h1>
+<div class="card"><div class="card-body">
+    <p><strong>Final Metres:</strong> {{ object.final_metres }}</p>
+    <p><strong>Quality Grade:</strong> {{ object.quality_grade }}</p>
+    <p><strong>Total Metre Loss:</strong> {{ total_metre_loss }}</p>
+    <p><strong>Shrinkage:</strong> {{ shrinkage_percentage|floatformat:2 }}%</p>
+</div></div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Transactions{% endblock %}
+{% block content %}
+<h1 class="page-header">Material Transactions</h1>
+<form method="get" class="mb-3"><div class="input-group"><input type="text" name="q" class="form-control" placeholder="Search..." value="{{ request.GET.q }}"><button class="btn btn-primary">Search</button></div></form>
+<div class="card"><table class="table mb-0"><thead><tr><th>Number</th><th>Date</th><th>Material</th><th>Type</th><th>In</th><th>Out</th><th></th></tr></thead>
+<tbody>{% for obj in objects %}<tr><td>{{ obj.transaction_number }}</td><td>{{ obj.transaction_date }}</td><td>{{ obj.material }}</td><td>{{ obj.transaction_type }}</td><td>{{ obj.quantity_in }}</td><td>{{ obj.quantity_out }}</td>
+<td><a href="{% url 'inventory:transaction_detail' obj.pk %}" class="btn btn-sm btn-primary">View</a></td></tr>{% empty %}<tr><td colspan="7" class="text-center">No transactions.</td></tr>{% endfor %}</tbody></table></div>
+{% include "includes/pagination.html" %}
+{% endblock %}

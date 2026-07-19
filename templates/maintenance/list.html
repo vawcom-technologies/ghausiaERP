@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Maintenance{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between page-header"><h1>Maintenance Jobs</h1><a href="{% url 'maintenance:create' %}" class="btn btn-save btn-lg-action">+ New Job</a></div>
+<form method="get" class="mb-3"><div class="input-group"><input type="text" name="q" class="form-control" placeholder="Search..." value="{{ request.GET.q }}"><button class="btn btn-primary">Search</button></div></form>
+<div class="card"><table class="table mb-0"><thead><tr><th>Job #</th><th>Machine</th><th>Type</th><th>Status</th><th>Reported</th><th></th></tr></thead>
+<tbody>{% for obj in objects %}<tr><td>{{ obj.job_number }}</td><td>{{ obj.machine }}</td><td>{{ obj.maintenance_type }}</td><td>{{ obj.status }}</td><td>{{ obj.reported_datetime|date:"Y-m-d H:i" }}</td>
+<td><a href="{% url 'maintenance:detail' obj.pk %}" class="btn btn-sm btn-primary">View</a></td></tr>{% empty %}<tr><td colspan="6" class="text-center">No jobs.</td></tr>{% endfor %}</tbody></table></div>
+{% include "includes/pagination.html" %}
+{% endblock %}

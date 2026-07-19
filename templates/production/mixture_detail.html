@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Mixture {{ object.mixture_number }}{% endblock %}
+{% block content %}
+<h1>{{ object.mixture_number }} - {{ object.name }}</h1>
+<div class="card mb-3"><div class="card-body">
+    <p><strong>Batch:</strong> {{ object.dyeing_batch.batch_number }}</p>
+    <p><strong>Prepared By:</strong> {{ object.prepared_by }}</p>
+    <p><strong>Total Quantity:</strong> {{ object.total_quantity }} {{ object.unit }}</p>
+</div></div>
+<a href="{% url 'production:mixture_ingredient_create' %}?mixture_id={{ object.pk }}" class="btn btn-save">+ Add Ingredient</a>
+<div class="card mt-2"><table class="table mb-0"><thead><tr><th>Material</th><th>Qty</th></tr></thead>
+<tbody>{% for i in object.ingredients.all %}{% if not i.is_cancelled %}<tr><td>{{ i.material }}</td><td>{{ i.quantity }} {{ i.unit }}</td></tr>{% endif %}{% endfor %}</tbody></table></div>
+{% endblock %}

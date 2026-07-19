@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ model_name }} - Textile Factory ERP{% endblock %}
+{% block content %}
+<div class="page-header-block d-flex flex-wrap justify-content-between align-items-start gap-3">
+    <div>
+        <h1 class="page-title">{{ model_name }}</h1>
+        <p class="page-subtitle">Manage {{ model_name|lower }} records used across the system</p>
+    </div>
+    <a href="{% url create_url %}" class="btn btn-save btn-lg-action">
+        <i class="bi bi-plus-lg me-1"></i> Add New
+    </a>
+</div>
+
+<form method="get" class="search-bar">
+    <div class="input-group">
+        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" class="form-control" placeholder="Search {{ model_name|lower }}..." value="{{ search_query }}">
+        <button class="btn btn-primary btn-search" type="submit">Search</button>
+    </div>
+</form>
+
+<div class="table-wrap">
+    <table class="table table-hover mb-0">
+        <thead><tr><th>Name</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+        {% for obj in objects %}
+        <tr>
+            <td><strong>{{ obj }}</strong></td>
+            <td>
+                {% if obj.is_active %}
+                <span class="badge bg-success badge-status">Active</span>
+                {% else %}
+                <span class="badge bg-secondary badge-status">Inactive</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url detail_url obj.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> View</a>
+                {% if edit_url %}<a href="{% url edit_url obj.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i> Edit</a>{% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="table-empty">No records found. Click "Add New" to create one.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

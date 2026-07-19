@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Finished Stock{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between page-header"><h1>Finished Stock</h1><a href="{% url 'production:finished_create' %}" class="btn btn-save btn-lg-action">+ Add Finished Stock</a></div>
+<div class="card"><table class="table mb-0"><thead><tr><th>Lot</th><th>Date</th><th>Final m</th><th>Grade</th><th></th></tr></thead>
+<tbody>{% for obj in objects %}<tr><td>{{ obj.production_lot.lot_number }}</td><td>{{ obj.completion_date }}</td><td>{{ obj.final_metres }}</td><td>{{ obj.quality_grade }}</td>
+<td><a href="{% url 'production:finished_detail' obj.pk %}" class="btn btn-sm btn-primary">View</a></td></tr>{% empty %}<tr><td colspan="5" class="text-center">No records.</td></tr>{% endfor %}</tbody></table></div>
+{% include "includes/pagination.html" %}
+{% endblock %}
