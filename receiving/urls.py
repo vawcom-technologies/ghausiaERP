@@ -9,6 +9,7 @@ urlpatterns = [
     path("new/", views.ClothReceiptCreateView.as_view(), name="create"),
     path("sheet/", views.ReceivingSheetView.as_view(), name="sheet"),
     path("export-template/", views.ReceivingTemplateDownloadView.as_view(), name="export_template"),
+    path("export/", views.ReceivingExportView.as_view(), name="export"),
     path("import/", views.ReceivingImportView.as_view(), name="import"),
     path("<int:pk>/", views.ClothReceiptDetailView.as_view(), name="detail"),
     path("<int:pk>/edit/", views.ClothReceiptUpdateView.as_view(), name="edit"),

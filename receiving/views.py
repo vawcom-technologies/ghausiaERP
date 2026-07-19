@@ -2,7 +2,7 @@ from datetime import date
 
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
@@ -13,7 +13,7 @@ from accounts.mixins import (
     ERPLoginRequiredMixin,
     PaginatedListMixin,
 )
-from common.excel import build_template_response, read_sheet_rows
+from common.excel import build_data_export_response, build_template_response, read_sheet_rows
 from common.views import apply_search
 from master_data.models import ClothType, Vendor
 from receiving.forms import ClothReceiptForm
@@ -21,7 +21,9 @@ from receiving.models import ClothReceipt
 from receiving.services.bulk import (
     RECEIVING_HEADERS,
     parse_grid_post,
+    receipt_to_excel_row,
     save_receiving_rows,
+    sheet_display_rows,
 )
 
 
@@ -45,12 +47,14 @@ class ClothReceiptCreateView(ERPLoginRequiredMixin, AuditCreateMixin, CreateView
     model = ClothReceipt
     form_class = ClothReceiptForm
     template_name = "receiving/form.html"
-    success_url = reverse_lazy("receiving:list")
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
         return kwargs
+
+    def get_success_url(self):
+        return reverse("receiving:detail", kwargs={"pk": self.object.pk})
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
@@ -60,7 +64,7 @@ class ClothReceiptCreateView(ERPLoginRequiredMixin, AuditCreateMixin, CreateView
             self.request,
             "Cloth receiving saved. Production lot / palli created.",
         )
-        return redirect(self.success_url)
+        return redirect(self.get_success_url())
 
 
 class ClothReceiptUpdateView(ERPLoginRequiredMixin, AuditUpdateMixin, UpdateView):
@@ -108,8 +112,8 @@ class ReceivingSheetView(ERPLoginRequiredMixin, View):
         return render(request, self.template_name, self._context())
 
     def post(self, request):
-        rows = parse_grid_post(request.POST)
-        saved, errors = save_receiving_rows(rows, request.user)
+        rows = parse_grid_post(request.POST, request.FILES)
+        saved, errors, failed_indexes = save_receiving_rows(rows, request.user)
         if saved:
             messages.success(request, f"Saved {saved} receiving row(s).")
         if errors:
@@ -117,16 +121,36 @@ class ReceivingSheetView(ERPLoginRequiredMixin, View):
                 messages.error(request, err)
             if len(errors) > 20:
                 messages.error(request, f"…and {len(errors) - 20} more error(s).")
+            messages.warning(
+                request,
+                "Your typed values are kept below. Fix the highlighted rows and save again. "
+                "Photos must be selected again (browsers clear file inputs after submit).",
+            )
         if saved and not errors:
             return redirect("receiving:list")
-        return render(request, self.template_name, self._context())
 
-    def _context(self):
+        # Keep typed values on screen — incomplete rows are not written to the database.
+        display_rows = sheet_display_rows(
+            rows,
+            failed_indexes=failed_indexes or None,
+            min_rows=self.blank_rows,
+            today=date.today().isoformat(),
+        )
+        return render(
+            request,
+            self.template_name,
+            self._context(sheet_rows=display_rows),
+        )
+
+    def _context(self, sheet_rows=None):
+        today = date.today().isoformat()
+        if sheet_rows is None:
+            sheet_rows = sheet_display_rows([], min_rows=self.blank_rows, today=today)
         return {
             "cloth_types": ClothType.objects.filter(is_active=True).order_by("name"),
             "vendors": Vendor.objects.filter(is_active=True).order_by("name"),
-            "today": date.today().isoformat(),
-            "row_range": range(self.blank_rows),
+            "today": today,
+            "sheet_rows": sheet_rows,
         }
 
 
@@ -137,21 +161,59 @@ class ReceivingTemplateDownloadView(ERPLoginRequiredMixin, View):
             headers=RECEIVING_HEADERS,
             sample_rows=[
                 [
-                    "",
+                    "LOT-SAMPLE-001",
                     date.today().isoformat(),
-                    "Sample Vendor",
-                    "CH-001",
-                    "Cotton Grey",
+                    "Sample Party",
+                    "80/40",
+                    "/",
                     10,
-                    1000,
-                    980,
-                    500,
-                    480,
-                    0,
-                    "",
+                    10,
+                    "1000",
+                    "980",
+                    "500",
+                    "480",
+                    "Sample remarks",
                 ]
             ],
-            sheet_title="Receiving",
+            sheet_title="Cloth Receiving",
+        )
+
+
+class ReceivingExportView(ERPLoginRequiredMixin, View):
+    """Download all saved cloth receiving rows as Excel (values + photos)."""
+
+    def get(self, request):
+        qs = (
+            ClothReceipt.objects.select_related("vendor")
+            .order_by("-receipt_date", "-id")
+        )
+        search = request.GET.get("q", "").strip()
+        if search:
+            qs = apply_search(
+                qs, search, ["receipt_number", "production_lot_number", "vendor_challan_number"]
+            )
+            qs = qs | ClothReceipt.objects.filter(vendor__name__icontains=search)
+            qs = qs.distinct().order_by("-receipt_date", "-id")
+
+        rows = []
+        image_paths: list[str | None] = []
+        for receipt in qs:
+            rows.append(receipt_to_excel_row(receipt))
+            if receipt.receipt_image:
+                try:
+                    image_paths.append(receipt.receipt_image.path)
+                except (ValueError, OSError):
+                    image_paths.append(None)
+            else:
+                image_paths.append(None)
+
+        return build_data_export_response(
+            filename="cloth_receiving_export.xlsx",
+            headers=RECEIVING_HEADERS,
+            rows=rows,
+            sheet_title="Cloth Receiving",
+            image_paths=image_paths,
+            image_column_header="Photo",
         )
 
 
@@ -175,7 +237,7 @@ class ReceivingImportView(ERPLoginRequiredMixin, View):
             messages.error(request, f"Could not read Excel file: {exc}")
             return render(request, self.template_name, {"headers": RECEIVING_HEADERS})
 
-        saved, errors = save_receiving_rows(rows, request.user)
+        saved, errors, _failed = save_receiving_rows(rows, request.user)
         if saved:
             messages.success(request, f"Imported {saved} receiving row(s) from Excel.")
         if errors:

@@ -1,0 +1,12 @@
+{# Opens the Cloth Receiving shell. Expects: rcv_title, rcv_subtitle (optional). #}
+<div class="rcv{% if rcv_compact %} rcv-compact{% endif %}">
+    <header class="rcv-hero">
+        <div class="rcv-hero-inner">
+            {% if not rcv_compact %}<p class="rcv-kicker">Ghausia Dyeing</p>{% endif %}
+            <h1 class="rcv-title">{{ rcv_title }}</h1>
+            {% if not rcv_compact %}<p class="rcv-urdu" dir="rtl">غزانہ</p>{% endif %}
+            {% if rcv_subtitle %}<p class="rcv-subtitle">{{ rcv_subtitle }}</p>{% endif %}
+            {% if rcv_subtitle_urdu and not rcv_compact %}<p class="rcv-subtitle-urdu" dir="rtl">{{ rcv_subtitle_urdu }}</p>{% endif %}
+        </div>
+    </header>
+    <div class="rcv-body{% if rcv_wide %} rcv-body-wide{% endif %}">

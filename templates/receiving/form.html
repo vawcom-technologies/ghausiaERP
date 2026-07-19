@@ -1,37 +1,222 @@
 {% extends "base.html" %}
-{% block title %}{% if object %}Edit Receiving{% else %}New Receiving{% endif %} - Textile Factory ERP{% endblock %}
+{% block title %}{% if object %}Edit Cloth Receiving{% else %}New Cloth Receiving{% endif %} - Ghausia Dyeing{% endblock %}
 {% block content %}
-<div class="page-header-block">
-    <h1 class="page-title">{% if object %}Edit Cloth Receiving{% else %}New Cloth Receiving{% endif %}</h1>
-    <p class="page-subtitle">Enter vendor, lot number, and metre details for incoming grey cloth</p>
-</div>
-<div class="card form-card">
-    <div class="card-header"><i class="bi bi-box-arrow-in-down me-2"></i>Receiving Entry</div>
-    <div class="card-body">
-        <form method="post">
-            {% csrf_token %}
-            {% include "includes/form_errors.html" %}
+{% if object %}
+{% include "receiving/_layout_open.html" with rcv_title="Edit Cloth Receiving" rcv_subtitle="Update this lot’s receiving details" rcv_subtitle_urdu="دستی اندراج — تمام ضروری خانے خود بھریں۔" %}
+{% else %}
+{% include "receiving/_layout_open.html" with rcv_title="New Cloth Receiving" rcv_subtitle="Single entry for one lot" rcv_subtitle_urdu="دستی اندراج — تمام ضروری خانے خود بھریں۔" %}
+{% endif %}
+
+<nav class="rcv-actions" aria-label="Form actions">
+    <a href="{% url 'receiving:sheet' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-table"></i> Spreadsheet</a>
+    <a href="{% url 'receiving:list' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-arrow-left"></i> Back</a>
+</nav>
+
+<form method="post" enctype="multipart/form-data" class="receiving-single-form">
+    {% csrf_token %}
+    {% include "includes/form_errors.html" %}
+
+    <div class="card form-card rcv-card mb-3">
+        <div class="card-header"><i class="bi bi-info-circle me-2"></i>Basic Info</div>
+        <div class="card-body">
             <div class="row">
-                {% for field in form %}
-                <div class="mb-3 col-md-6">
-                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                {% with f=form.production_lot_number %}
+                <div class="mb-3 col-md-4">
+                    <label class="form-label" for="{{ f.id_for_label }}">
+                        {{ f.label }}
+                        {% if form.LABEL_URDU.production_lot_number %}
+                        <span class="form-label-urdu">{{ form.LABEL_URDU.production_lot_number }}</span>
+                        {% endif %}
+                    </label>
+                    {{ f }}
+                    {% if f.help_text %}<div class="form-text">{{ f.help_text }}</div>{% endif %}
+                    {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
                 </div>
-                {% endfor %}
+                {% endwith %}
+                {% with f=form.receipt_date %}
+                <div class="mb-3 col-md-4">
+                    <label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}</label>
+                    {{ f }}
+                    {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                </div>
+                {% endwith %}
+                {% with f=form.vendor_name %}
+                <div class="mb-3 col-md-4">
+                    <label class="form-label" for="{{ f.id_for_label }}">
+                        {{ f.label }}
+                        <span class="form-label-urdu">{{ form.LABEL_URDU.vendor_name }}</span>
+                    </label>
+                    {{ f }}
+                    {% if f.help_text %}<div class="form-text">{{ f.help_text }}</div>{% endif %}
+                    {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                </div>
+                {% endwith %}
             </div>
-            <datalist id="existing-vendors">
-                {% for name in form.vendor_suggestions %}
-                <option value="{{ name }}"></option>
-                {% endfor %}
-            </datalist>
-            <div class="form-actions">
-                <button type="submit" class="btn btn-save btn-lg-action">
-                    <i class="bi bi-check-lg me-1"></i> Save
-                </button>
-                <a href="{% url 'receiving:list' %}" class="btn btn-outline-secondary btn-lg-action">Cancel</a>
-            </div>
-        </form>
+        </div>
     </div>
-</div>
+
+    <div class="card form-card rcv-card mb-3">
+        <div class="card-header"><i class="bi bi-layers me-2"></i>Cloth Type</div>
+        <div class="card-body">
+            <div class="row">
+                {% with f=form.pv_blend_qty %}
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}</label>
+                    {{ f }}
+                    {% if f.help_text %}<div class="form-text">{{ f.help_text }}</div>{% endif %}
+                    {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                </div>
+                {% endwith %}
+                {% with f=form.read_pick_qty %}
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}</label>
+                    {{ f }}
+                    {% if f.help_text %}<div class="form-text">{{ f.help_text }}</div>{% endif %}
+                    {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                </div>
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card form-card rcv-card mb-3">
+        <div class="card-header"><i class="bi bi-collection me-2"></i>Rolls <span class="opacity-75">تھان نمبر</span></div>
+        <div class="card-body">
+            <div class="row">
+                {% with f=form.number_of_rolls %}
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="{{ f.id_for_label }}">
+                        {{ f.label }}
+                        <span class="form-label-urdu">{{ form.LABEL_URDU.number_of_rolls }}</span>
+                    </label>
+                    {{ f }}
+                    {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                </div>
+                {% endwith %}
+                {% with f=form.factory_number_of_rolls %}
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="{{ f.id_for_label }}">
+                        {{ f.label }}
+                        <span class="form-label-urdu">{{ form.LABEL_URDU.factory_number_of_rolls }}</span>
+                    </label>
+                    {{ f }}
+                    {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                </div>
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card form-card rcv-card mb-3">
+        <div class="card-header"><i class="bi bi-rulers me-2"></i>Metres &amp; Weight</div>
+        <div class="card-body">
+            <div class="row">
+                {% with f=form.vendor_metres %}
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="{{ f.id_for_label }}">
+                        {{ f.label }}
+                        <span class="form-label-urdu">{{ form.LABEL_URDU.vendor_metres }}</span>
+                    </label>
+                    {{ f }}
+                    {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                </div>
+                {% endwith %}
+                {% with f=form.factory_measured_metres %}
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="{{ f.id_for_label }}">
+                        {{ f.label }}
+                        <span class="form-label-urdu">{{ form.LABEL_URDU.factory_measured_metres }}</span>
+                    </label>
+                    {{ f }}
+                    {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                </div>
+                {% endwith %}
+                {% with f=form.vendor_weight %}
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="{{ f.id_for_label }}">
+                        {{ f.label }}
+                        <span class="form-label-urdu">{{ form.LABEL_URDU.vendor_weight }}</span>
+                    </label>
+                    {{ f }}
+                    {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                </div>
+                {% endwith %}
+                {% with f=form.factory_measured_weight %}
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="{{ f.id_for_label }}">
+                        {{ f.label }}
+                        <span class="form-label-urdu">{{ form.LABEL_URDU.factory_measured_weight }}</span>
+                    </label>
+                    {{ f }}
+                    {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                </div>
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card form-card rcv-card mb-3">
+        <div class="card-header"><i class="bi bi-chat-left-text me-2"></i>Remarks <span class="opacity-75">ریمارکس</span> &amp; Photo</div>
+        <div class="card-body">
+            <div class="row">
+                {% with f=form.remarks %}
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="{{ f.id_for_label }}">
+                        {{ f.label }}
+                        <span class="form-label-urdu">{{ form.LABEL_URDU.remarks }}</span>
+                    </label>
+                    {{ f }}
+                    {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                </div>
+                {% endwith %}
+                {% with f=form.receipt_image %}
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}</label>
+                    {{ f }}
+                    {% if f.help_text %}<div class="form-text">{{ f.help_text }}</div>{% endif %}
+                    {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+                    <div class="mt-2 single-photo-preview-wrap" data-single-photo-preview>
+                        {% if object.receipt_image %}
+                        <img src="{{ object.receipt_image.url }}" alt="Receipt photo" class="receipt-photo-preview" data-photo-img>
+                        {% else %}
+                        <img src="" alt="Receipt photo preview" class="receipt-photo-preview" data-photo-img hidden>
+                        <p class="text-muted mb-0" data-photo-empty>No photo selected yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+
+    <datalist id="existing-vendors">
+        {% for name in form.vendor_suggestions %}
+        <option value="{{ name }}"></option>
+        {% endfor %}
+    </datalist>
+
+    <div class="rcv-actions rcv-actions-inline mb-2">
+        <button type="submit" class="rcv-btn rcv-btn-primary"><i class="bi bi-check-lg"></i> Save</button>
+        <a href="{% url 'receiving:list' %}" class="rcv-btn rcv-btn-ghost">Cancel</a>
+    </div>
+</form>
+{% include "receiving/_layout_close.html" %}
+<script>
+(function () {
+  var wrap = document.querySelector("[data-single-photo-preview]");
+  if (!wrap) return;
+  var input = document.querySelector("#id_receipt_image");
+  var img = wrap.querySelector("[data-photo-img]");
+  var empty = wrap.querySelector("[data-photo-empty]");
+  if (!input || !img) return;
+  input.addEventListener("change", function () {
+    var file = input.files && input.files[0];
+    if (!file) return;
+    var url = URL.createObjectURL(file);
+    img.src = url;
+    img.hidden = false;
+    if (empty) empty.hidden = true;
+  });
+})();
+</script>
 {% endblock %}

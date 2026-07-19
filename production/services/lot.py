@@ -15,15 +15,18 @@ def create_production_lot_from_receipt(receipt, user) -> "ProductionLot":
     """Create a production lot when cloth is received."""
     from production.models import ProductionLot
 
+    from receiving.models import parse_text_decimal
+
+    weight = parse_text_decimal(receipt.factory_measured_weight)
     lot = ProductionLot(
         lot_number=receipt.production_lot_number,
         cloth_receipt=receipt,
         vendor=receipt.vendor,
         cloth_type=receipt.cloth_type,
         initial_metres=receipt.accepted_metres,
-        initial_weight=receipt.factory_measured_weight,
+        initial_weight=weight,
         current_metres=receipt.accepted_metres,
-        current_weight=receipt.factory_measured_weight,
+        current_weight=weight,
         current_stage="Receiving",
         status="Received",
         start_date=receipt.receipt_date,

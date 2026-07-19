@@ -1,63 +1,126 @@
 {% extends "base.html" %}
-{% block title %}Lot {{ object.production_lot_number }} - Textile Factory ERP{% endblock %}
+{% block title %}Lot {{ object.production_lot_number }} - Ghausia Dyeing{% endblock %}
 {% block content %}
-<div class="page-header-block d-flex flex-wrap justify-content-between align-items-start gap-3">
-    <div>
-        <h1 class="page-title">
-            Lot / Palli: {{ object.production_lot_number }}
-            {% if object.is_cancelled %}<span class="badge badge-cancelled ms-2">Cancelled</span>{% endif %}
-        </h1>
-        <p class="page-subtitle">Cloth receiving details for this production lot</p>
-    </div>
-    <div class="page-actions">
-        <a href="{% url 'receiving:edit' object.pk %}" class="btn btn-primary btn-lg-action">
-            <i class="bi bi-pencil me-1"></i> Edit
-        </a>
-        {% if not object.is_cancelled %}
-        <a href="{% url 'receiving:cancel' object.pk %}" class="btn btn-cancel-record btn-lg-action">
-            <i class="bi bi-x-circle me-1"></i> Cancel Record
-        </a>
-        {% endif %}
-    </div>
-</div>
+{% include "receiving/_layout_open.html" with rcv_title="Lot / Palli: "|add:object.production_lot_number rcv_subtitle="Cloth receiving lot details" rcv_subtitle_urdu="لاٹ / پلی نمبر کی تفصیل" %}
 
-<div class="card">
-    <div class="card-header"><i class="bi bi-info-circle me-2"></i>Receiving Details</div>
+<nav class="rcv-actions" aria-label="Lot actions">
+    <a href="{% url 'receiving:list' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-arrow-left"></i> Back</a>
+    <a href="{% url 'receiving:edit' object.pk %}" class="rcv-btn rcv-btn-secondary"><i class="bi bi-pencil"></i> Edit</a>
+    {% if not object.is_cancelled %}
+    <a href="{% url 'receiving:cancel' object.pk %}" class="rcv-btn rcv-btn-danger"><i class="bi bi-x-circle"></i> Cancel Record</a>
+    {% endif %}
+</nav>
+{% if object.is_cancelled %}<p class="mb-3"><span class="badge badge-cancelled">Cancelled</span></p>{% endif %}
+
+<div class="card rcv-card mb-3">
+    <div class="card-header"><i class="bi bi-info-circle me-2"></i>Basic Info</div>
     <div class="card-body">
         <div class="detail-grid">
             <div class="detail-item">
-                <div class="detail-label">Vendor</div>
-                <div class="detail-value">{{ object.vendor }}</div>
+                <div class="detail-label">Lot / Palli No.<span class="detail-label-urdu">لاٹ / پلی نمبر</span></div>
+                <div class="detail-value">{{ object.production_lot_number }}</div>
             </div>
             <div class="detail-item">
-                <div class="detail-label">Challan Number</div>
-                <div class="detail-value">{{ object.vendor_challan_number|default:"—" }}</div>
-            </div>
-            <div class="detail-item">
-                <div class="detail-label">Cloth Type</div>
-                <div class="detail-value">{{ object.cloth_type }}</div>
-            </div>
-            <div class="detail-item">
-                <div class="detail-label">Receiving Date</div>
+                <div class="detail-label">Date</div>
                 <div class="detail-value">{{ object.receipt_date }}</div>
             </div>
             <div class="detail-item">
-                <div class="detail-label">Vendor Metres</div>
-                <div class="detail-value">{{ object.vendor_metres }} m</div>
+                <div class="detail-label">Party<span class="detail-label-urdu">پارٹی</span></div>
+                <div class="detail-value">{{ object.vendor }}</div>
+            </div>
+            {% if object.vendor_challan_number %}
+            <div class="detail-item">
+                <div class="detail-label">Challan</div>
+                <div class="detail-value">{{ object.vendor_challan_number }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card rcv-card mb-3">
+    <div class="card-header"><i class="bi bi-layers me-2"></i>Cloth Type</div>
+    <div class="card-body">
+        <div class="detail-grid">
+            <div class="detail-item">
+                <div class="detail-label">PV blend</div>
+                <div class="detail-value">{% if object.pv_blend_qty %}{{ object.pv_blend_qty }}{% else %}/{% endif %}</div>
             </div>
             <div class="detail-item">
-                <div class="detail-label">Factory Metres</div>
-                <div class="detail-value">{{ object.factory_measured_metres }} m</div>
-            </div>
-            <div class="detail-item">
-                <div class="detail-label">Accepted Metres</div>
-                <div class="detail-value">{{ object.accepted_metres }} m</div>
-            </div>
-            <div class="detail-item">
-                <div class="detail-label">Metre Difference</div>
-                <div class="detail-value">{{ object.metre_difference }} m</div>
+                <div class="detail-label">Read Pick</div>
+                <div class="detail-value">{% if object.read_pick_qty %}{{ object.read_pick_qty }}{% else %}/{% endif %}</div>
             </div>
         </div>
     </div>
 </div>
+
+<div class="card rcv-card mb-3">
+    <div class="card-header"><i class="bi bi-collection me-2"></i>Rolls <span class="ms-1 opacity-75">تھان نمبر</span></div>
+    <div class="card-body">
+        <div class="detail-grid">
+            <div class="detail-item">
+                <div class="detail-label">Party<span class="detail-label-urdu">پارٹی تھان نمبر</span></div>
+                <div class="detail-value">{{ object.number_of_rolls }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Factory<span class="detail-label-urdu">فیکٹری تھان نمبر</span></div>
+                <div class="detail-value">{{ object.factory_number_of_rolls }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card rcv-card mb-3">
+    <div class="card-header"><i class="bi bi-rulers me-2"></i>Metres &amp; Weight</div>
+    <div class="card-body">
+        <div class="detail-grid">
+            <div class="detail-item">
+                <div class="detail-label">Vendor M<span class="detail-label-urdu">پارٹی غزانہ</span></div>
+                <div class="detail-value">{{ object.vendor_metres }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Factory M<span class="detail-label-urdu">فیکٹری غزانہ</span></div>
+                <div class="detail-value">{{ object.factory_measured_metres }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Vendor wt<span class="detail-label-urdu">پارٹی وزن</span></div>
+                <div class="detail-value">{% if object.vendor_weight %}{{ object.vendor_weight }}{% else %}/{% endif %}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Factory wt<span class="detail-label-urdu">فیکٹری وزن</span></div>
+                <div class="detail-value">{% if object.factory_measured_weight %}{{ object.factory_measured_weight }}{% else %}/{% endif %}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Accepted</div>
+                <div class="detail-value">{{ object.accepted_metres }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Difference</div>
+                <div class="detail-value">{{ object.metre_difference }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card rcv-card mb-3">
+    <div class="card-header"><i class="bi bi-chat-left-text me-2"></i>Remarks <span class="ms-1 opacity-75">ریمارکس</span></div>
+    <div class="card-body">
+        <div class="detail-value">{{ object.remarks|default:"—" }}</div>
+    </div>
+</div>
+
+<div class="card rcv-card mb-3">
+    <div class="card-header"><i class="bi bi-camera me-2"></i>Photo</div>
+    <div class="card-body">
+        {% if object.receipt_image %}
+        <a href="{{ object.receipt_image.url }}" target="_blank" rel="noopener">
+            <img src="{{ object.receipt_image.url }}" alt="Receipt photo" class="receipt-photo-preview">
+        </a>
+        {% else %}
+        <p class="text-muted mb-0">No photo attached.</p>
+        {% endif %}
+    </div>
+</div>
+{% include "receiving/_layout_close.html" %}
 {% endblock %}
+

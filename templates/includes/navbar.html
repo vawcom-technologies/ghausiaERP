@@ -2,7 +2,7 @@
     <div class="container-fluid px-3 px-lg-4">
         <a class="navbar-brand" href="{% url 'accounts:home' %}">
             <span class="brand-icon"><i class="bi bi-building-gear"></i></span>
-            Textile Factory ERP
+            Ghausia Dyeing
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-label="Toggle menu">
             <span class="navbar-toggler-icon"></span>
@@ -14,7 +14,10 @@
                     <a class="nav-link" href="{% url 'accounts:home' %}"><i class="bi bi-house-door me-1"></i> Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'receiving:list' %}"><i class="bi bi-box-arrow-in-down me-1"></i> Receiving</a>
+                    <a class="nav-link nav-link-stacked" href="{% url 'receiving:list' %}">
+                        <span class="nav-link-main"><i class="bi bi-box-arrow-in-down me-1"></i> Cloth Receiving</span>
+                        <span class="nav-link-urdu">غزانہ</span>
+                    </a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Production</a>

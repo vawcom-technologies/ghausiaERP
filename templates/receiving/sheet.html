@@ -1,93 +1,110 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Receiving Spreadsheet - Textile Factory ERP{% endblock %}
+{% block title %}Cloth Receiving Spreadsheet - Ghausia Dyeing{% endblock %}
 {% block content %}
-<div class="page-header-block d-flex flex-wrap justify-content-between align-items-start gap-3">
+{% include "receiving/_layout_open.html" with rcv_title="Spreadsheet Entry" rcv_subtitle="Enter multiple lots at once — paste from Excel with Ctrl+V / Cmd+V" rcv_subtitle_urdu="دستی اندراج — ایک ساتھ کئی لاٹ" rcv_wide=True %}
+
+<nav class="rcv-actions" aria-label="Spreadsheet actions">
+    <a href="{% url 'receiving:export' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-file-earmark-excel"></i> Export Excel</a>
+    <a href="{% url 'receiving:export_template' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-download"></i> Excel Template</a>
+    <a href="{% url 'receiving:import' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-upload"></i> Import Excel</a>
+    <a href="{% url 'receiving:create' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-plus-lg"></i> Single Entry</a>
+    <a href="{% url 'receiving:list' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-arrow-left"></i> Back</a>
+</nav>
+
+<div class="rcv-hint">
+    <i class="bi bi-info-circle"></i>
     <div>
-        <h1 class="page-title">Cloth Receiving Spreadsheet</h1>
-        <p class="page-subtitle">Enter multiple lots at once — paste from Excel with Ctrl+V / Cmd+V</p>
-    </div>
-    <div class="page-actions">
-        <a href="{% url 'receiving:export_template' %}" class="btn btn-outline-primary">
-            <i class="bi bi-download me-1"></i> Excel Template
-        </a>
-        <a href="{% url 'receiving:import' %}" class="btn btn-outline-secondary">
-            <i class="bi bi-upload me-1"></i> Import Excel
-        </a>
-        <a href="{% url 'receiving:list' %}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Back to List
-        </a>
+        <strong>Tip:</strong> Fill every required field before saving — incomplete rows are not saved; your typed values stay on screen.
+        Enter values in <em>PV blend</em> and/or <em>Read Pick</em> (slash <em>/</em> allowed, e.g. 80/40; use / if empty). After adding a photo, click <em>View</em>.
+        <span class="d-block mt-1" dir="rtl">غلط قطار محفوظ نہیں ہوتی، ڈیٹا ویسا ہی رہتا ہے۔</span>
     </div>
 </div>
 
-<div class="sheet-hint">
-    <i class="bi bi-info-circle me-1"></i>
-    <strong>Tip:</strong> Leave <em>Lot / Palli Number</em> blank to auto-generate (e.g. LOT-2026-0001). Type vendor name manually — new vendors are created automatically.
-</div>
-
-<form method="post" data-sheet-entry data-row-template="sheet-row-template">
+<form method="post" enctype="multipart/form-data" data-sheet-entry data-row-template="sheet-row-template" class="rcv-sheet-form">
     {% csrf_token %}
-    <div class="sheet-toolbar">
-        <button type="button" class="btn btn-primary" data-sheet-add-row>
-            <i class="bi bi-plus-lg me-1"></i> Add Row
+    <div class="sheet-toolbar rcv-sheet-toolbar">
+        <button type="button" class="rcv-btn rcv-btn-secondary" data-sheet-add-row>
+            <i class="bi bi-plus-lg"></i> Add Row
         </button>
-        <button type="submit" class="btn btn-save">
-            <i class="bi bi-check-lg me-1"></i> Save All Rows
+        <button type="submit" class="rcv-btn rcv-btn-primary">
+            <i class="bi bi-check-lg"></i> Save All Rows
         </button>
     </div>
-    <div class="sheet-wrap">
+    <div class="sheet-wrap rcv-panel rcv-sheet-wrap">
         <table class="table sheet-table">
             <thead>
                 <tr>
-                    <th>Lot / Palli No.</th>
-                    <th>Date</th>
-                    <th>Vendor</th>
-                    <th>Challan</th>
-                    <th>Cloth Type</th>
-                    <th>Rolls</th>
-                    <th>Vendor m</th>
-                    <th>Factory m</th>
-                    <th>Vendor wt</th>
-                    <th>Factory wt</th>
-                    <th>Rejected m</th>
-                    <th>Remarks</th>
-                    <th></th>
+                    <th rowspan="2">Lot / Palli No.<span class="th-urdu">لاٹ / پلی نمبر</span></th>
+                    <th rowspan="2">Date</th>
+                    <th rowspan="2">Party<span class="th-urdu">پارٹی</span></th>
+                    <th colspan="2" class="th-group th-cloth-group">Cloth Type</th>
+                    <th colspan="2" class="th-group th-rolls-group">Rolls<span class="th-urdu">تھان نمبر</span></th>
+                    <th rowspan="2" class="th-metres">Vendor M<span class="th-urdu">پارٹی غزانہ</span></th>
+                    <th rowspan="2" class="th-metres">Factory M<span class="th-urdu">فیکٹری غزانہ</span></th>
+                    <th rowspan="2" class="th-weight">Vendor wt<span class="th-urdu">پارٹی وزن</span></th>
+                    <th rowspan="2" class="th-weight">Factory wt<span class="th-urdu">فیکٹری وزن</span></th>
+                    <th rowspan="2">Remarks<span class="th-urdu">ریمارکس</span></th>
+                    <th rowspan="2">Photo</th>
+                    <th rowspan="2"></th>
+                </tr>
+                <tr>
+                    <th class="th-sub th-cloth-start">PV blend</th>
+                    <th class="th-sub th-cloth-end">Read Pick</th>
+                    <th class="th-sub th-rolls-start">Party<span class="th-urdu">پارٹی تھان نمبر</span></th>
+                    <th class="th-sub th-rolls-end">Factory<span class="th-urdu">فیکٹری تھان نمبر</span></th>
                 </tr>
             </thead>
             <tbody data-sheet-body>
-                {% for i in row_range %}
-                <tr>
-                    <td><input type="text" name="lot_number" class="form-control" placeholder="Auto if blank"></td>
-                    <td><input type="date" name="receipt_date" class="form-control" value="{{ today }}"></td>
-                    <td><input type="text" name="vendor_name" class="form-control" list="vendor-suggestions" placeholder="Type vendor"></td>
-                    <td><input type="text" name="challan" class="form-control"></td>
-                    <td>
-                        <select name="cloth_type" class="form-select">
-                            <option value="">—</option>
-                            {% for ct in cloth_types %}
-                            <option value="{{ ct.name }}">{{ ct.name }} ({{ ct.code }})</option>
-                            {% endfor %}
-                        </select>
+                {% for row in sheet_rows %}
+                <tr class="{% if row.is_invalid %}sheet-row-invalid{% endif %}" data-sheet-row>
+                    <td><input type="text" name="lot_number" class="form-control" value="{{ row.lot_number }}"></td>
+                    <td><input type="date" name="receipt_date" class="form-control" value="{{ row.receipt_date }}"></td>
+                    <td><input type="text" name="vendor_name" class="form-control" list="vendor-suggestions" value="{{ row.vendor_name }}"></td>
+                    <td class="col-cloth col-cloth-start"><input type="text" name="cloth_pv" class="form-control" inputmode="text" value="{{ row.cloth_pv }}"></td>
+                    <td class="col-cloth col-cloth-end"><input type="text" name="cloth_read_pick" class="form-control" inputmode="text" value="{{ row.cloth_read_pick }}"></td>
+                    <td class="col-rolls col-rolls-start"><input type="text" name="rolls" class="form-control" inputmode="numeric" placeholder="0" value="{{ row.rolls }}"></td>
+                    <td class="col-rolls col-rolls-end"><input type="text" name="factory_rolls" class="form-control" inputmode="numeric" placeholder="0" value="{{ row.factory_rolls }}"></td>
+                    <td class="col-metres"><input type="text" name="vendor_metres" class="form-control" inputmode="decimal" value="{{ row.vendor_metres }}"></td>
+                    <td class="col-metres"><input type="text" name="factory_metres" class="form-control" inputmode="decimal" value="{{ row.factory_metres }}"></td>
+                    <td class="col-weight"><input type="text" name="vendor_weight" class="form-control" inputmode="text" placeholder="0" value="{{ row.vendor_weight }}"></td>
+                    <td class="col-weight"><input type="text" name="factory_weight" class="form-control" inputmode="text" placeholder="0" value="{{ row.factory_weight }}"></td>
+                    <td class="col-remarks"><input type="text" name="remarks" class="form-control" value="{{ row.remarks }}"></td>
+                    <td class="col-photo">
+                        <div class="sheet-photo-cell">
+                            <label class="sheet-photo-btn">
+                                <i class="bi bi-camera"></i>
+                                <span class="sheet-photo-label">{% if row.needs_photo_reselect %}Re-add{% else %}Add{% endif %}</span>
+                                <input type="file" name="receipt_image_{{ forloop.counter0 }}" accept="image/*" class="sheet-photo-input">
+                            </label>
+                            <button type="button" class="sheet-photo-view" data-photo-view hidden>View</button>
+                            {% if row.needs_photo_reselect %}
+                            <span class="sheet-photo-hint">re-select</span>
+                            {% endif %}
+                        </div>
                     </td>
-                    <td><input type="number" name="rolls" class="form-control" min="0" value="0"></td>
-                    <td><input type="text" name="vendor_metres" class="form-control" inputmode="decimal"></td>
-                    <td><input type="text" name="factory_metres" class="form-control" inputmode="decimal"></td>
-                    <td><input type="text" name="vendor_weight" class="form-control" inputmode="decimal" value="0"></td>
-                    <td><input type="text" name="factory_weight" class="form-control" inputmode="decimal" value="0"></td>
-                    <td><input type="text" name="rejected_metres" class="form-control" inputmode="decimal" value="0"></td>
-                    <td><input type="text" name="remarks" class="form-control"></td>
                     <td class="sheet-row-actions"><button type="button" class="btn btn-sm btn-outline-danger" data-sheet-remove-row title="Remove row">&times;</button></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-    <div class="mt-3">
-        <button type="submit" class="btn btn-save btn-lg-action">
-            <i class="bi bi-check-lg me-1"></i> Save All Rows
+    <div class="rcv-actions rcv-actions-inline mt-3">
+        <button type="submit" class="rcv-btn rcv-btn-primary">
+            <i class="bi bi-check-lg"></i> Save All Rows
         </button>
     </div>
 </form>
+
+{% include "receiving/_layout_close.html" %}
+
+<div class="sheet-photo-modal" id="sheet-photo-modal" hidden>
+    <div class="sheet-photo-modal-backdrop" data-photo-modal-close></div>
+    <div class="sheet-photo-modal-dialog" role="dialog" aria-modal="true" aria-label="Photo preview">
+        <button type="button" class="sheet-photo-modal-close" data-photo-modal-close aria-label="Close">&times;</button>
+        <img src="" alt="Uploaded photo preview" id="sheet-photo-modal-img">
+    </div>
+</div>
 
 <datalist id="vendor-suggestions">
     {% for v in vendors %}
@@ -96,26 +113,29 @@
 </datalist>
 
 <template id="sheet-row-template">
-    <tr>
-        <td><input type="text" name="lot_number" class="form-control" placeholder="Auto if blank"></td>
+    <tr data-sheet-row>
+        <td><input type="text" name="lot_number" class="form-control"></td>
         <td><input type="date" name="receipt_date" class="form-control" value="{{ today }}"></td>
-        <td><input type="text" name="vendor_name" class="form-control" list="vendor-suggestions" placeholder="Type vendor"></td>
-        <td><input type="text" name="challan" class="form-control"></td>
-        <td>
-            <select name="cloth_type" class="form-select">
-                <option value="">—</option>
-                {% for ct in cloth_types %}
-                <option value="{{ ct.name }}">{{ ct.name }} ({{ ct.code }})</option>
-                {% endfor %}
-            </select>
+        <td><input type="text" name="vendor_name" class="form-control" list="vendor-suggestions"></td>
+        <td class="col-cloth col-cloth-start"><input type="text" name="cloth_pv" class="form-control" inputmode="text"></td>
+        <td class="col-cloth col-cloth-end"><input type="text" name="cloth_read_pick" class="form-control" inputmode="text"></td>
+        <td class="col-rolls col-rolls-start"><input type="text" name="rolls" class="form-control" inputmode="numeric" placeholder="0"></td>
+        <td class="col-rolls col-rolls-end"><input type="text" name="factory_rolls" class="form-control" inputmode="numeric" placeholder="0"></td>
+        <td class="col-metres"><input type="text" name="vendor_metres" class="form-control" inputmode="decimal"></td>
+        <td class="col-metres"><input type="text" name="factory_metres" class="form-control" inputmode="decimal"></td>
+        <td class="col-weight"><input type="text" name="vendor_weight" class="form-control" inputmode="text" placeholder="0"></td>
+        <td class="col-weight"><input type="text" name="factory_weight" class="form-control" inputmode="text" placeholder="0"></td>
+        <td class="col-remarks"><input type="text" name="remarks" class="form-control"></td>
+        <td class="col-photo">
+            <div class="sheet-photo-cell">
+                <label class="sheet-photo-btn">
+                    <i class="bi bi-camera"></i>
+                    <span class="sheet-photo-label">Add</span>
+                    <input type="file" name="receipt_image_0" accept="image/*" class="sheet-photo-input">
+                </label>
+                <button type="button" class="sheet-photo-view" data-photo-view hidden>View</button>
+            </div>
         </td>
-        <td><input type="number" name="rolls" class="form-control" min="0" value="0"></td>
-        <td><input type="text" name="vendor_metres" class="form-control" inputmode="decimal"></td>
-        <td><input type="text" name="factory_metres" class="form-control" inputmode="decimal"></td>
-        <td><input type="text" name="vendor_weight" class="form-control" inputmode="decimal" value="0"></td>
-        <td><input type="text" name="factory_weight" class="form-control" inputmode="decimal" value="0"></td>
-        <td><input type="text" name="rejected_metres" class="form-control" inputmode="decimal" value="0"></td>
-        <td><input type="text" name="remarks" class="form-control"></td>
         <td class="sheet-row-actions"><button type="button" class="btn btn-sm btn-outline-danger" data-sheet-remove-row title="Remove row">&times;</button></td>
     </tr>
 </template>

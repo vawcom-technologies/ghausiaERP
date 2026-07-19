@@ -1,26 +1,32 @@
 {% extends "base.html" %}
-{% block title %}Import Receiving Excel - Textile Factory ERP{% endblock %}
+{% block title %}Import Receiving Excel - Ghausia Dyeing{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between page-header">
-    <h1>Import Cloth Receiving from Excel</h1>
-    <div>
-        <a href="{% url 'receiving:export_template' %}" class="btn btn-outline-primary">Download Template</a>
-        <a href="{% url 'receiving:sheet' %}" class="btn btn-secondary">Spreadsheet Entry</a>
-    </div>
+{% include "receiving/_layout_open.html" with rcv_title="Import Excel" rcv_subtitle="Upload cloth receiving rows from a spreadsheet file" rcv_subtitle_urdu="ایکسل فائل سے اندراج" %}
+
+<nav class="rcv-actions" aria-label="Import actions">
+    <a href="{% url 'receiving:export_template' %}" class="rcv-btn rcv-btn-secondary">
+        <i class="bi bi-download"></i> Download Template
+    </a>
+    <a href="{% url 'receiving:sheet' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-table"></i> Spreadsheet
+    </a>
+    <a href="{% url 'receiving:list' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-arrow-left"></i> Back
+    </a>
+</nav>
+
+<div class="rcv-panel rcv-panel-pad">
+    <p class="rcv-lead">Upload an <strong>.xlsx</strong> file. Header row must match these columns:</p>
+    <div class="rcv-code">{{ headers|join:", " }}</div>
+    <form method="post" enctype="multipart/form-data" class="rcv-import-form mt-3">
+        {% csrf_token %}
+        <label class="form-label fw-semibold">Excel file</label>
+        <input type="file" name="excel_file" class="form-control rcv-file" accept=".xlsx" required>
+        <div class="rcv-actions rcv-actions-inline mt-3">
+            <button type="submit" class="rcv-btn rcv-btn-primary"><i class="bi bi-upload"></i> Import</button>
+            <a href="{% url 'receiving:list' %}" class="rcv-btn rcv-btn-ghost">Cancel</a>
+        </div>
+    </form>
 </div>
-<div class="card">
-    <div class="card-body">
-        <p>Upload an <strong>.xlsx</strong> file with these columns (header row required):</p>
-        <p><code>{{ headers|join:", " }}</code></p>
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="mb-3">
-                <label class="form-label">Excel file</label>
-                <input type="file" name="excel_file" class="form-control" accept=".xlsx" required>
-            </div>
-            <button type="submit" class="btn btn-save btn-lg-action">Import</button>
-            <a href="{% url 'receiving:list' %}" class="btn btn-secondary btn-lg-action ms-2">Cancel</a>
-        </form>
-    </div>
-</div>
+{% include "receiving/_layout_close.html" %}
 {% endblock %}

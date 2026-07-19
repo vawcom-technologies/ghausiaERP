@@ -1,4 +1,4 @@
-"""Seed demo data for Textile Factory ERP."""
+"""Seed demo data for Ghausia Dyeing."""
 
 from decimal import Decimal
 
@@ -38,7 +38,13 @@ class Command(BaseCommand):
         for name in vendors:
             Vendor.objects.get_or_create(name=name, defaults={"contact_person": "Contact", "phone": "0300-0000000", "is_active": True})
 
-        cloth_types = [("Cotton Grey", "CTN-GRY"), ("Polyester", "POL-001"), ("Viscose", "VIS-001")]
+        cloth_types = [
+            ("PV blend", "PV-BLD"),
+            ("Read Pick", "RD-PICK"),
+            ("Cotton Grey", "CTN-GRY"),
+            ("Polyester", "POL-001"),
+            ("Viscose", "VIS-001"),
+        ]
         for name, code in cloth_types:
             ClothType.objects.get_or_create(code=code, defaults={"name": name, "is_active": True})
 
