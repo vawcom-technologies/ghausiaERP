@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Gate Entry Spreadsheet - Ghausia Dyeing{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title="Gate Entry" rcv_subtitle="Add rows as needed — numbers G1, G2, G3… are assigned automatically" rcv_subtitle_urdu="ضرورت کے مطابق قطاریں شامل کریں" rcv_wide=True %}
+
+<nav class="rcv-actions" aria-label="Gate sheet actions">
+    <a href="{% url 'gate_entry:list' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-arrow-left"></i> Back</a>
+</nav>
+
+<div class="rcv-hint">
+    <i class="bi bi-info-circle"></i>
+    <div>
+        <strong>Tip:</strong> Fill Date, Purchaser, Shop Name, at least one Stock Description column, and Demanded By.
+        Use <em>Add Row</em> for more G numbers.
+        <span class="d-block mt-1" dir="rtl">تاریخ، خریدار، دکان، اسٹاک تفصیل اور مطالبہ کنندہ بھریں۔</span>
+    </div>
+</div>
+
+<form method="post" data-gate-sheet data-row-template="gate-row-template" data-start-seq="{{ start_seq }}" class="rcv-sheet-form">
+    {% csrf_token %}
+    <div class="sheet-toolbar rcv-sheet-toolbar">
+        <button type="button" class="rcv-btn rcv-btn-secondary" data-sheet-add-row>
+            <i class="bi bi-plus-lg"></i> Add Row
+        </button>
+        <button type="submit" class="rcv-btn rcv-btn-primary">
+            <i class="bi bi-check-lg"></i> Save All Rows
+        </button>
+    </div>
+    <div class="sheet-wrap rcv-panel rcv-sheet-wrap">
+        <table class="table sheet-table gate-sheet-table">
+            <thead>
+                <tr>
+                    <th rowspan="2" class="col-gate">Gate No.<span class="th-urdu">گیٹ نمبر</span></th>
+                    <th rowspan="2">Date<span class="th-urdu">تاریخ</span></th>
+                    <th rowspan="2">Purchaser<span class="th-urdu">خریدار</span></th>
+                    <th rowspan="2">Shop Name<span class="th-urdu">دکان کا نام</span></th>
+                    <th colspan="4" class="th-group th-stock-group">Stock Description<span class="th-urdu">اسٹاک تفصیل</span></th>
+                    <th rowspan="2">Demanded By<span class="th-urdu">مطالبہ کنندہ</span></th>
+                    <th rowspan="2"></th>
+                </tr>
+                <tr>
+                    <th class="th-sub th-stock-start">Chemical<span class="th-urdu">کیمیکل</span></th>
+                    <th class="th-sub">Electrical<span class="th-urdu">الیکٹریکل</span></th>
+                    <th class="th-sub">Mechanical<span class="th-urdu">مکینیکل</span></th>
+                    <th class="th-sub th-stock-end">General<span class="th-urdu">جنرل</span></th>
+                </tr>
+            </thead>
+            <tbody data-sheet-body>
+                {% for row in sheet_rows %}
+                <tr class="{% if row.is_invalid %}sheet-row-invalid{% endif %}" data-sheet-row>
+                    <td class="col-gate">
+                        <input type="text" name="gate_number" class="form-control gate-number-input" value="{{ row.gate_number }}" readonly>
+                    </td>
+                    <td><input type="date" name="entry_date" class="form-control" value="{{ row.entry_date }}"></td>
+                    <td><input type="text" name="purchaser" class="form-control" value="{{ row.purchaser }}" autocomplete="off"></td>
+                    <td><input type="text" name="shop_name" class="form-control" value="{{ row.shop_name }}" autocomplete="off"></td>
+                    <td class="col-stock col-stock-start"><input type="text" name="chemical" class="form-control" value="{{ row.chemical }}" autocomplete="off"></td>
+                    <td class="col-stock"><input type="text" name="electrical" class="form-control" value="{{ row.electrical }}" autocomplete="off"></td>
+                    <td class="col-stock"><input type="text" name="mechanical" class="form-control" value="{{ row.mechanical }}" autocomplete="off"></td>
+                    <td class="col-stock col-stock-end"><input type="text" name="general" class="form-control" value="{{ row.general }}" autocomplete="off"></td>
+                    <td><input type="text" name="demanded_by" class="form-control" value="{{ row.demanded_by }}" autocomplete="off"></td>
+                    <td class="sheet-row-actions">
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-sheet-remove-row title="Remove row">&times;</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="rcv-actions rcv-actions-inline mt-3">
+        <button type="submit" class="rcv-btn rcv-btn-primary">
+            <i class="bi bi-check-lg"></i> Save All Rows
+        </button>
+    </div>
+</form>
+
+{% include "receiving/_layout_close.html" %}
+
+<template id="gate-row-template">
+    <tr data-sheet-row>
+        <td class="col-gate">
+            <input type="text" name="gate_number" class="form-control gate-number-input" value="" readonly>
+        </td>
+        <td><input type="date" name="entry_date" class="form-control" value="{{ today }}"></td>
+        <td><input type="text" name="purchaser" class="form-control" autocomplete="off"></td>
+        <td><input type="text" name="shop_name" class="form-control" autocomplete="off"></td>
+        <td class="col-stock col-stock-start"><input type="text" name="chemical" class="form-control" autocomplete="off"></td>
+        <td class="col-stock"><input type="text" name="electrical" class="form-control" autocomplete="off"></td>
+        <td class="col-stock"><input type="text" name="mechanical" class="form-control" autocomplete="off"></td>
+        <td class="col-stock col-stock-end"><input type="text" name="general" class="form-control" autocomplete="off"></td>
+        <td><input type="text" name="demanded_by" class="form-control" autocomplete="off"></td>
+        <td class="sheet-row-actions">
+            <button type="button" class="btn btn-sm btn-outline-danger" data-sheet-remove-row title="Remove row">&times;</button>
+        </td>
+    </tr>
+</template>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/gate_sheet.js' %}"></script>
+{% endblock %}

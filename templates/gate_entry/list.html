@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Gate Entry - Ghausia Dyeing{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title="Gate Entry" rcv_subtitle="Gate-in stock demands" rcv_compact=True %}
+
+<nav class="rcv-actions" aria-label="Gate Entry actions">
+    <a href="{% url 'gate_entry:sheet' %}" class="rcv-btn rcv-btn-primary">
+        <i class="bi bi-table"></i> Spreadsheet
+    </a>
+</nav>
+
+<form method="get" class="rcv-search">
+    <i class="bi bi-search rcv-search-icon" aria-hidden="true"></i>
+    <input type="text" name="q" class="rcv-search-input" placeholder="Search gate no, purchaser, shop…" value="{{ request.GET.q }}" autocomplete="off">
+    <button class="rcv-btn rcv-btn-primary rcv-search-btn" type="submit">Search</button>
+</form>
+
+<div class="rcv-panel">
+    <div class="table-responsive">
+        <table class="table rcv-table mb-0">
+            <thead>
+                <tr>
+                    <th>Gate No.<span class="rcv-th-urdu">گیٹ نمبر</span></th>
+                    <th>Date<span class="rcv-th-urdu">تاریخ</span></th>
+                    <th>Purchaser<span class="rcv-th-urdu">خریدار</span></th>
+                    <th>Shop Name<span class="rcv-th-urdu">دکان کا نام</span></th>
+                    <th>Stock<span class="rcv-th-urdu">اسٹاک</span></th>
+                    <th>Demanded By<span class="rcv-th-urdu">مطالبہ کنندہ</span></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for obj in objects %}
+            <tr>
+                <td><span class="rcv-lot-link">{{ obj.gate_number }}</span></td>
+                <td>{{ obj.entry_date }}</td>
+                <td>{{ obj.purchaser }}</td>
+                <td>{{ obj.shop_name }}</td>
+                <td class="rcv-cloth-cell">
+                    {% if obj.chemical %}<span class="rcv-chip">Chem {{ obj.chemical }}</span>{% endif %}
+                    {% if obj.electrical %}<span class="rcv-chip">Elec {{ obj.electrical }}</span>{% endif %}
+                    {% if obj.mechanical %}<span class="rcv-chip">Mech {{ obj.mechanical }}</span>{% endif %}
+                    {% if obj.general %}<span class="rcv-chip">Gen {{ obj.general }}</span>{% endif %}
+                    {% if not obj.chemical and not obj.electrical and not obj.mechanical and not obj.general %}
+                    <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
+                <td>{{ obj.demanded_by }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="rcv-empty">
+                    No gate entries yet.
+                    <a href="{% url 'gate_entry:sheet' %}">Open Spreadsheet</a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/pagination.html" %}
+{% include "receiving/_layout_close.html" %}
+{% endblock %}

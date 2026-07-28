@@ -124,7 +124,7 @@ class ReceivingSheetView(ERPLoginRequiredMixin, View):
             messages.warning(
                 request,
                 "Your typed values are kept below. Fix the highlighted rows and save again. "
-                "Photos must be selected again (browsers clear file inputs after submit).",
+                "Selected photos are kept for those rows.",
             )
         if saved and not errors:
             return redirect("receiving:list")

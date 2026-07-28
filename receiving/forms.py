@@ -44,7 +44,7 @@ class ClothReceiptForm(BootstrapFormMixin, forms.ModelForm):
         widgets = {
             "receipt_date": forms.DateInput(attrs={"type": "date"}),
             "remarks": forms.TextInput(),
-            "receipt_image": forms.ClearableFileInput(
+            "receipt_image": forms.FileInput(
                 attrs={"accept": "image/*", "class": "form-control"}
             ),
             "pv_blend_qty": forms.TextInput(attrs={"autocomplete": "off"}),
@@ -197,10 +197,8 @@ class ClothReceiptForm(BootstrapFormMixin, forms.ModelForm):
         image = self.cleaned_data.get("receipt_image")
         if not isinstance(image, UploadedFile):
             return image
-        try:
-            return compress_image_upload(image)
-        except Exception as exc:  # noqa: BLE001
-            raise forms.ValidationError(f"Could not process image: {exc}") from exc
+        # Keep original when compression is not possible (e.g. some phone formats).
+        return compress_image_upload(image)
 
     def _resolve_vendor(self, name: str) -> Vendor:
         existing = Vendor.objects.filter(Q(name__iexact=name)).first()
@@ -233,6 +231,7 @@ class ClothReceiptForm(BootstrapFormMixin, forms.ModelForm):
             return ct
 
     def save(self, commit=True, user=None):
+        image = self.cleaned_data.get("receipt_image")
         instance = super().save(commit=False)
         instance.vendor = self._resolve_vendor(self.cleaned_data["vendor_name"])
         instance.receipt_number = instance.production_lot_number
@@ -245,6 +244,10 @@ class ClothReceiptForm(BootstrapFormMixin, forms.ModelForm):
         instance.calculate_fields()
         if commit:
             with transaction.atomic():
+                # Persist file explicitly so photo is never dropped on create/update.
+                if isinstance(image, UploadedFile):
+                    filename = getattr(image, "name", None) or "receipt.jpg"
+                    instance.receipt_image.save(filename, image, save=False)
                 instance.save()
                 if not hasattr(instance, "production_lot"):
                     create_production_lot_from_receipt(instance, user)

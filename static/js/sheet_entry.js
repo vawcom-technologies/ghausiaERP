@@ -7,7 +7,9 @@
   }
 
   function editableFields(row) {
-    return Array.from(row.querySelectorAll("input:not([type=file]), select, textarea"));
+    return Array.from(
+      row.querySelectorAll("input:not([type=file]):not([type=hidden]), select, textarea")
+    );
   }
 
   function indexFileInputs(root) {
@@ -99,6 +101,7 @@
     const label = cell.querySelector(".sheet-photo-btn");
     const text = cell.querySelector(".sheet-photo-label");
     const viewBtn = cell.querySelector("[data-photo-view]");
+    const keep = cell.querySelector('input[name="photo_keep"]');
     if (cell._previewUrl) {
       URL.revokeObjectURL(cell._previewUrl);
       cell._previewUrl = "";
@@ -106,12 +109,17 @@
     if (input.files && input.files.length) {
       const url = URL.createObjectURL(input.files[0]);
       cell._previewUrl = url;
+      if (keep) keep.value = ""; // new file replaces any stashed photo
       if (text) text.textContent = "✓";
       if (label) label.classList.add("has-file");
       if (viewBtn) {
         viewBtn.hidden = false;
         viewBtn.dataset.previewUrl = url;
       }
+    } else if (keep && keep.value) {
+      // Stashed photo from a previous submit — keep View available.
+      if (text) text.textContent = "✓";
+      if (label) label.classList.add("has-file");
     } else {
       if (text) text.textContent = "Add";
       if (label) label.classList.remove("has-file");

@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+import re
+import uuid
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
+from pathlib import Path
 from typing import Any
 
+from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
 from django.db.models import Q
 
@@ -29,6 +34,8 @@ RECEIVING_HEADERS = [
     "Remarks",
 ]
 
+_TEMP_TOKEN_RE = re.compile(r"^[a-f0-9]{32}$")
+
 
 def receipt_to_excel_row(receipt: ClothReceipt) -> list[Any]:
     """Map a saved receipt to RECEIVING_HEADERS values for Excel export."""
@@ -48,6 +55,56 @@ def receipt_to_excel_row(receipt: ClothReceipt) -> list[Any]:
         receipt.factory_measured_weight or "",
         receipt.remarks or "",
     ]
+
+
+def _temp_image_dir() -> Path:
+    path = Path(settings.MEDIA_ROOT) / "receiving" / "tmp"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def persist_temp_image(uploaded_file) -> str:
+    """Store an upload under media/receiving/tmp and return a 32-char token."""
+    token = uuid.uuid4().hex
+    prepared = compress_image_upload(uploaded_file)
+    dest = _temp_image_dir() / f"{token}.jpg"
+    with dest.open("wb") as out:
+        if hasattr(prepared, "chunks"):
+            for chunk in prepared.chunks():
+                out.write(chunk)
+        else:
+            out.write(prepared.read())
+    return token
+
+
+def load_temp_image(token: str):
+    """Reload a previously stashed sheet photo as an upload."""
+    token = (token or "").strip()
+    if not _TEMP_TOKEN_RE.match(token):
+        return None
+    path = _temp_image_dir() / f"{token}.jpg"
+    if not path.is_file():
+        return None
+    return SimpleUploadedFile(f"{token}.jpg", path.read_bytes(), content_type="image/jpeg")
+
+
+def clear_temp_image(token: str) -> None:
+    token = (token or "").strip()
+    if not _TEMP_TOKEN_RE.match(token):
+        return
+    path = _temp_image_dir() / f"{token}.jpg"
+    try:
+        path.unlink(missing_ok=True)
+    except OSError:
+        pass
+
+
+def temp_image_url(token: str) -> str:
+    token = (token or "").strip()
+    if not _TEMP_TOKEN_RE.match(token):
+        return ""
+    base = settings.MEDIA_URL if settings.MEDIA_URL.endswith("/") else f"{settings.MEDIA_URL}/"
+    return f"{base}receiving/tmp/{token}.jpg"
 
 
 def _to_decimal(value: Any, field_label: str) -> Decimal:
@@ -294,6 +351,8 @@ def save_receiving_row(row: dict[str, Any], user) -> ClothReceipt:
     challan = str(row.get("Challan") or "").strip()
 
     factory_m = _to_decimal(row.get("Factory Metres"), "Factory M")
+    image = row.get("_image")
+    prepared_image = compress_image_upload(image) if image else None
 
     receipt = ClothReceipt(
         receipt_number=lot_number,
@@ -319,15 +378,13 @@ def save_receiving_row(row: dict[str, Any], user) -> ClothReceipt:
         created_by=user,
         updated_by=user,
     )
-    image = row.get("_image")
-    if image:
-        try:
-            receipt.receipt_image = compress_image_upload(image)
-        except Exception as exc:  # noqa: BLE001
-            raise ValueError(f"Could not process image: {exc}") from exc
     receipt.calculate_fields()
-    receipt.full_clean()
+    receipt.full_clean(exclude=["receipt_image"])
+    if prepared_image:
+        filename = getattr(prepared_image, "name", None) or "receipt.jpg"
+        receipt.receipt_image.save(filename, prepared_image, save=False)
     receipt.save()
+    clear_temp_image(str(row.get("_image_token") or ""))
     create_production_lot_from_receipt(receipt, user)
     return receipt
 
@@ -411,7 +468,9 @@ def sheet_display_rows(
                 ),
                 "remarks": str(row.get("Remarks") or ""),
                 "is_invalid": idx in failed_set,
-                "needs_photo_reselect": bool(row.get("_image")),
+                "photo_keep": str(row.get("_image_token") or ""),
+                "photo_preview_url": temp_image_url(str(row.get("_image_token") or "")),
+                "needs_photo_reselect": False,
             }
         )
 
@@ -429,6 +488,8 @@ def sheet_display_rows(
         "factory_weight": "",
         "remarks": "",
         "is_invalid": False,
+        "photo_keep": "",
+        "photo_preview_url": "",
         "needs_photo_reselect": False,
     }
     while len(display) < min_rows:
@@ -467,6 +528,18 @@ def parse_grid_post(post_data, files=None) -> list[dict[str, Any]]:
     lots = post_data.getlist("lot_number")
     rows = []
     for i in range(len(lots)):
+        image = _uploaded_file_for_row(files, i)
+        token = _getlist_at(post_data, "photo_keep", i).strip()
+        if image:
+            # Stash so the photo survives a failed save / browser file-input clear.
+            try:
+                token = persist_temp_image(image)
+                image = load_temp_image(token) or image
+            except Exception:  # noqa: BLE001
+                token = token or ""
+        elif token:
+            image = load_temp_image(token)
+
         rows.append(
             {
                 "Lot Number / Palli Number": _getlist_at(post_data, "lot_number", i),
@@ -481,7 +554,8 @@ def parse_grid_post(post_data, files=None) -> list[dict[str, Any]]:
                 "Vendor Weight": _getlist_at(post_data, "vendor_weight", i),
                 "Factory Weight": _getlist_at(post_data, "factory_weight", i),
                 "Remarks": _getlist_at(post_data, "remarks", i),
-                "_image": _uploaded_file_for_row(files, i),
+                "_image": image,
+                "_image_token": token,
             }
         )
     return rows

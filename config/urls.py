@@ -11,6 +11,7 @@ admin.site.site_title = "Ghausia Dyeing"
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("accounts.urls")),
+    path("gate-entry/", include("gate_entry.urls")),
     path("receiving/", include("receiving.urls")),
     path("production/", include("production.urls")),
     path("inventory/", include("inventory.urls")),

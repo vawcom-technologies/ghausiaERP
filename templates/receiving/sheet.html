@@ -71,16 +71,14 @@
                     <td class="col-weight"><input type="text" name="factory_weight" class="form-control" inputmode="text" placeholder="0" value="{{ row.factory_weight }}"></td>
                     <td class="col-remarks"><input type="text" name="remarks" class="form-control" value="{{ row.remarks }}"></td>
                     <td class="col-photo">
-                        <div class="sheet-photo-cell">
-                            <label class="sheet-photo-btn">
+                        <div class="sheet-photo-cell{% if row.photo_preview_url %} has-preview{% endif %}">
+                            <label class="sheet-photo-btn{% if row.photo_preview_url %} has-file{% endif %}">
                                 <i class="bi bi-camera"></i>
-                                <span class="sheet-photo-label">{% if row.needs_photo_reselect %}Re-add{% else %}Add{% endif %}</span>
+                                <span class="sheet-photo-label">{% if row.photo_preview_url %}✓{% else %}Add{% endif %}</span>
                                 <input type="file" name="receipt_image_{{ forloop.counter0 }}" accept="image/*" class="sheet-photo-input">
                             </label>
-                            <button type="button" class="sheet-photo-view" data-photo-view hidden>View</button>
-                            {% if row.needs_photo_reselect %}
-                            <span class="sheet-photo-hint">re-select</span>
-                            {% endif %}
+                            <input type="hidden" name="photo_keep" value="{{ row.photo_keep }}">
+                            <button type="button" class="sheet-photo-view" data-photo-view {% if not row.photo_preview_url %}hidden{% endif %} data-preview-url="{{ row.photo_preview_url }}">View</button>
                         </div>
                     </td>
                     <td class="sheet-row-actions"><button type="button" class="btn btn-sm btn-outline-danger" data-sheet-remove-row title="Remove row">&times;</button></td>
@@ -133,6 +131,7 @@
                     <span class="sheet-photo-label">Add</span>
                     <input type="file" name="receipt_image_0" accept="image/*" class="sheet-photo-input">
                 </label>
+                <input type="hidden" name="photo_keep" value="">
                 <button type="button" class="sheet-photo-view" data-photo-view hidden>View</button>
             </div>
         </td>

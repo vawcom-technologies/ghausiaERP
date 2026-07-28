@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "common",
     "master_data",
     "receiving",
+    "gate_entry",
     "production",
     "inventory",
     "maintenance",
