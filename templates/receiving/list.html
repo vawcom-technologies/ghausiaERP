@@ -1,7 +1,8 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Cloth Receiving - Ghausia Dyeing{% endblock %}
 {% block content %}
-{% include "receiving/_layout_open.html" with rcv_title="Cloth Receiving" rcv_subtitle="Incoming lots from parties" rcv_compact=True %}
+{% include "receiving/_layout_open.html" with rcv_title="Cloth Receiving" rcv_subtitle="Incoming lots from parties" rcv_compact=True rcv_wide=True %}
 
 <nav class="rcv-actions" aria-label="Receiving actions">
     <a href="{% url 'receiving:sheet' %}" class="rcv-btn rcv-btn-primary">
@@ -26,8 +27,8 @@
 </form>
 
 <div class="rcv-panel">
-    <div class="table-responsive">
-        <table class="table rcv-table mb-0">
+    <div class="table-responsive rcv-list-wrap">
+        <table class="table rcv-table rcv-list-table mb-0">
             <thead>
                 <tr>
                     <th>Lot / Palli</th>
@@ -35,7 +36,7 @@
                     <th>Party</th>
                     <th>Cloth Type</th>
                     <th class="text-end">Factory M</th>
-                    <th></th>
+                    <th class="text-center">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -53,8 +54,18 @@
                     {% if not obj.pv_blend_qty and not obj.read_pick_qty %}<span class="text-muted">—</span>{% endif %}
                 </td>
                 <td class="rcv-num text-end">{{ obj.factory_measured_metres }}</td>
-                <td class="text-end">
-                    <a href="{% url 'receiving:detail' obj.pk %}" class="rcv-btn rcv-btn-sm">View</a>
+                <td class="gate-actions-cell">
+                    <div class="gate-action-box" role="group" aria-label="Actions for {{ obj.production_lot_number }}">
+                        <a href="{% url 'receiving:detail' obj.pk %}" class="gate-action-btn gate-action-view">View</a>
+                        {% if not obj.is_cancelled %}
+                        <a href="{% url 'receiving:edit' obj.pk %}" class="gate-action-btn gate-action-update">Update</a>
+                        {% endif %}
+                        <button type="button"
+                                class="gate-action-btn gate-action-delete"
+                                data-delete-url="{% url 'receiving:delete' obj.pk %}"
+                                data-delete-label="{{ obj.production_lot_number }}"
+                                data-confirm-message="Delete {{ obj.production_lot_number }}?&#10;&#10;This cannot be undone.&#10;&#10;یہ لاٹ حذف ہو جائے گی۔ کیا آپ یقینی ہیں؟">Delete</button>
+                    </div>
                 </td>
             </tr>
             {% empty %}
@@ -73,4 +84,11 @@
 </div>
 {% include "includes/pagination.html" %}
 {% include "receiving/_layout_close.html" %}
+
+<form id="row-delete-form" method="post" hidden>
+    {% csrf_token %}
+</form>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/gate_list_actions.js' %}?v=3"></script>
 {% endblock %}

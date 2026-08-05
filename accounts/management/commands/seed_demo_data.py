@@ -20,19 +20,23 @@ class Command(BaseCommand):
         data_entry_group, _ = Group.objects.get_or_create(name=GROUP_DATA_ENTRY)
 
         users = [
-            ("admin", "admin123", "Admin User", admin_group, True),
-            ("supervisor", "super123", "Supervisor User", supervisor_group, False),
-            ("dataentry", "data123", "Data Entry User", data_entry_group, False),
+            ("admin", "admin123", "Admin", "User", "admin@ghausia.local", admin_group, True),
+            ("supervisor", "super123", "Supervisor", "User", "supervisor@ghausia.local", supervisor_group, False),
+            ("dataentry", "data123", "Data Entry", "User", "dataentry@ghausia.local", data_entry_group, False),
         ]
-        for username, password, name, group, is_super in users:
-            user, created = User.objects.get_or_create(username=username, defaults={"first_name": name})
-            if created:
-                user.set_password(password)
-                user.is_superuser = is_super
-                user.is_staff = is_super
-                user.save()
+        for username, password, first_name, last_name, email, group, is_super in users:
+            user, created = User.objects.get_or_create(username=username)
+            user.first_name = first_name
+            user.last_name = last_name
+            user.email = email
+            user.set_password(password)
+            user.is_superuser = is_super
+            user.is_staff = is_super or user.is_staff
+            user.is_active = True
+            user.save()
             user.groups.add(group)
-            self.stdout.write(f"  User: {username} / {password}")
+            status = "created" if created else "updated"
+            self.stdout.write(f"  User ({status}): {username} / {password} — {user.get_full_name()}")
 
         vendors = ["Alpha Textiles", "Beta Fabrics", "Gamma Mills"]
         for name in vendors:

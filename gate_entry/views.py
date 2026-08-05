@@ -1,12 +1,16 @@
 from datetime import date
 
 from django.contrib import messages
-from django.shortcuts import redirect, render
+from django.db.models import IntegerField
+from django.db.models.functions import Cast, Substr
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views import View
-from django.views.generic import ListView
+from django.views.generic import DetailView, ListView, UpdateView
 
-from accounts.mixins import ERPLoginRequiredMixin, PaginatedListMixin
+from accounts.mixins import AuditUpdateMixin, ERPLoginRequiredMixin, PaginatedListMixin
 from common.views import apply_search
+from gate_entry.forms import GateEntryForm
 from gate_entry.models import GateEntry
 from gate_entry.services import (
     next_gate_sequence_start,
@@ -39,7 +43,48 @@ class GateEntryListView(ERPLoginRequiredMixin, PaginatedListMixin, ListView):
                     "general",
                 ],
             )
-        return qs.order_by("-entry_date", "-id")
+        # G1, G2, G3… (numeric order, not newest-first)
+        return qs.annotate(
+            _gate_seq=Cast(Substr("gate_number", 2), IntegerField())
+        ).order_by("_gate_seq", "id")
+
+
+class GateEntryDetailView(ERPLoginRequiredMixin, DetailView):
+    model = GateEntry
+    template_name = "gate_entry/detail.html"
+    context_object_name = "object"
+
+
+class GateEntryUpdateView(ERPLoginRequiredMixin, AuditUpdateMixin, UpdateView):
+    model = GateEntry
+    form_class = GateEntryForm
+    template_name = "gate_entry/form.html"
+
+    def get_success_url(self):
+        return reverse("gate_entry:list")
+
+    def form_valid(self, form):
+        messages.success(
+            self.request,
+            f"Gate entry {form.instance.gate_number} updated.",
+        )
+        return super().form_valid(form)
+
+
+class GateEntryDeleteView(ERPLoginRequiredMixin, View):
+    """Soft-delete a gate entry (recoverable from Profile → Recently Deleted)."""
+
+    def post(self, request, pk):
+        from common.recycle import soft_delete_record
+
+        entry = get_object_or_404(GateEntry, pk=pk)
+        label = entry.gate_number
+        soft_delete_record(entry, request.user)
+        messages.success(
+            request,
+            f"Gate entry {label} moved to Recently Deleted. You can restore it from your profile.",
+        )
+        return redirect("gate_entry:list")
 
 
 class GateEntrySheetView(ERPLoginRequiredMixin, View):

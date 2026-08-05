@@ -59,12 +59,25 @@
                     </ul>
                 </li>
             </ul>
-            <ul class="navbar-nav">
+            <ul class="navbar-nav align-items-lg-center gap-lg-1">
                 <li class="nav-item">
-                    <span class="nav-link user-badge"><i class="bi bi-person-circle me-1"></i>{{ user.username }}</span>
+                    <a class="nav-link user-badge" href="{% url 'accounts:profile' %}" title="Open profile">
+                        <i class="bi bi-person-circle me-1"></i>
+                        <span class="user-badge-text">
+                            <span class="user-badge-name">{{ user.get_full_name|default:user.username }}</span>
+                            <span class="user-badge-meta">
+                                @{{ user.username }}
+                                {% with groups=user.groups.all %}
+                                {% if groups %} · {{ groups.0.name }}{% elif user.is_superuser %} · Administrator{% endif %}
+                                {% endwith %}
+                            </span>
+                        </span>
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'accounts:logout' %}"><i class="bi bi-box-arrow-right me-1"></i> Logout</a>
+                    <a class="nav-link" href="{% url 'accounts:logout' %}">
+                        <i class="bi bi-box-arrow-right me-1"></i> Logout
+                    </a>
                 </li>
             </ul>
             {% endif %}

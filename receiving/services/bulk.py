@@ -340,9 +340,9 @@ def save_receiving_row(row: dict[str, Any], user) -> ClothReceipt:
 
     lot_number = str(row.get("Lot Number / Palli Number") or "").strip()
 
-    if ClothReceipt.objects.filter(production_lot_number=lot_number).exists():
+    if ClothReceipt.all_objects.filter(production_lot_number=lot_number).exists():
         raise ValueError(f"Lot / Palli Number '{lot_number}' already exists.")
-    if ClothReceipt.objects.filter(receipt_number=lot_number).exists():
+    if ClothReceipt.all_objects.filter(receipt_number=lot_number).exists():
         raise ValueError(f"Lot / Palli Number '{lot_number}' already used.")
 
     vendor = resolve_vendor(str(_row_get(row, "Party", "Vendor") or ""))

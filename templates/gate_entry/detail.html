@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load erp_tags %}
+{% block title %}{{ object.gate_number }} - Gate Entry{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title=object.gate_number rcv_subtitle="Gate entry details" rcv_subtitle_urdu="گیٹ اندراج کی تفصیل" %}
+
+<nav class="rcv-actions" aria-label="Gate entry actions">
+    <a href="{% url 'gate_entry:list' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-arrow-left"></i> Back</a>
+    <a href="{% url 'gate_entry:edit' object.pk %}" class="rcv-btn rcv-btn-secondary"><i class="bi bi-pencil"></i> Update</a>
+</nav>
+
+<div class="card rcv-card mb-3">
+    <div class="card-header"><i class="bi bi-info-circle me-2"></i>Basic Info</div>
+    <div class="card-body">
+        <div class="detail-grid">
+            <div class="detail-item">
+                <div class="detail-label">Gate No.<span class="detail-label-urdu">گیٹ نمبر</span></div>
+                <div class="detail-value">{{ object.gate_number }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Date<span class="detail-label-urdu">تاریخ</span></div>
+                <div class="detail-value">{{ object.entry_date }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Purchaser<span class="detail-label-urdu">خریدار</span></div>
+                <div class="detail-value">{{ object.purchaser }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Shop Name<span class="detail-label-urdu">دکان کا نام</span></div>
+                <div class="detail-value">{{ object.shop_name }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Demanded By<span class="detail-label-urdu">مطالبہ کنندہ</span></div>
+                <div class="detail-value">{{ object.demanded_by }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card rcv-card mb-3">
+    <div class="card-header"><i class="bi bi-box-seam me-2"></i>Stock Description<span class="ms-1 opacity-75">اسٹاک تفصیل</span></div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="gate-detail-stock">
+                    <div class="gate-detail-stock-title">Chemical <span>کیمیکل</span></div>
+                    {% with items=object.chemical|stock_items %}
+                    {% if items %}
+                    <ol class="gate-detail-stock-list">
+                        {% for item in items %}<li>{{ item }}</li>{% endfor %}
+                    </ol>
+                    {% else %}
+                    <p class="gate-detail-stock-empty">—</p>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="gate-detail-stock">
+                    <div class="gate-detail-stock-title">Electrical <span>الیکٹریکل</span></div>
+                    {% with items=object.electrical|stock_items %}
+                    {% if items %}
+                    <ol class="gate-detail-stock-list">
+                        {% for item in items %}<li>{{ item }}</li>{% endfor %}
+                    </ol>
+                    {% else %}
+                    <p class="gate-detail-stock-empty">—</p>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="gate-detail-stock">
+                    <div class="gate-detail-stock-title">Mechanical <span>مکینیکل</span></div>
+                    {% with items=object.mechanical|stock_items %}
+                    {% if items %}
+                    <ol class="gate-detail-stock-list">
+                        {% for item in items %}<li>{{ item }}</li>{% endfor %}
+                    </ol>
+                    {% else %}
+                    <p class="gate-detail-stock-empty">—</p>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="gate-detail-stock">
+                    <div class="gate-detail-stock-title">General <span>جنرل</span></div>
+                    {% with items=object.general|stock_items %}
+                    {% if items %}
+                    <ol class="gate-detail-stock-list">
+                        {% for item in items %}<li>{{ item }}</li>{% endfor %}
+                    </ol>
+                    {% else %}
+                    <p class="gate-detail-stock-empty">—</p>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include "receiving/_layout_close.html" %}
+{% endblock %}

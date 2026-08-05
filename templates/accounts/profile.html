@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}My Profile - Ghausia Dyeing{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title="My Profile" rcv_subtitle="Your account details" rcv_compact=True %}
+
+<nav class="rcv-actions" aria-label="Profile actions">
+    <a href="{% url 'accounts:home' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-arrow-left"></i> Back</a>
+    <a href="{% url 'accounts:logout' %}" class="rcv-btn rcv-btn-secondary"><i class="bi bi-box-arrow-right"></i> Logout</a>
+</nav>
+
+<div class="rcv-panel rcv-panel-pad profile-card mb-3">
+    <div class="profile-header">
+        <div class="profile-avatar" aria-hidden="true">
+            <i class="bi bi-person-circle"></i>
+        </div>
+        <div>
+            <h2 class="profile-name mb-1">{{ profile_user.get_full_name|default:profile_user.username }}</h2>
+            <p class="profile-username text-muted mb-0">@{{ profile_user.username }}</p>
+        </div>
+    </div>
+
+    <div class="detail-grid mt-4">
+        <div class="detail-item">
+            <div class="detail-label">Full name</div>
+            <div class="detail-value">{{ profile_user.get_full_name|default:"—" }}</div>
+        </div>
+        <div class="detail-item">
+            <div class="detail-label">Username</div>
+            <div class="detail-value">{{ profile_user.username }}</div>
+        </div>
+        <div class="detail-item">
+            <div class="detail-label">Email</div>
+            <div class="detail-value">{{ profile_user.email|default:"—" }}</div>
+        </div>
+        <div class="detail-item">
+            <div class="detail-label">Role</div>
+            <div class="detail-value">
+                {% for g in profile_user.groups.all %}
+                    {{ g.name }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    {% if profile_user.is_superuser %}Administrator{% else %}User{% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        <div class="detail-item">
+            <div class="detail-label">Staff access</div>
+            <div class="detail-value">{% if profile_user.is_staff %}Yes{% else %}No{% endif %}</div>
+        </div>
+        <div class="detail-item">
+            <div class="detail-label">Superuser</div>
+            <div class="detail-value">{% if profile_user.is_superuser %}Yes{% else %}No{% endif %}</div>
+        </div>
+        <div class="detail-item">
+            <div class="detail-label">Last login</div>
+            <div class="detail-value">{% if profile_user.last_login %}{{ profile_user.last_login }}{% else %}—{% endif %}</div>
+        </div>
+        <div class="detail-item">
+            <div class="detail-label">Date joined</div>
+            <div class="detail-value">{{ profile_user.date_joined }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="rcv-panel mb-3" id="recently-deleted">
+    <div class="rcv-panel-pad border-bottom">
+        <h2 class="profile-section-title mb-1">
+            <i class="bi bi-trash3 me-2"></i>Recently Deleted
+        </h2>
+        <p class="text-muted mb-0 small">
+            Records deleted from Gate Entry or Cloth Receiving appear here. Restore brings them back.
+        </p>
+    </div>
+    <div class="table-responsive">
+        <table class="table rcv-table mb-0">
+            <thead>
+                <tr>
+                    <th>Module</th>
+                    <th>Record</th>
+                    <th>Deleted at</th>
+                    <th>Deleted by</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item in recently_deleted %}
+                <tr>
+                    <td>{{ item.module }}</td>
+                    <td class="fw-semibold">{{ item.label }}</td>
+                    <td>{% if item.deleted_at %}{{ item.deleted_at }}{% else %}—{% endif %}</td>
+                    <td>
+                        {% if item.deleted_by %}
+                            {{ item.deleted_by.get_full_name|default:item.deleted_by.username }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <form method="post" action="{% url 'accounts:restore_deleted' item.model_key item.object.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="gate-action-btn gate-action-update" style="display:inline-block;width:auto;min-width:5.5rem;">
+                                Restore
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5" class="rcv-empty">No recently deleted records.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% include "receiving/_layout_close.html" %}
+{% endblock %}

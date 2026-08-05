@@ -28,7 +28,8 @@ _GATE_NUM_RE = re.compile(r"^G(\d+)$", re.IGNORECASE)
 def next_gate_sequence_start() -> int:
     """Return the next integer n so new rows can be G{n}, G{n+1}, …"""
     highest = 0
-    for value in GateEntry.objects.values_list("gate_number", flat=True):
+    # Include soft-deleted so recycled gate numbers are not reused
+    for value in GateEntry.all_objects.values_list("gate_number", flat=True):
         match = _GATE_NUM_RE.match(str(value or "").strip())
         if match:
             highest = max(highest, int(match.group(1)))
@@ -57,6 +58,22 @@ def _to_date(value: Any) -> date:
 
 def _text(value: Any) -> str:
     return str(value or "").strip()
+
+
+_STOCK_SPLIT_RE = re.compile(r"\s{2,}|\n+")
+
+
+def _stock_text(value: Any) -> str:
+    """Normalize stock fields into newline-separated list items."""
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    parts: list[str] = []
+    for part in _STOCK_SPLIT_RE.split(text):
+        cleaned = re.sub(r"^\d+\.\s*", "", part.strip())
+        if cleaned:
+            parts.append(cleaned)
+    return "\n".join(parts)
 
 
 def row_is_blank(row: dict[str, Any]) -> bool:
@@ -97,12 +114,12 @@ def validate_row_complete(row: dict[str, Any]) -> list[str]:
 
 def _allocate_gate_number(preferred: str, used: set[str]) -> str:
     preferred = _text(preferred).upper()
-    if preferred and preferred not in used and not GateEntry.objects.filter(gate_number__iexact=preferred).exists():
+    if preferred and preferred not in used and not GateEntry.all_objects.filter(gate_number__iexact=preferred).exists():
         return preferred
     n = next_gate_sequence_start()
     while True:
         candidate = format_gate_number(n)
-        if candidate not in used and not GateEntry.objects.filter(gate_number__iexact=candidate).exists():
+        if candidate not in used and not GateEntry.all_objects.filter(gate_number__iexact=candidate).exists():
             return candidate
         n += 1
 
@@ -121,10 +138,10 @@ def save_gate_row(row: dict[str, Any], user, used_numbers: set[str]) -> GateEntr
         entry_date=_to_date(row.get("Date")),
         purchaser=_text(row.get("Purchaser")),
         shop_name=_text(row.get("Shop Name")),
-        chemical=_text(row.get("Chemical")),
-        electrical=_text(row.get("Electrical")),
-        mechanical=_text(row.get("Mechanical")),
-        general=_text(row.get("General")),
+        chemical=_stock_text(row.get("Chemical")),
+        electrical=_stock_text(row.get("Electrical")),
+        mechanical=_stock_text(row.get("Mechanical")),
+        general=_stock_text(row.get("General")),
         demanded_by=_text(row.get("Demanded By")),
         created_by=user,
         updated_by=user,
@@ -181,10 +198,10 @@ def sheet_display_rows(
                 "entry_date": str(row.get("Date") or today),
                 "purchaser": _text(row.get("Purchaser")),
                 "shop_name": _text(row.get("Shop Name")),
-                "chemical": _text(row.get("Chemical")),
-                "electrical": _text(row.get("Electrical")),
-                "mechanical": _text(row.get("Mechanical")),
-                "general": _text(row.get("General")),
+                "chemical": _stock_text(row.get("Chemical")),
+                "electrical": _stock_text(row.get("Electrical")),
+                "mechanical": _stock_text(row.get("Mechanical")),
+                "general": _stock_text(row.get("General")),
                 "demanded_by": _text(row.get("Demanded By")),
                 "is_invalid": idx in failed_set,
             }

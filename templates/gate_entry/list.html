@@ -1,7 +1,9 @@
 {% extends "base.html" %}
+{% load static %}
+{% load erp_tags %}
 {% block title %}Gate Entry - Ghausia Dyeing{% endblock %}
 {% block content %}
-{% include "receiving/_layout_open.html" with rcv_title="Gate Entry" rcv_subtitle="Gate-in stock demands" rcv_compact=True %}
+{% include "receiving/_layout_open.html" with rcv_title="Gate Entry" rcv_subtitle="Gate-in stock demands" rcv_compact=True rcv_wide=True %}
 
 <nav class="rcv-actions" aria-label="Gate Entry actions">
     <a href="{% url 'gate_entry:sheet' %}" class="rcv-btn rcv-btn-primary">
@@ -15,40 +17,115 @@
     <button class="rcv-btn rcv-btn-primary rcv-search-btn" type="submit">Search</button>
 </form>
 
+<div class="rcv-hint">
+    <i class="bi bi-info-circle"></i>
+    <div>
+        <strong>Tip:</strong> Click a Stock Description box to select it. Click the same box again to open a popup — that is where the numbered list appears.
+        Double space while typing stock items starts a new point.
+        <span class="d-block mt-1" dir="rtl">اسٹاک باکس پر کلک کریں — دوبارہ کلک سے فہرست والی پاپ اپ کھلے گی۔</span>
+    </div>
+</div>
+
 <div class="rcv-panel">
-    <div class="table-responsive">
-        <table class="table rcv-table mb-0">
+    <div class="table-responsive gate-list-wrap">
+        <table class="table rcv-table gate-list-table mb-0">
             <thead>
                 <tr>
-                    <th>Gate No.<span class="rcv-th-urdu">گیٹ نمبر</span></th>
-                    <th>Date<span class="rcv-th-urdu">تاریخ</span></th>
-                    <th>Purchaser<span class="rcv-th-urdu">خریدار</span></th>
-                    <th>Shop Name<span class="rcv-th-urdu">دکان کا نام</span></th>
-                    <th>Stock<span class="rcv-th-urdu">اسٹاک</span></th>
-                    <th>Demanded By<span class="rcv-th-urdu">مطالبہ کنندہ</span></th>
+                    <th rowspan="2">Gate No.<span class="rcv-th-urdu">گیٹ نمبر</span></th>
+                    <th rowspan="2">Date<span class="rcv-th-urdu">تاریخ</span></th>
+                    <th rowspan="2">Purchaser<span class="rcv-th-urdu">خریدار</span></th>
+                    <th rowspan="2">Shop Name<span class="rcv-th-urdu">دکان کا نام</span></th>
+                    <th colspan="4" class="th-group th-stock-group">Stock Description<span class="rcv-th-urdu">اسٹاک تفصیل</span></th>
+                    <th rowspan="2">Demanded By<span class="rcv-th-urdu">مطالبہ کنندہ</span></th>
+                    <th rowspan="2" class="th-actions">Actions<span class="rcv-th-urdu">عمل</span></th>
+                </tr>
+                <tr>
+                    <th class="th-sub th-stock-start">Chemical<span class="rcv-th-urdu">کیمیکل</span></th>
+                    <th class="th-sub">Electrical<span class="rcv-th-urdu">الیکٹریکل</span></th>
+                    <th class="th-sub">Mechanical<span class="rcv-th-urdu">مکینیکل</span></th>
+                    <th class="th-sub th-stock-end">General<span class="rcv-th-urdu">جنرل</span></th>
                 </tr>
             </thead>
             <tbody>
             {% for obj in objects %}
-            <tr>
+            <tr data-gate-row
+                data-gate="{{ obj.gate_number }}"
+                data-date="{{ obj.entry_date }}"
+                data-purchaser="{{ obj.purchaser }}"
+                data-shop="{{ obj.shop_name }}"
+                data-demanded="{{ obj.demanded_by }}">
                 <td><span class="rcv-lot-link">{{ obj.gate_number }}</span></td>
                 <td>{{ obj.entry_date }}</td>
                 <td>{{ obj.purchaser }}</td>
                 <td>{{ obj.shop_name }}</td>
-                <td class="rcv-cloth-cell">
-                    {% if obj.chemical %}<span class="rcv-chip">Chem {{ obj.chemical }}</span>{% endif %}
-                    {% if obj.electrical %}<span class="rcv-chip">Elec {{ obj.electrical }}</span>{% endif %}
-                    {% if obj.mechanical %}<span class="rcv-chip">Mech {{ obj.mechanical }}</span>{% endif %}
-                    {% if obj.general %}<span class="rcv-chip">Gen {{ obj.general }}</span>{% endif %}
-                    {% if not obj.chemical and not obj.electrical and not obj.mechanical and not obj.general %}
-                    <span class="text-muted">—</span>
-                    {% endif %}
+                <td class="gate-stock-cell col-stock col-stock-start">
+                    <button type="button"
+                            class="gate-stock-block{% if not obj.chemical %} is-empty{% endif %}"
+                            data-stock-block
+                            data-stock-key="chemical"
+                            data-stock-label="Chemical"
+                            data-stock-label-urdu="کیمیکل"
+                            data-stock-value="{{ obj.chemical|stock_data_attr }}"
+                            {% if not obj.chemical %}disabled{% endif %}
+                            title="{% if obj.chemical %}{{ obj.chemical|stock_preview }}{% else %}Empty{% endif %}">
+                        <span class="gate-stock-text">{{ obj.chemical|stock_preview|default:"—" }}</span>
+                    </button>
+                </td>
+                <td class="gate-stock-cell col-stock">
+                    <button type="button"
+                            class="gate-stock-block{% if not obj.electrical %} is-empty{% endif %}"
+                            data-stock-block
+                            data-stock-key="electrical"
+                            data-stock-label="Electrical"
+                            data-stock-label-urdu="الیکٹریکل"
+                            data-stock-value="{{ obj.electrical|stock_data_attr }}"
+                            {% if not obj.electrical %}disabled{% endif %}
+                            title="{% if obj.electrical %}{{ obj.electrical|stock_preview }}{% else %}Empty{% endif %}">
+                        <span class="gate-stock-text">{{ obj.electrical|stock_preview|default:"—" }}</span>
+                    </button>
+                </td>
+                <td class="gate-stock-cell col-stock">
+                    <button type="button"
+                            class="gate-stock-block{% if not obj.mechanical %} is-empty{% endif %}"
+                            data-stock-block
+                            data-stock-key="mechanical"
+                            data-stock-label="Mechanical"
+                            data-stock-label-urdu="مکینیکل"
+                            data-stock-value="{{ obj.mechanical|stock_data_attr }}"
+                            {% if not obj.mechanical %}disabled{% endif %}
+                            title="{% if obj.mechanical %}{{ obj.mechanical|stock_preview }}{% else %}Empty{% endif %}">
+                        <span class="gate-stock-text">{{ obj.mechanical|stock_preview|default:"—" }}</span>
+                    </button>
+                </td>
+                <td class="gate-stock-cell col-stock col-stock-end">
+                    <button type="button"
+                            class="gate-stock-block{% if not obj.general %} is-empty{% endif %}"
+                            data-stock-block
+                            data-stock-key="general"
+                            data-stock-label="General"
+                            data-stock-label-urdu="جنرل"
+                            data-stock-value="{{ obj.general|stock_data_attr }}"
+                            {% if not obj.general %}disabled{% endif %}
+                            title="{% if obj.general %}{{ obj.general|stock_preview }}{% else %}Empty{% endif %}">
+                        <span class="gate-stock-text">{{ obj.general|stock_preview|default:"—" }}</span>
+                    </button>
                 </td>
                 <td>{{ obj.demanded_by }}</td>
+                <td class="gate-actions-cell">
+                    <div class="gate-action-box" role="group" aria-label="Actions for {{ obj.gate_number }}">
+                        <a href="{% url 'gate_entry:detail' obj.pk %}" class="gate-action-btn gate-action-view">View</a>
+                        <a href="{% url 'gate_entry:edit' obj.pk %}" class="gate-action-btn gate-action-update">Update</a>
+                        <button type="button"
+                                class="gate-action-btn gate-action-delete"
+                                data-delete-url="{% url 'gate_entry:delete' obj.pk %}"
+                                data-delete-label="{{ obj.gate_number }}"
+                                data-confirm-message="Delete {{ obj.gate_number }}?&#10;&#10;This cannot be undone.&#10;&#10;یہ گیٹ اندراج حذف ہو جائے گی۔ کیا آپ یقینی ہیں؟">Delete</button>
+                    </div>
+                </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6" class="rcv-empty">
+                <td colspan="10" class="rcv-empty">
                     No gate entries yet.
                     <a href="{% url 'gate_entry:sheet' %}">Open Spreadsheet</a>
                 </td>
@@ -60,4 +137,24 @@
 </div>
 {% include "includes/pagination.html" %}
 {% include "receiving/_layout_close.html" %}
+
+<form id="row-delete-form" method="post" hidden>
+    {% csrf_token %}
+</form>
+
+<div class="gate-stock-modal" id="gate-stock-modal" hidden>
+    <div class="gate-stock-modal-backdrop" data-stock-modal-close></div>
+    <div class="gate-stock-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="gate-stock-modal-title">
+        <button type="button" class="gate-stock-modal-close" data-stock-modal-close aria-label="Close">&times;</button>
+        <div class="gate-stock-modal-header">
+            <h2 id="gate-stock-modal-title">Stock Description</h2>
+            <p class="gate-stock-modal-meta" id="gate-stock-modal-meta"></p>
+        </div>
+        <div class="gate-stock-modal-focus" id="gate-stock-modal-focus"></div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/gate_stock_view.js' %}?v=4"></script>
+<script src="{% static 'js/gate_list_actions.js' %}?v=3"></script>
 {% endblock %}

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Update {{ object.gate_number }} - Gate Entry{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title="Update Gate Entry" rcv_subtitle=object.gate_number rcv_subtitle_urdu="گیٹ اندراج میں ترمیم" %}
+
+<nav class="rcv-actions" aria-label="Form actions">
+    <a href="{% url 'gate_entry:list' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-arrow-left"></i> Back</a>
+</nav>
+
+<form method="post" data-gate-sheet class="rcv-sheet-form">
+    {% csrf_token %}
+    {% include "includes/form_errors.html" %}
+
+    <div class="rcv-panel rcv-panel-pad mb-3">
+        <div class="row">
+            {% with f=form.gate_number %}
+            <div class="mb-3 col-md-3">
+                <label class="form-label" for="{{ f.id_for_label }}">
+                    {{ f.label }}
+                    <span class="form-label-urdu">{{ form.LABEL_URDU.gate_number }}</span>
+                </label>
+                {{ f }}
+                {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+            </div>
+            {% endwith %}
+
+            {% with f=form.entry_date %}
+            <div class="mb-3 col-md-3">
+                <label class="form-label" for="{{ f.id_for_label }}">
+                    {{ f.label }}
+                    <span class="form-label-urdu">{{ form.LABEL_URDU.entry_date }}</span>
+                </label>
+                {{ f }}
+                {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+            </div>
+            {% endwith %}
+
+            {% with f=form.purchaser %}
+            <div class="mb-3 col-md-3">
+                <label class="form-label" for="{{ f.id_for_label }}">
+                    {{ f.label }}
+                    <span class="form-label-urdu">{{ form.LABEL_URDU.purchaser }}</span>
+                </label>
+                {{ f }}
+                {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+            </div>
+            {% endwith %}
+
+            {% with f=form.shop_name %}
+            <div class="mb-3 col-md-3">
+                <label class="form-label" for="{{ f.id_for_label }}">
+                    {{ f.label }}
+                    <span class="form-label-urdu">{{ form.LABEL_URDU.shop_name }}</span>
+                </label>
+                {{ f }}
+                {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+            </div>
+            {% endwith %}
+        </div>
+
+        <div class="rcv-hint mb-3">
+            <i class="bi bi-info-circle"></i>
+            <div>
+                Stock boxes: type point <em>1</em>, then <em>Space Space</em> (or Enter) for point <em>2</em>, <em>3</em>, …
+            </div>
+        </div>
+
+        <div class="row">
+            {% with f=form.chemical %}
+            <div class="mb-3 col-md-6">
+                <label class="form-label" for="{{ f.id_for_label }}">
+                    {{ f.label }}
+                    <span class="form-label-urdu">{{ form.LABEL_URDU.chemical }}</span>
+                </label>
+                {{ f }}
+                {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+            </div>
+            {% endwith %}
+            {% with f=form.electrical %}
+            <div class="mb-3 col-md-6">
+                <label class="form-label" for="{{ f.id_for_label }}">
+                    {{ f.label }}
+                    <span class="form-label-urdu">{{ form.LABEL_URDU.electrical }}</span>
+                </label>
+                {{ f }}
+                {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+            </div>
+            {% endwith %}
+            {% with f=form.mechanical %}
+            <div class="mb-3 col-md-6">
+                <label class="form-label" for="{{ f.id_for_label }}">
+                    {{ f.label }}
+                    <span class="form-label-urdu">{{ form.LABEL_URDU.mechanical }}</span>
+                </label>
+                {{ f }}
+                {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+            </div>
+            {% endwith %}
+            {% with f=form.general %}
+            <div class="mb-3 col-md-6">
+                <label class="form-label" for="{{ f.id_for_label }}">
+                    {{ f.label }}
+                    <span class="form-label-urdu">{{ form.LABEL_URDU.general }}</span>
+                </label>
+                {{ f }}
+                {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+            </div>
+            {% endwith %}
+        </div>
+
+        {% with f=form.demanded_by %}
+        <div class="mb-3 col-md-4 px-0">
+            <label class="form-label" for="{{ f.id_for_label }}">
+                {{ f.label }}
+                <span class="form-label-urdu">{{ form.LABEL_URDU.demanded_by }}</span>
+            </label>
+            {{ f }}
+            {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+        </div>
+        {% endwith %}
+    </div>
+
+    <div class="rcv-actions rcv-actions-inline">
+        <button type="submit" class="rcv-btn rcv-btn-primary">
+            <i class="bi bi-check-lg"></i> Save Changes
+        </button>
+        <a href="{% url 'gate_entry:list' %}" class="rcv-btn rcv-btn-ghost">Cancel</a>
+    </div>
+</form>
+
+{% include "receiving/_layout_close.html" %}
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/gate_sheet.js' %}?v=5"></script>
+{% endblock %}

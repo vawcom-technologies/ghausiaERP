@@ -127,10 +127,80 @@ main.app-main {
 }
 
 .erp-navbar .user-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
     background: rgba(255, 255, 255, 0.12);
     border-radius: 20px;
-    padding: 0.35rem 0.85rem !important;
+    padding: 0.3rem 0.75rem !important;
     font-size: 0.85rem;
+    max-width: 16rem;
+    color: #fff !important;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.erp-navbar .user-badge:hover,
+.erp-navbar .user-badge:focus {
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff !important;
+}
+
+.erp-navbar .user-badge-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+    min-width: 0;
+}
+
+.erp-navbar .user-badge-name {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.erp-navbar .user-badge-meta {
+    font-size: 0.68rem;
+    opacity: 0.85;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile-card .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.profile-avatar {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 999px;
+    background: #eef3ff;
+    color: var(--erp-primary, #1a3a5c);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    flex-shrink: 0;
+}
+
+.profile-name {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--rcv-ink, #1a3a5c);
+}
+
+.profile-username {
+    font-size: 0.92rem;
+}
+
+.profile-section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--rcv-ink, #1a3a5c);
 }
 
 /* Page header */
@@ -546,6 +616,19 @@ h1.page-header {
     padding: 1.75rem;
 }
 
+.login-demo {
+    text-align: center;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--erp-border, #e5e7eb);
+}
+
+.login-demo code {
+    font-size: 0.85rem;
+    background: #f1f5f9;
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+}
+
 /* Footer */
 .app-footer {
     margin-top: auto;
@@ -635,9 +718,9 @@ h1.page-header {
 }
 
 .sheet-table thead th.th-stock-group {
-    border: 2px solid #c47a2c;
-    border-bottom: 1px solid rgba(196, 122, 44, 0.45);
-    box-shadow: inset 0 0 0 1px rgba(196, 122, 44, 0.35);
+    border: 2px solid #4d86ef;
+    border-bottom: 1px solid rgba(78, 135, 240, 0.45);
+    box-shadow: inset 0 0 0 1px rgba(78, 135, 240, 0.35);
 }
 
 .sheet-table thead tr:nth-child(2) th {
@@ -669,13 +752,13 @@ h1.page-header {
 }
 
 .sheet-table thead th.th-stock-start {
-    border-left: 2px solid #c47a2c;
-    border-bottom: 2px solid #c47a2c;
+    border-left: 2px solid #4d86ef;
+    border-bottom: 2px solid #4d86ef;
 }
 
 .sheet-table thead th.th-stock-end {
-    border-right: 2px solid #c47a2c;
-    border-bottom: 2px solid #c47a2c;
+    border-right: 2px solid #4d86ef;
+    border-bottom: 2px solid #4d86ef;
 }
 
 .gate-sheet-table .col-gate {
@@ -690,15 +773,475 @@ h1.page-header {
 }
 
 .gate-sheet-table td.col-stock {
-    min-width: 110px;
+    min-width: 140px;
+    max-width: 180px;
+    width: 160px;
+    background: #eef3ff;
 }
 
 .gate-sheet-table td.col-stock-start {
-    border-left: 2px solid #c47a2c;
+    border-left: 2px solid #4d86ef;
 }
 
 .gate-sheet-table td.col-stock-end {
-    border-right: 2px solid #c47a2c;
+    border-right: 2px solid #4d86ef;
+}
+
+.gate-sheet-table tbody tr:last-child td.col-stock {
+    border-bottom: 2px solid #4d86ef;
+}
+
+.gate-sheet-table td.col-stock .gate-stock-input {
+    overflow: auto;
+    text-overflow: unset;
+    white-space: pre-wrap;
+    resize: vertical;
+    min-height: 4.2rem;
+    line-height: 1.35;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+/* Gate list — fixed stock sub-columns + select / popup */
+.gate-list-wrap {
+    overflow-x: auto !important;
+}
+
+.gate-list-table {
+    table-layout: fixed;
+    width: 100%;
+    min-width: 1100px;
+}
+
+.gate-list-table thead th {
+    text-align: center;
+    vertical-align: middle;
+    white-space: normal !important;
+    padding: 0.45rem 0.35rem !important;
+    font-size: 0.68rem;
+    line-height: 1.2;
+}
+
+.gate-list-table .rcv-th-urdu {
+    white-space: normal;
+}
+
+.gate-list-table tbody td {
+    padding: 0.5rem 0.45rem;
+    font-size: 0.84rem;
+    overflow: visible;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+    max-width: none;
+    vertical-align: middle;
+}
+
+/* Name columns: more room so full names read cleanly */
+.gate-list-table td:nth-child(3),
+.gate-list-table td:nth-child(4),
+.gate-list-table td:nth-child(9) {
+    text-align: left;
+    line-height: 1.35;
+    font-weight: 500;
+}
+
+.gate-list-table thead th.th-group,
+.gate-list-table thead th.th-sub {
+    background: var(--erp-primary-dark);
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-size: 0.68rem;
+}
+
+.gate-list-table thead th.th-group .rcv-th-urdu,
+.gate-list-table thead th.th-sub .rcv-th-urdu {
+    color: #fff;
+    opacity: 0.92;
+    font-size: 0.68rem;
+    margin-top: 0.1rem;
+}
+
+.gate-list-table thead th.th-stock-group {
+    border: 2px solid #4d86ef;
+    border-bottom: 1px solid rgba(78, 135, 240, 0.45);
+}
+
+.gate-list-table thead th.th-stock-start {
+    border-left: 2px solid #4d86ef;
+    border-bottom: 2px solid #4d86ef;
+}
+
+.gate-list-table thead th.th-stock-end {
+    border-right: 2px solid #4d86ef;
+    border-bottom: 2px solid #4d86ef;
+}
+
+.gate-list-table thead th.th-sub {
+    border-bottom: 2px solid #4d86ef;
+    font-size: 0.62rem;
+    padding: 0.3rem 0.2rem;
+}
+
+/* Column widths: give purchaser / shop / demanded-by more space */
+.gate-list-table th:nth-child(1),
+.gate-list-table td:nth-child(1) { width: 5%; min-width: 3.2rem; }   /* Gate No */
+.gate-list-table th:nth-child(2),
+.gate-list-table td:nth-child(2) { width: 9%; min-width: 6.5rem; }   /* Date */
+.gate-list-table th:nth-child(3),
+.gate-list-table td:nth-child(3) { width: 14%; min-width: 9rem; }    /* Purchaser */
+.gate-list-table th:nth-child(4),
+.gate-list-table td:nth-child(4) { width: 14%; min-width: 9rem; }    /* Shop */
+.gate-list-table thead tr:first-child th:nth-child(5) { width: 36%; } /* Stock group */
+.gate-list-table thead tr:last-child th { width: 9%; } /* each stock sub */
+.gate-list-table td:nth-child(5),
+.gate-list-table td:nth-child(6),
+.gate-list-table td:nth-child(7),
+.gate-list-table td:nth-child(8) { width: 9%; min-width: 5.5rem; }  /* stock cells */
+.gate-list-table th:nth-child(6),
+.gate-list-table td:nth-child(9) { width: 12%; min-width: 7.5rem; }  /* Demanded By */
+.gate-list-table th.th-actions,
+.gate-list-table td.gate-actions-cell {
+    width: 10%;
+    min-width: 7.25rem;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.gate-action-box {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    width: 100%;
+    max-width: 6.75rem;
+    padding: 0.35rem;
+    border: 1px solid var(--erp-border, #d0d7e2);
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.gate-action-btn {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0.28rem 0.4rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.gate-action-btn:hover {
+    opacity: 0.92;
+    text-decoration: none;
+}
+
+.gate-action-btn:active {
+    transform: scale(0.98);
+}
+
+.gate-action-view {
+    background: #334155;
+    color: #fff;
+}
+
+.gate-action-view:hover,
+.gate-action-view:focus {
+    background: #1e293b;
+    color: #fff;
+}
+
+.gate-action-update {
+    background: #111827;
+    color: #fff;
+}
+
+.gate-action-update:hover,
+.gate-action-update:focus {
+    background: #000;
+    color: #fff;
+}
+
+.gate-action-delete {
+    background: #dc2626;
+    color: #fff;
+}
+
+.gate-action-delete:hover,
+.gate-action-delete:focus {
+    background: #b91c1c;
+    color: #fff;
+}
+
+.gate-detail-stock {
+    border: 1px solid rgba(77, 134, 239, 0.35);
+    border-radius: 10px;
+    background: #eef3ff;
+    padding: 0.85rem 1rem;
+    min-height: 5rem;
+}
+
+.gate-detail-stock-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #1a3a5c;
+    margin-bottom: 0.45rem;
+}
+
+.gate-detail-stock-title span {
+    margin-left: 0.35rem;
+    font-weight: 500;
+    text-transform: none;
+    color: var(--erp-text-muted, #64748b);
+}
+
+.gate-detail-stock-list {
+    margin: 0;
+    padding-left: 1.2rem;
+}
+
+.gate-detail-stock-list li {
+    margin: 0.2rem 0;
+    font-weight: 600;
+    color: var(--erp-text, #1a3a5c);
+    overflow-wrap: anywhere;
+}
+
+.gate-detail-stock-empty {
+    margin: 0;
+    color: var(--erp-text-muted, #64748b);
+}
+
+.gate-list-table .gate-stock-cell {
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    padding: 0.2rem !important;
+    background: #eef3ff;
+    vertical-align: middle;
+}
+
+.gate-list-table .gate-stock-cell.col-stock-start {
+    border-left: 2px solid #4d86ef;
+}
+
+.gate-list-table .gate-stock-cell.col-stock-end {
+    border-right: 2px solid #4d86ef;
+}
+
+.gate-stock-block {
+    display: block;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0.32rem 0.35rem;
+    border: 1px solid rgba(77, 134, 239, 0.35);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--erp-text);
+    font-size: 0.74rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+
+.gate-stock-block:hover:not(:disabled) {
+    border-color: #4d86ef;
+    background: #f5f8ff;
+}
+
+.gate-stock-block.is-selected {
+    border-color: #1a3a5c;
+    background: #dbe7ff;
+    box-shadow: 0 0 0 2px rgba(77, 134, 239, 0.45);
+}
+
+.gate-stock-block.is-empty,
+.gate-stock-block:disabled {
+    color: var(--erp-text-muted);
+    font-weight: 500;
+    cursor: default;
+    opacity: 0.7;
+    background: #f8fafc;
+}
+
+.gate-stock-text {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gate-stock-modal[hidden] {
+    display: none !important;
+}
+
+.gate-stock-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1080;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+}
+
+.gate-stock-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.72);
+}
+
+.gate-stock-modal-dialog {
+    position: relative;
+    z-index: 1;
+    width: min(640px, 100%);
+    max-height: min(88vh, 100%);
+    overflow: auto;
+    background: #fff;
+    border-radius: var(--erp-radius);
+    box-shadow: var(--erp-shadow-lg);
+    padding: 1.25rem 1.35rem 1.4rem;
+}
+
+.gate-stock-modal-close {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.65rem;
+    border: none;
+    background: rgba(15, 23, 42, 0.75);
+    color: #fff;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.gate-stock-modal-header {
+    padding-right: 2rem;
+    margin-bottom: 1rem;
+}
+
+.gate-stock-modal-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--erp-primary-dark);
+}
+
+.gate-stock-modal-meta {
+    margin: 0.35rem 0 0;
+    color: var(--erp-text-muted);
+    font-size: 0.85rem;
+}
+
+.gate-stock-modal-focus {
+    background: #eef3ff;
+    border: 2px solid #4d86ef;
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.gate-stock-focus-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #1a3a5c;
+    margin-bottom: 0.45rem;
+}
+
+.gate-stock-full-text {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--erp-text);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.gate-stock-item-list {
+    margin: 0;
+    padding-left: 1.35rem;
+}
+
+.gate-stock-item-list li {
+    margin: 0.35rem 0;
+    font-size: 1.02rem;
+    font-weight: 600;
+    color: var(--erp-text);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.gate-stock-empty {
+    margin: 0;
+    color: var(--erp-text-muted);
+}
+
+.gate-stock-modal-all h3 {
+    margin: 0 0 0.65rem;
+    font-size: 0.9rem;
+    color: var(--erp-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.gate-stock-modal-card {
+    border: 1px solid var(--erp-border);
+    border-radius: 8px;
+    padding: 0.7rem 0.85rem;
+    margin-bottom: 0.55rem;
+    background: #f8fafc;
+}
+
+.gate-stock-modal-card.is-active {
+    border-color: #4d86ef;
+    background: #f5f8ff;
+}
+
+.gate-stock-modal-card.is-empty {
+    opacity: 0.65;
+}
+
+.gate-stock-modal-card-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #1a3a5c;
+    margin-bottom: 0.3rem;
+}
+
+.gate-stock-modal-card-title span {
+    display: inline-block;
+    margin-left: 0.4rem;
+    font-weight: 500;
+    text-transform: none;
+    color: var(--erp-text-muted);
+}
+
+.gate-stock-modal-card .gate-stock-full-text,
+.gate-stock-modal-card .gate-stock-item-list li {
+    font-size: 0.92rem;
+    font-weight: 500;
+}
+
+body.gate-stock-modal-open {
+    overflow: hidden;
 }
 
 .sheet-table thead th .th-urdu {
@@ -883,6 +1426,7 @@ h1.page-header {
 
 .sheet-table tbody tr.sheet-row-invalid td.col-cloth,
 .sheet-table tbody tr.sheet-row-invalid td.col-rolls,
+.gate-sheet-table tbody tr.sheet-row-invalid td.col-stock,
 .sheet-table tbody tr.sheet-row-invalid td.col-photo {
     background: #ffe4e1;
 }
@@ -1301,6 +1845,50 @@ body.sheet-photo-modal-open {
 
 .rcv-table tbody tr:hover {
     background: #f8fafc;
+}
+
+/* Cloth Receiving list — wider layout for lot / party names */
+.rcv-list-wrap {
+    overflow-x: auto;
+}
+
+.rcv-list-table {
+    table-layout: fixed;
+    width: 100%;
+    min-width: 980px;
+}
+
+.rcv-list-table thead th {
+    white-space: normal;
+}
+
+.rcv-list-table tbody td {
+    word-break: normal;
+    overflow-wrap: break-word;
+    line-height: 1.35;
+}
+
+.rcv-list-table th:nth-child(1),
+.rcv-list-table td:nth-child(1) { width: 24%; min-width: 12rem; } /* Lot / Palli */
+.rcv-list-table th:nth-child(2),
+.rcv-list-table td:nth-child(2) { width: 12%; min-width: 7rem; }  /* Date */
+.rcv-list-table th:nth-child(3),
+.rcv-list-table td:nth-child(3) { width: 22%; min-width: 10rem; } /* Party */
+.rcv-list-table th:nth-child(4),
+.rcv-list-table td:nth-child(4) { width: 16%; min-width: 8rem; }  /* Cloth Type */
+.rcv-list-table th:nth-child(5),
+.rcv-list-table td:nth-child(5) { width: 12%; min-width: 6rem; }  /* Factory M */
+.rcv-list-table th:nth-child(6),
+.rcv-list-table td:nth-child(6) {
+    width: 14%;
+    min-width: 7.25rem;
+    text-align: center;
+}
+
+.rcv-list-table td:nth-child(1),
+.rcv-list-table td:nth-child(3) {
+    text-align: left;
+    font-weight: 500;
 }
 
 .rcv-lot-link {

@@ -13,5 +13,6 @@ urlpatterns = [
     path("import/", views.ReceivingImportView.as_view(), name="import"),
     path("<int:pk>/", views.ClothReceiptDetailView.as_view(), name="detail"),
     path("<int:pk>/edit/", views.ClothReceiptUpdateView.as_view(), name="edit"),
+    path("<int:pk>/delete/", views.ClothReceiptDeleteView.as_view(), name="delete"),
     path("<int:pk>/cancel/", views.ClothReceiptCancelView.as_view(), name="cancel"),
 ]

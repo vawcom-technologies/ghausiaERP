@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.contrib import messages
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views import View
@@ -90,6 +91,56 @@ class ClothReceiptUpdateView(ERPLoginRequiredMixin, AuditUpdateMixin, UpdateView
 class ClothReceiptDetailView(ERPLoginRequiredMixin, DetailView):
     model = ClothReceipt
     template_name = "receiving/detail.html"
+
+
+class ClothReceiptDeleteView(ERPLoginRequiredMixin, View):
+    """Soft-delete a receiving row (and linked production tree) into Recently Deleted."""
+
+    PROCESS_RELATIONS = (
+        "singeing_entries",
+        "dyeing_batches",
+        "six_chamber_entries",
+        "calender_entries",
+        "comfort_entries",
+        "finished_stock",
+        "process_material_usages",
+    )
+
+    def post(self, request, pk):
+        from common.recycle import soft_delete_record
+
+        receipt = get_object_or_404(
+            ClothReceipt.objects.select_related("production_lot"),
+            pk=pk,
+        )
+        label = receipt.production_lot_number
+
+        try:
+            with transaction.atomic():
+                lot = receipt.production_lot if hasattr(receipt, "production_lot") else None
+                if lot is not None:
+                    # Soft-delete unfinished / in-progress production work with the lot
+                    for rel in self.PROCESS_RELATIONS:
+                        for child in getattr(lot, rel).all():
+                            if rel == "dyeing_batches":
+                                for usage in child.material_usages.all():
+                                    soft_delete_record(usage, request.user)
+                                for mixture in child.mixtures.all():
+                                    for ingredient in mixture.ingredients.all():
+                                        soft_delete_record(ingredient, request.user)
+                                    soft_delete_record(mixture, request.user)
+                            soft_delete_record(child, request.user)
+                    soft_delete_record(lot, request.user)
+                soft_delete_record(receipt, request.user)
+        except Exception as exc:  # noqa: BLE001
+            messages.error(request, f"Could not delete {label}: {exc}")
+            return redirect("receiving:list")
+
+        messages.success(
+            request,
+            f"Cloth receiving {label} moved to Recently Deleted. You can restore it from your profile.",
+        )
+        return redirect("receiving:list")
 
 
 class ClothReceiptCancelView(CancelRecordView):

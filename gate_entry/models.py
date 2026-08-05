@@ -22,7 +22,7 @@ class GateEntry(AuditModel):
     demanded_by = models.CharField("Demanded By", max_length=200)
 
     class Meta:
-        ordering = ["-entry_date", "-id"]
+        ordering = ["gate_number"]
         verbose_name = "Gate Entry"
         verbose_name_plural = "Gate Entries"
 
