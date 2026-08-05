@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Attendance - Ghausia Dyeing{% endblock %}
+{% block content %}
+<div class="page-header-block">
+    <h1 class="page-title">Attendance</h1>
+    <p class="page-subtitle">Choose a department to open its attendance register</p>
+</div>
+
+<div class="row g-3">
+    {% for dept in departments %}
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'attendance:department' dept.slug %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi {{ dept.icon }}"></i></div>
+            <div class="nav-card-title">{{ dept.name }}</div>
+            <p class="nav-card-desc">{{ dept.description }}</p>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "inventory",
     "maintenance",
     "electricity",
+    "attendance",
 ]
 
 MIDDLEWARE = [

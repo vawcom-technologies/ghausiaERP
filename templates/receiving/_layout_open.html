@@ -4,7 +4,7 @@
         <div class="rcv-hero-inner">
             {% if not rcv_compact %}<p class="rcv-kicker">Ghausia Dyeing</p>{% endif %}
             <h1 class="rcv-title">{{ rcv_title }}</h1>
-            {% if not rcv_compact %}<p class="rcv-urdu" dir="rtl">غزانہ</p>{% endif %}
+            {% if not rcv_compact %}<p class="rcv-urdu" dir="rtl">{{ rcv_urdu|default:"غزانہ" }}</p>{% endif %}
             {% if rcv_subtitle %}<p class="rcv-subtitle">{{ rcv_subtitle }}</p>{% endif %}
             {% if rcv_subtitle_urdu and not rcv_compact %}<p class="rcv-subtitle-urdu" dir="rtl">{{ rcv_subtitle_urdu }}</p>{% endif %}
         </div>

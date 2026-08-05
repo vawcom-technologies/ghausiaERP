@@ -1339,6 +1339,190 @@ body.gate-stock-modal-open {
     background: #eef5ff;
 }
 
+/* Attendance spreadsheet (day tabs) */
+.attendance-sheet {
+    min-width: 0;
+}
+
+.attendance-day-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.85rem;
+}
+
+.attendance-day-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 3.4rem;
+    padding: 0.35rem 0.7rem;
+    border: 1px solid var(--rcv-line, rgba(15, 39, 64, 0.1));
+    border-radius: 999px;
+    background: #fff;
+    color: var(--rcv-ink, #0f2740);
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(15, 39, 64, 0.06);
+}
+
+.attendance-day-tab:hover {
+    border-color: var(--rcv-accent, #1a6bb5);
+    color: var(--rcv-accent, #1a6bb5);
+}
+
+.attendance-day-tab.is-active {
+    background: var(--rcv-ink, #0f2740);
+    border-color: var(--rcv-ink, #0f2740);
+    color: #fff;
+}
+
+.attendance-sheet-table {
+    min-width: 980px;
+    width: 100%;
+}
+
+.attendance-sheet-table thead th {
+    padding: 0.4rem 0.35rem;
+    font-size: 0.7rem;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.attendance-sheet-table thead th.th-daily {
+    border-top: 2px solid #2a9d8f;
+    border-bottom: 2px solid #2a9d8f;
+    background: var(--erp-primary-dark);
+}
+
+.attendance-sheet-table thead th.th-daily-start {
+    border-left: 2px solid #2a9d8f;
+}
+
+.attendance-sheet-table thead th.th-daily-end {
+    border-right: 2px solid #2a9d8f;
+}
+
+.attendance-sheet-table .th-day-badge {
+    display: inline-block;
+    margin-left: 0.25rem;
+    padding: 0.05rem 0.35rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.attendance-sheet-table td.attendance-day-store {
+    display: none;
+}
+
+.attendance-sheet-table input,
+.attendance-sheet-table select {
+    min-height: 28px;
+    padding: 0.2rem 0.3rem;
+    font-size: 0.78rem;
+}
+
+.attendance-sheet-table .attendance-row-number {
+    width: 34px;
+    min-width: 34px;
+    padding: 0.25rem 0.15rem;
+    text-align: center;
+    color: var(--erp-text-muted);
+    background: #f1f5f9;
+    border: 1px solid var(--erp-border);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.75rem;
+}
+
+.attendance-sheet-table td.col-name,
+.attendance-sheet-table td.col-father {
+    min-width: 120px;
+}
+
+.attendance-sheet-table td.col-daily {
+    background: #eefaf7;
+}
+
+.attendance-sheet-table td.col-daily-start {
+    border-left: 2px solid #2a9d8f;
+}
+
+.attendance-sheet-table td.col-daily-end {
+    border-right: 2px solid #2a9d8f;
+}
+
+.attendance-sheet-table tbody tr:last-child td.col-daily {
+    border-bottom: 2px solid #2a9d8f;
+}
+
+.attendance-sheet-table td.col-pa {
+    min-width: 64px;
+    width: 64px;
+}
+
+.attendance-sheet-table .attendance-pa {
+    text-align: center;
+    font-weight: 700;
+}
+
+.attendance-sheet-table td.col-time {
+    min-width: 96px;
+}
+
+.attendance-sheet-table td.col-hours {
+    min-width: 96px;
+}
+
+.attendance-sheet-table td.col-status {
+    min-width: 110px;
+}
+
+.attendance-sheet-table td.col-salary {
+    min-width: 110px;
+}
+
+.attendance-sheet-table td.col-hours input,
+.attendance-sheet-table td.col-salary input,
+.attendance-sheet-table td.col-time input,
+.attendance-sheet-table td.col-pa select {
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.attendance-sheet-table .attendance-total-hours,
+.attendance-sheet-table .attendance-hours-worked {
+    font-weight: 700;
+    background: #f1f5f9;
+    cursor: default;
+}
+
+.attendance-sheet-table tbody tr.is-absent > th,
+.attendance-sheet-table tbody tr.is-absent > td {
+    background: #fee2e2;
+}
+
+.attendance-sheet-table tbody tr.is-absent > td.col-daily {
+    background: #fecaca;
+}
+
+.attendance-sheet-table tbody tr.is-absent .attendance-total-hours,
+.attendance-sheet-table tbody tr.is-absent .attendance-hours-worked {
+    background: #fecaca;
+}
+
+.attendance-sheet-table tbody tr.is-absent input:disabled,
+.attendance-sheet-table tbody tr.is-absent select:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    background: #fecaca;
+}
+
 .sheet-table .sheet-row-actions {
     width: 44px;
     text-align: center;

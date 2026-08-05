@@ -52,6 +52,19 @@
                     <a class="nav-link" href="{% url 'maintenance:list' %}"><i class="bi bi-tools me-1"></i> Maintenance</a>
                 </li>
                 <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-calendar-check me-1"></i> Attendance
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{% url 'attendance:hub' %}">All departments</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'attendance:department' 'admin' %}">Admin</a></li>
+                        <li><a class="dropdown-item" href="{% url 'attendance:department' 'kora' %}">Kora</a></li>
+                        <li><a class="dropdown-item" href="{% url 'attendance:department' 'singeing' %}">Singeing</a></li>
+                        <li><a class="dropdown-item" href="{% url 'attendance:department' 'dyeing' %}">Dyeing</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Setup</a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="{% url 'master_data:setup' %}">Basic Setup</a></li>

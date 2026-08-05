@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ department.name }} Attendance - Ghausia Dyeing{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'attendance:hub' %}">Attendance</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ department.name }}</li>
+    </ol>
+</nav>
+
+<div class="page-header-block">
+    <h1 class="page-title">{{ department.name }}</h1>
+    <p class="page-subtitle">{{ department.description }} — open a section register</p>
+</div>
+
+<div class="row g-3">
+    {% for section in department.sections %}
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'attendance:section' department.slug section.slug %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi {{ section.icon }}"></i></div>
+            <div class="nav-card-title">{{ section.name }}</div>
+            <p class="nav-card-desc">{{ section.description }}</p>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

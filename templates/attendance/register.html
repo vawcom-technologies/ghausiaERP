@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ register_title }} - Ghausia Dyeing{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title=register_title rcv_subtitle=register_subtitle rcv_urdu="حاضری" rcv_wide=True %}
+
+{% if breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        {% for crumb in breadcrumb %}
+            {% if crumb.url %}
+            <li class="breadcrumb-item"><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+            {% else %}
+            <li class="breadcrumb-item active" aria-current="page">{{ crumb.label }}</li>
+            {% endif %}
+        {% endfor %}
+    </ol>
+</nav>
+{% endif %}
+
+<nav class="rcv-actions" aria-label="Attendance actions">
+    {% if department.sections %}
+    <a href="{% url 'attendance:department' department.slug %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-arrow-left"></i> Back to {{ department.name }}
+    </a>
+    {% else %}
+    <a href="{% url 'attendance:hub' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-arrow-left"></i> All departments
+    </a>
+    {% endif %}
+</nav>
+
+<div class="rcv-hint">
+    <i class="bi bi-info-circle"></i>
+    <div>
+        Pick a day, then mark <strong>P/A</strong>, <strong>Check-in</strong>, and <strong>Check-out</strong>.
+        <strong>Total hours worked</strong> is calculated from check-out minus check-in; <strong>Total hours</strong> sums all 15 days.
+    </div>
+</div>
+
+<div
+    class="attendance-sheet"
+    data-attendance-sheet
+    data-active-day="1"
+>
+    <div class="attendance-day-tabs" data-attendance-day-tabs role="tablist" aria-label="Attendance day">
+        {% for day in day_range %}
+        <button
+            type="button"
+            class="attendance-day-tab{% if forloop.first %} is-active{% endif %}"
+            role="tab"
+            data-day="{{ day }}"
+            aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+        >Day {{ day }}</button>
+        {% endfor %}
+    </div>
+
+    <div class="sheet-wrap rcv-panel rcv-sheet-wrap">
+        <table class="table sheet-table attendance-sheet-table">
+            <thead>
+                <tr>
+                    <th class="attendance-row-number" aria-label="Row number">#</th>
+                    <th>Name</th>
+                    <th>Father Name</th>
+                    <th class="th-daily th-daily-start">P/A <span class="th-day-badge" data-active-day-label>D1</span></th>
+                    <th class="th-daily">Check-in</th>
+                    <th class="th-daily">Check-out</th>
+                    <th class="th-daily th-daily-end">Total Hours Worked</th>
+                    <th>Total Overtime Hours</th>
+                    <th>Work Status</th>
+                    <th>Decided Salary</th>
+                    <th>Total Hours<span class="th-urdu">15-day sum</span></th>
+                </tr>
+            </thead>
+            <tbody data-sheet-body>
+                {% for row_number in blank_rows %}
+                <tr data-sheet-row data-row="{{ row_number }}">
+                    <th scope="row" class="attendance-row-number">{{ row_number }}</th>
+                    <td class="col-name">
+                        <input type="text" name="name" class="form-control" autocomplete="off" aria-label="Name row {{ row_number }}">
+                    </td>
+                    <td class="col-father">
+                        <input type="text" name="father_name" class="form-control" autocomplete="off" aria-label="Father name row {{ row_number }}">
+                    </td>
+
+                    <td class="col-pa col-daily col-daily-start">
+                        <select class="form-select attendance-pa" data-day-visible="pa" aria-label="P/A row {{ row_number }}">
+                            <option value=""></option>
+                            <option value="P">P</option>
+                            <option value="A">A</option>
+                        </select>
+                    </td>
+                    <td class="col-time col-daily">
+                        <input type="time" class="form-control" data-day-visible="check_in" aria-label="Check-in row {{ row_number }}">
+                    </td>
+                    <td class="col-time col-daily">
+                        <input type="time" class="form-control" data-day-visible="check_out" aria-label="Check-out row {{ row_number }}">
+                    </td>
+                    <td class="col-hours col-daily col-daily-end">
+                        <input type="text" class="form-control attendance-hours-worked" data-day-visible="hours_worked" readonly tabindex="-1" aria-label="Total hours worked row {{ row_number }}" title="Check-out minus Check-in">
+                    </td>
+
+                    <td class="col-hours">
+                        <input type="text" name="total_overtime_hours" class="form-control" inputmode="decimal" aria-label="Total overtime hours row {{ row_number }}">
+                    </td>
+                    <td class="col-status">
+                        <input type="text" name="work_status" class="form-control" autocomplete="off" aria-label="Work status row {{ row_number }}">
+                    </td>
+                    <td class="col-salary">
+                        <input type="text" name="decided_salary" class="form-control" inputmode="decimal" aria-label="Decided salary row {{ row_number }}">
+                    </td>
+                    <td class="col-hours">
+                        <input type="text" name="total_hours" class="form-control attendance-total-hours" inputmode="decimal" readonly tabindex="-1" aria-label="Cumulative total hours row {{ row_number }}" title="Sum of hours worked across all 15 days">
+                    </td>
+
+                    <td class="attendance-day-store" hidden>
+                        {% for day in day_range %}
+                        <input type="hidden" name="day_{{ day }}_pa" value="" data-day-store="{{ day }}" data-field="pa">
+                        <input type="hidden" name="day_{{ day }}_check_in" value="" data-day-store="{{ day }}" data-field="check_in">
+                        <input type="hidden" name="day_{{ day }}_check_out" value="" data-day-store="{{ day }}" data-field="check_out">
+                        <input type="hidden" name="day_{{ day }}_hours_worked" value="" data-day-store="{{ day }}" data-field="hours_worked">
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% include "receiving/_layout_close.html" %}
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/attendance_sheet.js' %}"></script>
+{% endblock %}
