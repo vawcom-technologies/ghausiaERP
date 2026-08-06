@@ -3,11 +3,16 @@
 from __future__ import annotations
 
 import re
+import uuid
 from datetime import date, datetime
+from pathlib import Path
 from typing import Any
 
+from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import transaction
 
+from common.images import compress_image_upload
 from gate_entry.models import GateEntry
 
 GATE_HEADERS = [
@@ -22,7 +27,86 @@ GATE_HEADERS = [
     "Demanded By",
 ]
 
+_TEMP_TOKEN_RE = re.compile(r"^[a-f0-9]{32}$")
 _GATE_NUM_RE = re.compile(r"^G(\d+)$", re.IGNORECASE)
+
+
+def entry_to_excel_row(entry: GateEntry) -> list[Any]:
+    """Map a saved gate entry to GATE_HEADERS values for Excel export."""
+    return [
+        entry.gate_number or "",
+        entry.entry_date.isoformat() if entry.entry_date else "",
+        entry.purchaser or "",
+        entry.shop_name or "",
+        entry.chemical or "",
+        entry.electrical or "",
+        entry.mechanical or "",
+        entry.general or "",
+        entry.demanded_by or "",
+    ]
+
+
+def _temp_image_dir() -> Path:
+    path = Path(settings.MEDIA_ROOT) / "gate_entry" / "tmp"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def persist_temp_image(uploaded_file) -> str:
+    """Store an upload under media/gate_entry/tmp and return a 32-char token."""
+    token = uuid.uuid4().hex
+    prepared = compress_image_upload(uploaded_file)
+    dest = _temp_image_dir() / f"{token}.jpg"
+    with dest.open("wb") as out:
+        if hasattr(prepared, "chunks"):
+            for chunk in prepared.chunks():
+                out.write(chunk)
+        else:
+            out.write(prepared.read())
+    return token
+
+
+def load_temp_image(token: str):
+    """Reload a previously stashed sheet photo as an upload."""
+    token = (token or "").strip()
+    if not _TEMP_TOKEN_RE.match(token):
+        return None
+    path = _temp_image_dir() / f"{token}.jpg"
+    if not path.is_file():
+        return None
+    return SimpleUploadedFile(f"{token}.jpg", path.read_bytes(), content_type="image/jpeg")
+
+
+def clear_temp_image(token: str) -> None:
+    token = (token or "").strip()
+    if not _TEMP_TOKEN_RE.match(token):
+        return
+    path = _temp_image_dir() / f"{token}.jpg"
+    try:
+        path.unlink(missing_ok=True)
+    except OSError:
+        pass
+
+
+def temp_image_url(token: str) -> str:
+    token = (token or "").strip()
+    if not _TEMP_TOKEN_RE.match(token):
+        return ""
+    base = settings.MEDIA_URL if settings.MEDIA_URL.endswith("/") else f"{settings.MEDIA_URL}/"
+    return f"{base}gate_entry/tmp/{token}.jpg"
+
+
+def _uploaded_file_for_row(files, i: int):
+    upload = files.get(f"gate_image_{i}") if files is not None else None
+    if not upload:
+        return None
+    name = (getattr(upload, "name", "") or "").strip()
+    if not name:
+        return None
+    size = getattr(upload, "size", None)
+    if size == 0:
+        return None
+    return upload
 
 
 def next_gate_sequence_start() -> int:
@@ -133,6 +217,9 @@ def save_gate_row(row: dict[str, Any], user, used_numbers: set[str]) -> GateEntr
     gate_number = _allocate_gate_number(_text(row.get("Gate No.")), used_numbers)
     used_numbers.add(gate_number)
 
+    image = row.get("_image")
+    prepared_image = compress_image_upload(image) if image else None
+
     entry = GateEntry(
         gate_number=gate_number,
         entry_date=_to_date(row.get("Date")),
@@ -146,8 +233,12 @@ def save_gate_row(row: dict[str, Any], user, used_numbers: set[str]) -> GateEntr
         created_by=user,
         updated_by=user,
     )
-    entry.full_clean()
+    entry.full_clean(exclude=["entry_image"])
+    if prepared_image:
+        filename = getattr(prepared_image, "name", None) or "gate.jpg"
+        entry.entry_image.save(filename, prepared_image, save=False)
     entry.save()
+    clear_temp_image(str(row.get("_image_token") or ""))
     return entry
 
 
@@ -203,6 +294,8 @@ def sheet_display_rows(
                 "mechanical": _stock_text(row.get("Mechanical")),
                 "general": _stock_text(row.get("General")),
                 "demanded_by": _text(row.get("Demanded By")),
+                "photo_keep": str(row.get("_image_token") or ""),
+                "photo_preview_url": temp_image_url(str(row.get("_image_token") or "")),
                 "is_invalid": idx in failed_set,
             }
         )
@@ -220,6 +313,8 @@ def sheet_display_rows(
                 "mechanical": "",
                 "general": "",
                 "demanded_by": "",
+                "photo_keep": "",
+                "photo_preview_url": "",
                 "is_invalid": False,
             }
         )
@@ -231,10 +326,22 @@ def _getlist_at(post_data, key: str, i: int) -> str:
     return values[i] if i < len(values) else ""
 
 
-def parse_grid_post(post_data) -> list[dict[str, Any]]:
+def parse_grid_post(post_data, files=None) -> list[dict[str, Any]]:
+    files = files or {}
     gates = post_data.getlist("gate_number")
     rows = []
     for i in range(len(gates)):
+        image = _uploaded_file_for_row(files, i)
+        token = _getlist_at(post_data, "photo_keep", i).strip()
+        if image:
+            try:
+                token = persist_temp_image(image)
+                image = load_temp_image(token) or image
+            except Exception:
+                token = token or ""
+        elif token:
+            image = load_temp_image(token)
+
         rows.append(
             {
                 "Gate No.": _getlist_at(post_data, "gate_number", i),
@@ -246,6 +353,8 @@ def parse_grid_post(post_data) -> list[dict[str, Any]]:
                 "Mechanical": _getlist_at(post_data, "mechanical", i),
                 "General": _getlist_at(post_data, "general", i),
                 "Demanded By": _getlist_at(post_data, "demanded_by", i),
+                "_image": image,
+                "_image_token": token,
             }
         )
     return rows

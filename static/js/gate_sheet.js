@@ -58,6 +58,67 @@
     });
   }
 
+  function indexFileInputs(root) {
+    const tbody = root.querySelector("[data-sheet-body]");
+    if (!tbody) return;
+    tbody.querySelectorAll("tr").forEach(function (row, i) {
+      const file = row.querySelector('input[type="file"].sheet-photo-input');
+      if (file) file.name = "gate_image_" + i;
+    });
+  }
+
+  function updatePhotoLabel(input) {
+    const cell = input.closest(".sheet-photo-cell");
+    if (!cell) return;
+    const label = cell.querySelector(".sheet-photo-btn");
+    const text = cell.querySelector(".sheet-photo-label");
+    const viewBtn = cell.querySelector("[data-photo-view]");
+    const keep = cell.querySelector('input[name="photo_keep"]');
+    if (cell._previewUrl) {
+      URL.revokeObjectURL(cell._previewUrl);
+      cell._previewUrl = "";
+    }
+    if (input.files && input.files.length) {
+      const url = URL.createObjectURL(input.files[0]);
+      cell._previewUrl = url;
+      if (keep) keep.value = "";
+      if (text) text.textContent = "✓";
+      if (label) label.classList.add("has-file");
+      if (viewBtn) {
+        viewBtn.hidden = false;
+        viewBtn.dataset.previewUrl = url;
+      }
+    } else if (keep && keep.value) {
+      if (text) text.textContent = "✓";
+      if (label) label.classList.add("has-file");
+    } else {
+      if (text) text.textContent = "Add";
+      if (label) label.classList.remove("has-file");
+      if (viewBtn) {
+        viewBtn.hidden = true;
+        delete viewBtn.dataset.previewUrl;
+      }
+    }
+  }
+
+  function openPhotoModal(url) {
+    const modal = document.getElementById("sheet-photo-modal");
+    const img = document.getElementById("sheet-photo-modal-img");
+    if (!modal || !img || !url) return;
+    img.src = url;
+    modal.hidden = false;
+    document.body.classList.add("sheet-photo-modal-open");
+  }
+
+  function closePhotoModal() {
+    const modal = document.getElementById("sheet-photo-modal");
+    const img = document.getElementById("sheet-photo-modal-img");
+    if (!modal) return;
+    modal.hidden = true;
+    if (img) img.src = "";
+    document.body.classList.remove("sheet-photo-modal-open");
+  }
+
   function addRow(root) {
     const tbody = root.querySelector("[data-sheet-body]");
     const templateId = root.getAttribute("data-row-template") || "gate-row-template";
@@ -65,6 +126,7 @@
     if (!template || !tbody) return;
     tbody.appendChild(template.content.cloneNode(true));
     renumberGates(root);
+    indexFileInputs(root);
   }
 
   function stripItemPrefix(line) {
@@ -166,10 +228,13 @@
     const addBtn = root.querySelector("[data-sheet-add-row]");
 
     renumberGates(root);
+    indexFileInputs(root);
 
     root.querySelectorAll(".gate-stock-input").forEach(function (el) {
       if (String(el.value || "").trim()) formatStockField(el, false);
     });
+
+    root.querySelectorAll('input[type="file"].sheet-photo-input').forEach(updatePhotoLabel);
 
     if (addBtn) {
       addBtn.addEventListener("click", function (e) {
@@ -230,8 +295,6 @@
       }
     });
 
-    // Space twice / Enter handled in keydown above (prevents macOS ". " substitution)
-
     root.addEventListener(
       "blur",
       function (e) {
@@ -243,26 +306,55 @@
       true
     );
 
+    root.addEventListener("change", function (e) {
+      const input = e.target;
+      if (input && input.matches('input[type="file"].sheet-photo-input')) {
+        updatePhotoLabel(input);
+      }
+    });
+
     root.addEventListener("click", function (e) {
       const removeBtn = e.target.closest("[data-sheet-remove-row]");
-      if (!removeBtn) return;
-      e.preventDefault();
-      const row = removeBtn.closest("tr");
-      if (!row || !tbody || tbody.querySelectorAll("tr").length <= 1) return;
-      if (!rowLooksBlank(row)) {
-        const ok = window.confirm(
-          "This row has data. Remove it anyway?\n\nیہ قطار بھری ہوئی ہے — کیا آپ واقعی ہٹانا چاہتے ہیں؟"
-        );
-        if (!ok) return;
+      if (removeBtn) {
+        e.preventDefault();
+        const row = removeBtn.closest("tr");
+        if (!row || !tbody || tbody.querySelectorAll("tr").length <= 1) return;
+        if (!rowLooksBlank(row)) {
+          const ok = window.confirm(
+            "This row has data. Remove it anyway?\n\nیہ قطار بھری ہوئی ہے — کیا آپ واقعی ہٹانا چاہتے ہیں؟"
+          );
+          if (!ok) return;
+        }
+        const cell = row.querySelector(".sheet-photo-cell");
+        if (cell && cell._previewUrl) URL.revokeObjectURL(cell._previewUrl);
+        row.remove();
+        renumberGates(root);
+        indexFileInputs(root);
+        return;
       }
-      row.remove();
-      renumberGates(root);
+
+      const viewBtn = e.target.closest("[data-photo-view]");
+      if (viewBtn) {
+        e.preventDefault();
+        openPhotoModal(viewBtn.dataset.previewUrl || "");
+      }
+    });
+
+    document.addEventListener("click", function (e) {
+      if (e.target.closest("[data-photo-modal-close]")) {
+        closePhotoModal();
+      }
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closePhotoModal();
     });
 
     root.addEventListener("submit", function (e) {
       root.querySelectorAll(".gate-stock-input").forEach(prepareStockFieldForSubmit);
       if (!tbody) return;
       renumberGates(root);
+      indexFileInputs(root);
       tbody.querySelectorAll("tr.sheet-row-invalid").forEach(function (row) {
         row.classList.remove("sheet-row-invalid");
       });

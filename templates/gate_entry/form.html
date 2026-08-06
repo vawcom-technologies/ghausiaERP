@@ -8,7 +8,7 @@
     <a href="{% url 'gate_entry:list' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-arrow-left"></i> Back</a>
 </nav>
 
-<form method="post" data-gate-sheet class="rcv-sheet-form">
+<form method="post" enctype="multipart/form-data" data-gate-sheet class="rcv-sheet-form">
     {% csrf_token %}
     {% include "includes/form_errors.html" %}
 
@@ -109,16 +109,36 @@
             {% endwith %}
         </div>
 
-        {% with f=form.demanded_by %}
-        <div class="mb-3 col-md-4 px-0">
-            <label class="form-label" for="{{ f.id_for_label }}">
-                {{ f.label }}
-                <span class="form-label-urdu">{{ form.LABEL_URDU.demanded_by }}</span>
-            </label>
-            {{ f }}
-            {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+        <div class="row">
+            {% with f=form.demanded_by %}
+            <div class="mb-3 col-md-4">
+                <label class="form-label" for="{{ f.id_for_label }}">
+                    {{ f.label }}
+                    <span class="form-label-urdu">{{ form.LABEL_URDU.demanded_by }}</span>
+                </label>
+                {{ f }}
+                {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+            </div>
+            {% endwith %}
+
+            {% with f=form.entry_image %}
+            <div class="mb-3 col-md-4">
+                <label class="form-label" for="{{ f.id_for_label }}">
+                    {{ f.label }}
+                    <span class="form-label-urdu">{{ form.LABEL_URDU.entry_image }}</span>
+                </label>
+                {{ f }}
+                {% if object.entry_image %}
+                <div class="mt-2">
+                    <img src="{{ object.entry_image.url }}" alt="Current photo" class="receipt-photo-preview" data-single-photo-preview>
+                </div>
+                {% else %}
+                <img src="" alt="Photo preview" class="receipt-photo-preview mt-2" data-single-photo-preview hidden>
+                {% endif %}
+                {% for e in f.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+            </div>
+            {% endwith %}
         </div>
-        {% endwith %}
     </div>
 
     <div class="rcv-actions rcv-actions-inline">
@@ -132,5 +152,20 @@
 {% include "receiving/_layout_close.html" %}
 {% endblock %}
 {% block extra_js %}
-<script src="{% static 'js/gate_sheet.js' %}?v=5"></script>
+<script src="{% static 'js/gate_sheet.js' %}?v=6"></script>
+<script>
+(function () {
+  var input = document.getElementById("id_entry_image");
+  var preview = document.querySelector("[data-single-photo-preview]");
+  if (!input || !preview) return;
+  input.addEventListener("change", function () {
+    if (preview._url) URL.revokeObjectURL(preview._url);
+    if (input.files && input.files[0]) {
+      preview._url = URL.createObjectURL(input.files[0]);
+      preview.src = preview._url;
+      preview.hidden = false;
+    }
+  });
+})();
+</script>
 {% endblock %}

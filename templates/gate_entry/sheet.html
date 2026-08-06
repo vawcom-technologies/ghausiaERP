@@ -5,6 +5,9 @@
 {% include "receiving/_layout_open.html" with rcv_title="Gate Entry" rcv_subtitle="Add rows as needed — numbers G1, G2, G3… are assigned automatically" rcv_subtitle_urdu="ضرورت کے مطابق قطاریں شامل کریں" rcv_wide=True %}
 
 <nav class="rcv-actions" aria-label="Gate sheet actions">
+    <a href="{% url 'gate_entry:export' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-file-earmark-excel"></i> Export Excel</a>
+    <a href="{% url 'gate_entry:export_template' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-download"></i> Excel Template</a>
+    <a href="{% url 'gate_entry:import' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-upload"></i> Import Excel</a>
     <a href="{% url 'gate_entry:list' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-arrow-left"></i> Back</a>
 </nav>
 
@@ -13,11 +16,12 @@
     <div>
         <strong>Tip:</strong> Fill Date, Purchaser, Shop Name, at least one Stock Description column, and Demanded By.
         Stock boxes: type point <em>1</em>, then press <em>Space Space</em> (or Enter) for point <em>2</em>, again for <em>3</em>, <em>4</em>, … as many as you need.
+        After adding a photo, click <em>View</em>.
         <span class="d-block mt-1" dir="rtl">پہلا آئٹم لکھیں، دوہری اسپیس (یا Enter) دیں — اگلا نمبر 2، 3، 4… آ جائے گا۔</span>
     </div>
 </div>
 
-<form method="post" data-gate-sheet data-row-template="gate-row-template" data-start-seq="{{ start_seq }}" class="rcv-sheet-form">
+<form method="post" enctype="multipart/form-data" data-gate-sheet data-row-template="gate-row-template" data-start-seq="{{ start_seq }}" class="rcv-sheet-form">
     {% csrf_token %}
     <div class="sheet-toolbar rcv-sheet-toolbar">
         <button type="button" class="rcv-btn rcv-btn-secondary" data-sheet-add-row>
@@ -37,6 +41,7 @@
                     <th rowspan="2">Shop Name<span class="th-urdu">دکان کا نام</span></th>
                     <th colspan="4" class="th-group th-stock-group">Stock Description<span class="th-urdu">اسٹاک تفصیل</span></th>
                     <th rowspan="2">Demanded By<span class="th-urdu">مطالبہ کنندہ</span></th>
+                    <th rowspan="2">Photo</th>
                     <th rowspan="2"></th>
                 </tr>
                 <tr>
@@ -60,6 +65,17 @@
                     <td class="col-stock"><textarea name="mechanical" class="form-control gate-stock-input" rows="3" autocomplete="off" placeholder="1. item&#10;2. next item (double space)">{{ row.mechanical }}</textarea></td>
                     <td class="col-stock col-stock-end"><textarea name="general" class="form-control gate-stock-input" rows="3" autocomplete="off" placeholder="1. item&#10;2. next item (double space)">{{ row.general }}</textarea></td>
                     <td><input type="text" name="demanded_by" class="form-control" value="{{ row.demanded_by }}" autocomplete="off"></td>
+                    <td class="col-photo">
+                        <div class="sheet-photo-cell{% if row.photo_preview_url %} has-preview{% endif %}">
+                            <label class="sheet-photo-btn{% if row.photo_preview_url %} has-file{% endif %}">
+                                <i class="bi bi-camera"></i>
+                                <span class="sheet-photo-label">{% if row.photo_preview_url %}✓{% else %}Add{% endif %}</span>
+                                <input type="file" name="gate_image_{{ forloop.counter0 }}" accept="image/*" class="sheet-photo-input">
+                            </label>
+                            <input type="hidden" name="photo_keep" value="{{ row.photo_keep }}">
+                            <button type="button" class="sheet-photo-view" data-photo-view {% if not row.photo_preview_url %}hidden{% endif %} data-preview-url="{{ row.photo_preview_url }}">View</button>
+                        </div>
+                    </td>
                     <td class="sheet-row-actions">
                         <button type="button" class="btn btn-sm btn-outline-danger" data-sheet-remove-row title="Remove row">&times;</button>
                     </td>
@@ -77,6 +93,14 @@
 
 {% include "receiving/_layout_close.html" %}
 
+<div class="sheet-photo-modal" id="sheet-photo-modal" hidden>
+    <div class="sheet-photo-modal-backdrop" data-photo-modal-close></div>
+    <div class="sheet-photo-modal-dialog" role="dialog" aria-modal="true" aria-label="Photo preview">
+        <button type="button" class="sheet-photo-modal-close" data-photo-modal-close aria-label="Close">&times;</button>
+        <img src="" alt="Uploaded photo preview" id="sheet-photo-modal-img">
+    </div>
+</div>
+
 <template id="gate-row-template">
     <tr data-sheet-row>
         <td class="col-gate">
@@ -90,6 +114,17 @@
         <td class="col-stock"><textarea name="mechanical" class="form-control gate-stock-input" rows="3" autocomplete="off" placeholder="1. item&#10;2. next item (double space)"></textarea></td>
         <td class="col-stock col-stock-end"><textarea name="general" class="form-control gate-stock-input" rows="3" autocomplete="off" placeholder="1. item&#10;2. next item (double space)"></textarea></td>
         <td><input type="text" name="demanded_by" class="form-control" autocomplete="off"></td>
+        <td class="col-photo">
+            <div class="sheet-photo-cell">
+                <label class="sheet-photo-btn">
+                    <i class="bi bi-camera"></i>
+                    <span class="sheet-photo-label">Add</span>
+                    <input type="file" name="gate_image_0" accept="image/*" class="sheet-photo-input">
+                </label>
+                <input type="hidden" name="photo_keep" value="">
+                <button type="button" class="sheet-photo-view" data-photo-view hidden>View</button>
+            </div>
+        </td>
         <td class="sheet-row-actions">
             <button type="button" class="btn btn-sm btn-outline-danger" data-sheet-remove-row title="Remove row">&times;</button>
         </td>
@@ -97,5 +132,5 @@
 </template>
 {% endblock %}
 {% block extra_js %}
-<script src="{% static 'js/gate_sheet.js' %}?v=5"></script>
+<script src="{% static 'js/gate_sheet.js' %}?v=6"></script>
 {% endblock %}

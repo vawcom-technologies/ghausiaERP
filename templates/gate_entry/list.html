@@ -9,6 +9,13 @@
     <a href="{% url 'gate_entry:sheet' %}" class="rcv-btn rcv-btn-primary">
         <i class="bi bi-table"></i> Spreadsheet
     </a>
+    <div class="rcv-actions-more">
+        <a href="{% url 'gate_entry:export' %}{% if request.GET.q %}?q={{ request.GET.q|urlencode }}{% endif %}" class="rcv-link">Export</a>
+        <span class="rcv-dot" aria-hidden="true">·</span>
+        <a href="{% url 'gate_entry:export_template' %}" class="rcv-link">Template</a>
+        <span class="rcv-dot" aria-hidden="true">·</span>
+        <a href="{% url 'gate_entry:import' %}" class="rcv-link">Import</a>
+    </div>
 </nav>
 
 <form method="get" class="rcv-search">

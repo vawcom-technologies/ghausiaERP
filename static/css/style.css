@@ -74,39 +74,79 @@ main.app-main {
     font-size: 1rem;
 }
 
-.erp-navbar .nav-link {
-    font-size: 0.9rem;
+.erp-navbar .navbar-nav {
+    align-items: center;
+    flex-wrap: nowrap;
+    column-gap: 0.15rem;
+}
+
+.erp-navbar .navbar-nav .nav-item {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.erp-navbar .navbar-nav .nav-link {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: center;
+    gap: 0.35rem;
+    height: 2.15rem;
+    font-size: 0.82rem;
     font-weight: 500;
-    padding: 0.45rem 0.75rem !important;
+    padding: 0 0.65rem !important;
     border-radius: 6px;
-    margin: 0 1px;
+    margin: 0;
+    white-space: nowrap !important;
+    line-height: 1 !important;
     transition: background 0.15s;
 }
 
-.erp-navbar .nav-link:hover,
-.erp-navbar .nav-link:focus {
+.erp-navbar .navbar-nav .nav-link i {
+    display: inline-block !important;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-right: 0 !important;
+    vertical-align: middle;
+}
+
+.erp-navbar .navbar-nav .nav-link:hover,
+.erp-navbar .navbar-nav .nav-link:focus {
     background: rgba(255, 255, 255, 0.12);
 }
 
-.erp-navbar .nav-link-stacked {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    line-height: 1.15;
-    padding-top: 0.3rem !important;
-    padding-bottom: 0.3rem !important;
-}
-
-.erp-navbar .nav-link-stacked .nav-link-main {
+.erp-navbar .navbar-nav .nav-link .nav-link-main,
+.erp-navbar .navbar-nav .nav-link .nav-link-urdu {
+    display: inline !important;
     white-space: nowrap;
+    margin: 0;
+    line-height: 1;
 }
 
-.erp-navbar .nav-link-stacked .nav-link-urdu {
-    display: block;
+.erp-navbar .navbar-nav .nav-link .nav-link-urdu {
     font-size: 0.78rem;
     font-weight: 500;
     opacity: 0.9;
-    margin-top: 0.1rem;
+}
+
+.erp-navbar .navbar-nav .nav-link .nav-link-urdu::before {
+    content: "·";
+    margin: 0 0.3rem 0 0.15rem;
+    opacity: 0.7;
+}
+
+@media (max-width: 1199.98px) {
+    .erp-navbar .navbar-nav .nav-link {
+        font-size: 0.76rem;
+        height: 2rem;
+        padding: 0 0.45rem !important;
+    }
+
+    .erp-navbar .navbar-nav .nav-link .nav-link-urdu {
+        display: none !important;
+    }
 }
 
 .erp-navbar .dropdown-menu {
@@ -126,9 +166,10 @@ main.app-main {
     background: var(--erp-bg);
 }
 
-.erp-navbar .user-badge {
-    display: flex;
-    align-items: center;
+.erp-navbar .navbar-nav .nav-link.user-badge {
+    height: auto;
+    min-height: 2.15rem;
+    white-space: normal !important;
     gap: 0.35rem;
     background: rgba(255, 255, 255, 0.12);
     border-radius: 20px;

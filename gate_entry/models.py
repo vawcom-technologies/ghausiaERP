@@ -20,6 +20,13 @@ class GateEntry(AuditModel):
     mechanical = models.CharField("Mechanical", max_length=255, blank=True, default="")
     general = models.CharField("General", max_length=255, blank=True, default="")
     demanded_by = models.CharField("Demanded By", max_length=200)
+    entry_image = models.ImageField(
+        "Photo",
+        upload_to="gate_entry/%Y/%m/",
+        blank=True,
+        null=True,
+        help_text="Optional photo — compressed automatically to save space.",
+    )
 
     class Meta:
         ordering = ["gate_number"]

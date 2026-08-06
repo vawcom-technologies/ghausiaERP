@@ -1,6 +1,9 @@
 from django import forms
+from django.core.files.uploadedfile import UploadedFile
+from django.db import transaction
 
 from common.forms import BootstrapFormMixin
+from common.images import compress_image_upload
 from gate_entry.models import GateEntry
 from gate_entry.services import _stock_text
 
@@ -18,6 +21,7 @@ class GateEntryForm(BootstrapFormMixin, forms.ModelForm):
             "mechanical",
             "general",
             "demanded_by",
+            "entry_image",
         ]
         widgets = {
             "entry_date": forms.DateInput(attrs={"type": "date"}),
@@ -26,6 +30,7 @@ class GateEntryForm(BootstrapFormMixin, forms.ModelForm):
             "electrical": forms.Textarea(attrs={"rows": 4}),
             "mechanical": forms.Textarea(attrs={"rows": 4}),
             "general": forms.Textarea(attrs={"rows": 4}),
+            "entry_image": forms.FileInput(attrs={"accept": "image/*"}),
         }
         labels = {
             "gate_number": "Gate No.",
@@ -37,6 +42,7 @@ class GateEntryForm(BootstrapFormMixin, forms.ModelForm):
             "mechanical": "Mechanical",
             "general": "General",
             "demanded_by": "Demanded By",
+            "entry_image": "Photo",
         }
 
     LABEL_URDU = {
@@ -49,6 +55,7 @@ class GateEntryForm(BootstrapFormMixin, forms.ModelForm):
         "mechanical": "مکینیکل",
         "general": "جنرل",
         "demanded_by": "مطالبہ کنندہ",
+        "entry_image": "تصویر",
     }
 
     def __init__(self, *args, **kwargs):
@@ -61,6 +68,7 @@ class GateEntryForm(BootstrapFormMixin, forms.ModelForm):
             )
         self.fields["gate_number"].disabled = True
         self.fields["gate_number"].required = False
+        self.fields["entry_image"].required = False
 
     def clean_gate_number(self):
         # Disabled fields are omitted from POST; keep the instance value.
@@ -80,6 +88,12 @@ class GateEntryForm(BootstrapFormMixin, forms.ModelForm):
     def clean_general(self):
         return _stock_text(self.cleaned_data.get("general"))
 
+    def clean_entry_image(self):
+        image = self.cleaned_data.get("entry_image")
+        if not isinstance(image, UploadedFile):
+            return image
+        return compress_image_upload(image)
+
     def clean(self):
         cleaned = super().clean()
         stock = any(
@@ -92,3 +106,14 @@ class GateEntryForm(BootstrapFormMixin, forms.ModelForm):
                 "(Chemical, Electrical, Mechanical, or General)."
             )
         return cleaned
+
+    def save(self, commit=True):
+        image = self.cleaned_data.get("entry_image")
+        instance = super().save(commit=False)
+        if commit:
+            with transaction.atomic():
+                if isinstance(image, UploadedFile):
+                    filename = getattr(image, "name", None) or "gate.jpg"
+                    instance.entry_image.save(filename, image, save=False)
+                instance.save()
+        return instance

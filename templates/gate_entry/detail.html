@@ -101,5 +101,18 @@
     </div>
 </div>
 
+<div class="card rcv-card mb-3">
+    <div class="card-header"><i class="bi bi-camera me-2"></i>Photo</div>
+    <div class="card-body">
+        {% if object.entry_image %}
+        <a href="{{ object.entry_image.url }}" target="_blank" rel="noopener">
+            <img src="{{ object.entry_image.url }}" alt="Gate entry photo" class="receipt-photo-preview">
+        </a>
+        {% else %}
+        <p class="text-muted mb-0">No photo attached.</p>
+        {% endif %}
+    </div>
+</div>
+
 {% include "receiving/_layout_close.html" %}
 {% endblock %}
