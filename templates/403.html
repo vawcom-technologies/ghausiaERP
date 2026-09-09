@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Access denied - Ghausia Dyeing{% endblock %}
+{% block content %}
+<div class="page-header-block">
+    <h1 class="page-title">Access denied</h1>
+    <p class="page-subtitle">You do not have this job assigned. Ask an administrator or supervisor to give you access.</p>
+</div>
+<a href="{% url 'accounts:home' %}" class="btn btn-primary">Back to dashboard</a>
+{% endblock %}

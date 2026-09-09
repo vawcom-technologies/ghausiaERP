@@ -11,6 +11,7 @@
            class="btn btn-outline-success"
            data-export-select-trigger
            data-export-url="{% url 'electricity:reading_export' %}">Export Excel</a>
+        <a href="{% url 'electricity:meter_list' %}" class="btn btn-outline-secondary">Meters</a>
         <a href="{% url 'electricity:reading_create' %}" class="btn btn-save btn-lg-action">+ New Reading</a>
     </div>
 </div>

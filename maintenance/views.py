@@ -71,6 +71,7 @@ class MaintenanceJobExportView(ERPLoginRequiredMixin, View):
             filename="maintenance_jobs_export.xlsx",
             sheet_title="Maintenance",
             list_redirect="maintenance:list",
+            today_field="reported_datetime__date",
         )
 
 

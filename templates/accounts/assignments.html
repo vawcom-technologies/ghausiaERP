@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Job assignments - Ghausia Dyeing{% endblock %}
+{% block content %}
+<div class="page-header-block d-flex flex-wrap justify-content-between align-items-start gap-3">
+    <div>
+        <h1 class="page-title">Job assignments</h1>
+        <p class="page-subtitle">Tick the factory areas each data-entry user is allowed to work in</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary btn-lg-action">Profile</a>
+        <form method="post" action="{% url 'accounts:job_accounts' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-primary btn-lg-action">Create one account per job</button>
+        </form>
+        <a href="{% url 'accounts:users' %}" class="btn btn-outline-secondary btn-lg-action">All users</a>
+        <a href="{% url 'accounts:user_create' %}" class="btn btn-save btn-lg-action">+ New data-entry user</a>
+    </div>
+</div>
+
+{% if not rows %}
+<div class="card">
+    <div class="card-body text-center py-5">
+        <div class="assign-empty-icon"><i class="bi bi-people"></i></div>
+        <h2 class="h5 mb-2">No data-entry users yet</h2>
+        <p class="text-muted mb-3">Create a data-entry account, then choose which jobs they can enter.</p>
+        <a href="{% url 'accounts:user_create' %}" class="btn btn-primary">Create data-entry user</a>
+    </div>
+</div>
+{% else %}
+<form method="post" class="assign-form">
+    {% csrf_token %}
+    <div class="assign-grid">
+        {% for row in rows %}
+        <section class="card assign-card">
+            <div class="card-header assign-card-header">
+                <div class="assign-user">
+                    <span class="assign-avatar" aria-hidden="true">
+                        {{ row.user.get_full_name|default:row.user.username|slice:":1"|upper }}
+                    </span>
+                    <div>
+                        <div class="assign-user-name">{{ row.user.get_full_name|default:row.user.username }}</div>
+                        <div class="assign-user-meta">@{{ row.user.username }}</div>
+                    </div>
+                </div>
+                <span class="assign-count">{{ row.modules|length }} of {{ work_modules|length }} jobs</span>
+            </div>
+            <div class="card-body">
+                <div class="assign-chips">
+                    {% for key, label, icon in work_modules %}
+                    <label class="assign-chip">
+                        <input type="checkbox" name="modules_{{ row.user.pk }}" value="{{ key }}"
+                               {% if key in row.modules %}checked{% endif %}>
+                        <i class="bi {{ icon }}" aria-hidden="true"></i>
+                        <span>{{ label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        {% endfor %}
+    </div>
+    <div class="assign-savebar">
+        <p class="assign-savebar-hint mb-0">Changes apply after you save. Unchecked jobs are hidden from that user.</p>
+        <div class="page-actions">
+            <button type="submit" class="btn btn-save btn-lg-action">Save assignments</button>
+        </div>
+    </div>
+</form>
+{% endif %}
+{% endblock %}

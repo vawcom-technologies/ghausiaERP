@@ -119,6 +119,7 @@ class ProductionLotExportView(ERPLoginRequiredMixin, View):
             filename="production_lots_export.xlsx",
             sheet_title="Lots",
             list_redirect="production:lot_list",
+            today_field="start_date",
         )
 
 
@@ -179,19 +180,39 @@ class SingeingCreateView(ERPLoginRequiredMixin, AuditCreateMixin, CreateView):
         return redirect("production:singeing_list")
 
 
-class SingeingDetailView(ERPLoginRequiredMixin, DetailView):
-    model = SingeingEntry
+class _ProcessDetailView(ERPLoginRequiredMixin, DetailView):
     template_name = "production/process_detail.html"
+    cancel_url_name = ""
+    list_url_name = ""
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["cancel_url_name"] = self.cancel_url_name
+        ctx["list_url_name"] = self.list_url_name
+        return ctx
 
 
-class SingeingCancelView(CancelRecordView):
-    cancel_url_name = "production:singeing_cancel"
+class _StageCancelView(CancelRecordView):
+    model = None
+    success_name = ""
 
     def get_object(self):
-        return get_object_or_404(SingeingEntry, pk=self.kwargs["pk"])
+        return get_object_or_404(self.model, pk=self.kwargs["pk"])
 
     def get_success_url(self):
-        return reverse("production:singeing_detail", kwargs={"pk": self.object.pk})
+        return reverse(self.success_name, kwargs={"pk": self.object.pk})
+
+
+class SingeingDetailView(_ProcessDetailView):
+    model = SingeingEntry
+    cancel_url_name = "production:singeing_cancel"
+    list_url_name = "production:singeing_list"
+
+
+class SingeingCancelView(_StageCancelView):
+    model = SingeingEntry
+    cancel_url_name = "production:singeing_cancel"
+    success_name = "production:singeing_detail"
 
 
 # --- Dyeing ---
@@ -231,6 +252,12 @@ class DyeingDetailView(ERPLoginRequiredMixin, DetailView):
         ctx["material_usages"] = self.object.material_usages.filter(is_cancelled=False)
         ctx["mixtures"] = self.object.mixtures.filter(is_cancelled=False)
         return ctx
+
+
+class DyeingCancelView(_StageCancelView):
+    model = DyeingBatch
+    cancel_url_name = "production:dyeing_cancel"
+    success_name = "production:dyeing_detail"
 
 
 class DyeingMaterialUsageCreateView(ERPLoginRequiredMixin, AuditCreateMixin, CreateView):
@@ -292,6 +319,15 @@ class MixtureDetailView(ERPLoginRequiredMixin, DetailView):
     template_name = "production/mixture_detail.html"
 
 
+class MixtureCancelView(_StageCancelView):
+    model = Mixture
+    cancel_url_name = "production:mixture_cancel"
+    success_name = "production:mixture_detail"
+
+    def get_success_url(self):
+        return reverse("production:dyeing_detail", kwargs={"pk": self.object.dyeing_batch_id})
+
+
 class MixtureIngredientCreateView(ERPLoginRequiredMixin, AuditCreateMixin, CreateView):
     model = MixtureIngredient
     form_class = MixtureIngredientForm
@@ -308,6 +344,25 @@ class MixtureIngredientCreateView(ERPLoginRequiredMixin, AuditCreateMixin, Creat
         form.save(user=self.request.user)
         messages.success(self.request, "Ingredient added.")
         return redirect("production:mixture_detail", pk=form.instance.mixture_id)
+
+
+class MixtureIngredientCancelView(_StageCancelView):
+    model = MixtureIngredient
+    cancel_url_name = "production:mixture_ingredient_cancel"
+    success_name = "production:mixture_detail"
+
+    def get_success_url(self):
+        return reverse("production:mixture_detail", kwargs={"pk": self.object.mixture_id})
+
+    def on_cancel(self, reason):
+        txs = MaterialTransaction.objects.filter(
+            mixture=self.object.mixture,
+            material=self.object.material,
+            transaction_type="Mixture Usage",
+            is_cancelled=False,
+        )
+        for tx in txs:
+            tx.cancel(self.request.user, reason)
 
 
 # --- Six Chamber ---
@@ -343,9 +398,16 @@ class SixChamberCreateView(ERPLoginRequiredMixin, AuditCreateMixin, CreateView):
         return redirect("production:sixchamber_list")
 
 
-class SixChamberDetailView(ERPLoginRequiredMixin, DetailView):
+class SixChamberDetailView(_ProcessDetailView):
     model = SixChamberEntry
-    template_name = "production/process_detail.html"
+    cancel_url_name = "production:sixchamber_cancel"
+    list_url_name = "production:sixchamber_list"
+
+
+class SixChamberCancelView(_StageCancelView):
+    model = SixChamberEntry
+    cancel_url_name = "production:sixchamber_cancel"
+    success_name = "production:sixchamber_detail"
 
 
 # --- Calender ---
@@ -381,9 +443,16 @@ class CalenderCreateView(ERPLoginRequiredMixin, AuditCreateMixin, CreateView):
         return redirect("production:calender_list")
 
 
-class CalenderDetailView(ERPLoginRequiredMixin, DetailView):
+class CalenderDetailView(_ProcessDetailView):
     model = CalenderEntry
-    template_name = "production/process_detail.html"
+    cancel_url_name = "production:calender_cancel"
+    list_url_name = "production:calender_list"
+
+
+class CalenderCancelView(_StageCancelView):
+    model = CalenderEntry
+    cancel_url_name = "production:calender_cancel"
+    success_name = "production:calender_detail"
 
 
 # --- Comfort ---
@@ -419,9 +488,16 @@ class ComfortCreateView(ERPLoginRequiredMixin, AuditCreateMixin, CreateView):
         return redirect("production:comfort_list")
 
 
-class ComfortDetailView(ERPLoginRequiredMixin, DetailView):
+class ComfortDetailView(_ProcessDetailView):
     model = ComfortEntry
-    template_name = "production/process_detail.html"
+    cancel_url_name = "production:comfort_cancel"
+    list_url_name = "production:comfort_list"
+
+
+class ComfortCancelView(_StageCancelView):
+    model = ComfortEntry
+    cancel_url_name = "production:comfort_cancel"
+    success_name = "production:comfort_detail"
 
 
 # --- Finished Stock ---
@@ -465,3 +541,9 @@ class FinishedStockDetailView(ERPLoginRequiredMixin, DetailView):
         ctx["total_metre_loss"] = total_loss
         ctx["shrinkage_percentage"] = shrinkage
         return ctx
+
+
+class FinishedStockCancelView(_StageCancelView):
+    model = FinishedStock
+    cancel_url_name = "production:finished_cancel"
+    success_name = "production:finished_detail"

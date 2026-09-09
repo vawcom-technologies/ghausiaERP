@@ -1,14 +1,20 @@
 from datetime import date
 
 from django.contrib import messages
-from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, TemplateView
 
-from accounts.mixins import AuditCreateMixin, ERPLoginRequiredMixin, PaginatedListMixin
+from accounts.mixins import AuditCreateMixin, CancelRecordView, ERPLoginRequiredMixin, PaginatedListMixin
 from common.excel import build_data_export_response, build_template_response, read_sheet_rows
-from common.selective_export import filter_queryset_by_ids, ordered_by_ids, parse_selected_ids
+from common.selective_export import (
+    apply_today_filter,
+    export_filename,
+    filter_queryset_by_ids,
+    ordered_by_ids,
+    parse_selected_ids,
+)
 from common.views import apply_search
 from inventory.forms import AdjustmentInForm, AdjustmentOutForm, PurchaseForm
 from inventory.models import ChemicalIssueSlip, ChemicalStock, MaterialTransaction
@@ -53,6 +59,16 @@ class MaterialTransactionListView(ERPLoginRequiredMixin, PaginatedListMixin, Lis
 class MaterialTransactionDetailView(ERPLoginRequiredMixin, DetailView):
     model = MaterialTransaction
     template_name = "inventory/transaction_detail.html"
+
+
+class MaterialTransactionCancelView(CancelRecordView):
+    cancel_url_name = "inventory:transaction_cancel"
+
+    def get_object(self):
+        return get_object_or_404(MaterialTransaction, pk=self.kwargs["pk"])
+
+    def get_success_url(self):
+        return reverse("inventory:transaction_detail", kwargs={"pk": self.object.pk})
 
 
 class PurchaseCreateView(ERPLoginRequiredMixin, AuditCreateMixin, CreateView):
@@ -194,10 +210,11 @@ class TransactionExportView(ERPLoginRequiredMixin, View):
             qs = qs.filter(transaction_type=ttype)
 
         qs = filter_queryset_by_ids(qs, ids)
+        qs = apply_today_filter(qs, request, "transaction_date", ids)
         objects = ordered_by_ids(qs, ids) if ids is not None else list(qs)
         rows = [transaction_to_excel_row(obj) for obj in objects]
         return build_data_export_response(
-            filename="material_transactions_export.xlsx",
+            filename=export_filename(request, "material_transactions_export.xlsx"),
             headers=TRANSACTION_EXPORT_HEADERS,
             rows=rows,
             sheet_title="Transactions",

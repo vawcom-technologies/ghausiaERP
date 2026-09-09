@@ -1,23 +1,53 @@
+from urllib.parse import urlparse
+
 from django.contrib import messages
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
+from django.contrib.auth.views import LoginView
 from django.db import transaction
-from django.db.models import Count, Q
-from django.shortcuts import redirect, render
+from django.db.models import Count
+from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import TemplateView, View
 
 from accounts.mixins import ERPLoginRequiredMixin
-from accounts.permissions import can_manage_users, require_admin
-from electricity.models import DailyElectricityReading, ElectricityMeter
+from accounts.modules import MODULE_HOME_LINKS, WORK_MODULES, module_for_path
+from accounts.permissions import (
+    assigned_modules,
+    can_access_module,
+    can_delete_records,
+    is_data_entry,
+    is_supervisor,
+)
 from electricity.services.electricity import active_meters_count, today_readings_count
+from gate_entry.models import GateEntry
 from inventory.services.stock import get_materials_below_minimum
 from maintenance.models import MaintenanceJob
 from master_data.models import Machine
 from production.models import ProductionLot
+from receiving.models import ClothReceipt
 
-User = get_user_model()
+
+class ERPLoginView(LoginView):
+    template_name = "registration/login.html"
+    redirect_authenticated_user = True
+
+    def get_success_url(self):
+        raw = self.get_redirect_url()
+        if not raw:
+            return reverse("accounts:home")
+        path = urlparse(raw).path or "/"
+        user = self.request.user
+        if path in ("/", "/profile/"):
+            return raw
+        module = module_for_path(path)
+        if module and can_access_module(user, module):
+            return raw
+        if is_data_entry(user):
+            return reverse("accounts:home")
+        if path.startswith("/users/") or path.startswith("/master-data/") or path.startswith("/admin/"):
+            if is_data_entry(user):
+                return reverse("accounts:home")
+        return raw
 
 
 class HomeView(ERPLoginRequiredMixin, TemplateView):
@@ -25,33 +55,55 @@ class HomeView(ERPLoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        today = timezone.now().date()
-        active_lots = ProductionLot.objects.filter(
+        user = self.request.user
+        today = timezone.localdate()
+        active_lot_qs = ProductionLot.objects.filter(
             is_cancelled=False, status__in=["Received", "In Production", "On Hold"]
-        ).count()
-        waiting_dyeing = ProductionLot.objects.filter(
-            is_cancelled=False, current_stage="Dyeing"
-        ).count()
-        open_maintenance = MaintenanceJob.objects.filter(
-            is_cancelled=False, status__in=["Reported", "In Progress"]
-        ).count()
-        broken_machines = Machine.objects.filter(status="Broken Down", is_active=True).count()
-        low_stock = get_materials_below_minimum()
+        )
+        stage_map = {
+            row["current_stage"]: row["count"]
+            for row in active_lot_qs.values("current_stage").annotate(count=Count("id"))
+        }
+        low_stock = get_materials_below_minimum() if is_supervisor(user) else []
         meters = active_meters_count()
         today_readings = today_readings_count()
+        assigned = assigned_modules(user)
         ctx.update({
-            "active_lots": active_lots,
-            "waiting_dyeing": waiting_dyeing,
-            "open_maintenance": open_maintenance,
-            "broken_machines": broken_machines,
+            "active_lots": active_lot_qs.count(),
+            "lots_on_hold": active_lot_qs.filter(status="On Hold").count(),
+            "waiting_dyeing": active_lot_qs.filter(current_stage="Dyeing").count(),
+            "open_maintenance": MaintenanceJob.objects.filter(
+                is_cancelled=False, status__in=["Reported", "In Progress"]
+            ).count(),
+            "broken_machines": Machine.objects.filter(status="Broken Down", is_active=True).count(),
             "low_stock_count": len(low_stock),
             "low_stock_items": low_stock[:10],
             "electricity_today_entered": today_readings >= meters if meters > 0 else today_readings > 0,
             "today_readings": today_readings,
             "active_meters": meters,
-            "stage_counts": ProductionLot.objects.filter(is_cancelled=False)
-            .values("current_stage")
-            .annotate(count=Count("id")),
+            "today_gate_entries": GateEntry.objects.filter(
+                is_cancelled=False, entry_date=today
+            ).count(),
+            "today_receipts": ClothReceipt.objects.filter(
+                is_cancelled=False, receipt_date=today
+            ).count(),
+            "stage_pipeline": [
+                {"stage": stage, "count": stage_map.get(stage, 0)}
+                for stage, _label in ProductionLot.STAGE_CHOICES
+                if stage != "Finished"
+            ],
+            "show_ops_dashboard": is_supervisor(user),
+            "assigned_job_cards": [
+                {
+                    "key": key,
+                    "label": label,
+                    "icon": icon,
+                    "url_name": MODULE_HOME_LINKS[key][0],
+                    "description": MODULE_HOME_LINKS[key][1],
+                }
+                for key, label, icon in WORK_MODULES
+                if is_data_entry(user) and key in assigned
+            ],
         })
         return ctx
 
@@ -64,7 +116,7 @@ class ProfileView(ERPLoginRequiredMixin, TemplateView):
 
         ctx = super().get_context_data(**kwargs)
         ctx["profile_user"] = self.request.user
-        ctx["recently_deleted"] = list_recently_deleted(limit=40)
+        ctx["recently_deleted"] = list_recently_deleted(limit=40) if can_delete_records(self.request.user) else []
         return ctx
 
 
@@ -72,6 +124,9 @@ class RestoreDeletedView(ERPLoginRequiredMixin, View):
     """Restore a soft-deleted record from the profile recycle bin."""
 
     def post(self, request, model_key, pk):
+        if not can_delete_records(request.user):
+            from django.core.exceptions import PermissionDenied
+            raise PermissionDenied
         from common.recycle import get_deleted_object, restore_record
         from production.models import (
             CalenderEntry,
@@ -143,17 +198,3 @@ class RestoreDeletedView(ERPLoginRequiredMixin, View):
         return redirect("accounts:profile")
 
 
-class UserListView(ERPLoginRequiredMixin, TemplateView):
-    template_name = "accounts/user_list.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        if not can_manage_users(request.user):
-            from django.core.exceptions import PermissionDenied
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx["users"] = User.objects.all().order_by("username")
-        ctx["groups"] = Group.objects.all()
-        return ctx

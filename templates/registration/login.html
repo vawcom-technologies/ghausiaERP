@@ -9,36 +9,62 @@
             <p>Sign in to manage production and inventory</p>
         </div>
         <div class="login-body">
-            <form method="post">
+            <form method="post" action="{% url 'accounts:login' %}">
                 {% csrf_token %}
+                {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
                 {% if form.errors %}
                 <div class="alert alert-danger py-2">
-                    <i class="bi bi-exclamation-triangle me-1"></i> Invalid username or password. Please try again.
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    {% if form.non_field_errors %}{{ form.non_field_errors|striptags }}
+                    {% else %}Invalid username or password. Please try again.{% endif %}
                 </div>
                 {% endif %}
                 <div class="mb-3">
-                    <label class="form-label">Username</label>
+                    <label class="form-label" for="id_username">Username</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-person"></i></span>
-                        <input type="text" name="username" class="form-control" placeholder="Enter your username" required autofocus>
+                        <input type="text" name="username" id="id_username" class="form-control" placeholder="Enter your username" value="{{ form.username.value|default:'' }}" autocomplete="username" required autofocus>
                     </div>
                 </div>
                 <div class="mb-4">
-                    <label class="form-label">Password</label>
+                    <label class="form-label" for="id_password">Password</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                        <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+                        <input type="password" name="password" id="id_password" class="form-control" placeholder="Enter your password" autocomplete="current-password" required>
+                        <button type="button" class="btn btn-outline-secondary login-toggle-password" data-target="id_password" aria-label="Show password">
+                            <i class="bi bi-eye"></i>
+                        </button>
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary btn-lg w-100">
                     <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
                 </button>
             </form>
+            <p class="small text-muted text-center mt-3 mb-0">
+                New staff accounts are created after sign-in
+                (Profile → Data-entry staff). There is no public sign-up.
+            </p>
             <div class="login-demo mt-3">
-                <div class="small text-muted mb-1">Demo admin</div>
-                <code>admin</code> / <code>admin123</code>
+                <div class="small text-muted mb-1">Demo accounts</div>
+                <div class="small"><code>admin</code> / <code>admin123</code></div>
+                <div class="small"><code>supervisor</code> / <code>super123</code></div>
+                <div class="small"><code>dataentry</code> / <code>data123</code></div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.querySelectorAll(".login-toggle-password").forEach(function (button) {
+    button.addEventListener("click", function () {
+        var input = document.getElementById(button.getAttribute("data-target"));
+        if (!input) return;
+        var hidden = input.type === "password";
+        input.type = hidden ? "text" : "password";
+        button.setAttribute("aria-label", hidden ? "Hide password" : "Show password");
+        button.querySelector("i").className = hidden ? "bi bi-eye-slash" : "bi bi-eye";
+    });
+});
+</script>
 {% endblock %}

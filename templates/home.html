@@ -3,78 +3,124 @@
 {% block content %}
 <div class="page-header-block">
     <h1 class="page-title">Dashboard</h1>
-    <p class="page-subtitle">Overview of production, stock, and daily operations</p>
+    <p class="page-subtitle">
+        {% if is_data_entry %}Jobs assigned to you
+        {% else %}What is happening on the floor today{% endif %}
+    </p>
+</div>
+
+{% if show_ops_dashboard %}
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <a href="{% url 'production:lot_list' %}" class="text-decoration-none text-reset">
+            <div class="card card-stat stat-success">
+                <div class="card-body">
+                    <div class="stat-icon"><i class="bi bi-diagram-3"></i></div>
+                    <div class="stat-value">{{ active_lots }}</div>
+                    <div class="stat-label">Active lots</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <a href="{% url 'production:dyeing_list' %}" class="text-decoration-none text-reset">
+            <div class="card card-stat stat-warning">
+                <div class="card-body">
+                    <div class="stat-icon"><i class="bi bi-droplet"></i></div>
+                    <div class="stat-value">{{ waiting_dyeing }}</div>
+                    <div class="stat-label">Waiting for dyeing</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <a href="{% url 'maintenance:list' %}" class="text-decoration-none text-reset">
+            <div class="card card-stat {% if open_maintenance %}stat-warning{% endif %}">
+                <div class="card-body">
+                    <div class="stat-icon"><i class="bi bi-tools"></i></div>
+                    <div class="stat-value">{{ open_maintenance }}</div>
+                    <div class="stat-label">Open maintenance</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <a href="{% url 'inventory:stock_overview' %}" class="text-decoration-none text-reset">
+            <div class="card card-stat {% if low_stock_count %}stat-danger{% endif %}">
+                <div class="card-body">
+                    <div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
+                    <div class="stat-value">{{ low_stock_count }}</div>
+                    <div class="stat-label">Below minimum stock</div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header"><i class="bi bi-signpost-split me-2"></i>Lots in production</div>
+    <div class="card-body">
+        <div class="dash-pipeline">
+            {% for step in stage_pipeline %}
+            <a href="{% url 'production:lot_list' %}" class="dash-pipe{% if not step.count %} is-zero{% endif %}">
+                <div class="dash-pipe-count">{{ step.count }}</div>
+                <div class="dash-pipe-label">{{ step.stage }}</div>
+            </a>
+            {% endfor %}
+        </div>
+        {% if lots_on_hold %}
+        <p class="text-warning mb-0 mt-3">
+            <i class="bi bi-pause-circle me-1"></i>{{ lots_on_hold }} lot{{ lots_on_hold|pluralize }} on hold
+        </p>
+        {% endif %}
+    </div>
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-md-3 col-sm-6">
-        <div class="card card-stat stat-success">
-            <div class="card-body">
-                <div class="stat-icon"><i class="bi bi-diagram-3"></i></div>
-                <div class="stat-value">{{ active_lots }}</div>
-                <div class="stat-label">Active Production Lots</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 col-sm-6">
-        <div class="card card-stat stat-warning">
-            <div class="card-body">
-                <div class="stat-icon"><i class="bi bi-droplet"></i></div>
-                <div class="stat-value">{{ waiting_dyeing }}</div>
-                <div class="stat-label">Waiting for Dyeing</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 col-sm-6">
-        <div class="card card-stat">
-            <div class="card-body">
-                <div class="stat-icon"><i class="bi bi-tools"></i></div>
-                <div class="stat-value">{{ open_maintenance }}</div>
-                <div class="stat-label">Open Maintenance Jobs</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 col-sm-6">
-        <div class="card card-stat stat-danger">
-            <div class="card-body">
-                <div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
-                <div class="stat-value">{{ low_stock_count }}</div>
-                <div class="stat-label">Materials Below Minimum</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-3 mb-4">
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="card h-100">
-            <div class="card-header"><i class="bi bi-lightning-charge me-2"></i>Electricity Today</div>
+            <div class="card-header"><i class="bi bi-calendar-day me-2"></i>Today</div>
+            <div class="card-body">
+                <p class="mb-2">
+                    <a href="{% url 'gate_entry:list' %}">{{ today_gate_entries }}</a> gate {{ today_gate_entries|pluralize:"entry,entries" }}
+                </p>
+                <p class="mb-0">
+                    <a href="{% url 'receiving:list' %}">{{ today_receipts }}</a> cloth receipt{{ today_receipts|pluralize }}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header"><i class="bi bi-lightning-charge me-2"></i>Electricity</div>
             <div class="card-body">
                 {% if electricity_today_entered %}
                 <p class="text-success mb-0">
                     <i class="bi bi-check-circle me-1"></i>
-                    <strong>All readings entered</strong> &mdash; {{ today_readings }} of {{ active_meters }} meters recorded
+                    All readings in — {{ today_readings }} of {{ active_meters }} meters
                 </p>
                 {% else %}
                 <p class="text-warning mb-2">
                     <i class="bi bi-exclamation-circle me-1"></i>
-                    <strong>Readings incomplete</strong> &mdash; {{ today_readings }} of {{ active_meters }} meters recorded
+                    {{ today_readings }} of {{ active_meters }} meters recorded
                 </p>
-                <a href="{% url 'electricity:reading_create' %}" class="btn btn-primary btn-sm">Enter Reading</a>
+                <a href="{% url 'electricity:reading_create' %}" class="btn btn-primary btn-sm">Enter reading</a>
                 {% endif %}
             </div>
         </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="card h-100">
-            <div class="card-header"><i class="bi bi-gear-wide-connected me-2"></i>Machine Status</div>
+            <div class="card-header"><i class="bi bi-gear-wide-connected me-2"></i>Machines</div>
             <div class="card-body">
-                <p class="mb-0">
-                    <span class="stat-value" style="font-size:2rem;">{{ broken_machines }}</span>
-                    <span class="text-muted ms-2">machine(s) currently broken down</span>
-                </p>
                 {% if broken_machines %}
-                <a href="{% url 'maintenance:list' %}" class="btn btn-outline-primary btn-sm mt-2">View Maintenance</a>
+                <p class="mb-2">
+                    <span class="text-danger fw-semibold">{{ broken_machines }}</span>
+                    <span class="text-muted">broken down</span>
+                </p>
+                <a href="{% url 'maintenance:list' %}" class="btn btn-outline-primary btn-sm">View maintenance</a>
+                {% else %}
+                <p class="text-success mb-0"><i class="bi bi-check-circle me-1"></i>No machines broken down</p>
                 {% endif %}
             </div>
         </div>
@@ -83,14 +129,14 @@
 
 {% if low_stock_items %}
 <div class="card mb-4">
-    <div class="card-header"><i class="bi bi-box-seam me-2"></i>Low Stock Alert</div>
+    <div class="card-header"><i class="bi bi-box-seam me-2"></i>Low stock</div>
     <div class="table-wrap">
         <table class="table mb-0">
-            <thead><tr><th>Material</th><th>Current Stock</th><th>Minimum Required</th></tr></thead>
+            <thead><tr><th>Material</th><th>Current</th><th>Minimum</th></tr></thead>
             <tbody>
             {% for item in low_stock_items %}
             <tr>
-                <td>{{ item.material.name }}</td>
+                <td><a href="{% url 'master_data:material_detail' item.material.pk %}">{{ item.material.name }}</a></td>
                 <td><span class="text-danger fw-semibold">{{ item.stock }}</span></td>
                 <td>{{ item.material.minimum_stock }}</td>
             </tr>
@@ -100,57 +146,26 @@
     </div>
 </div>
 {% endif %}
+{% endif %}
 
-<h2 class="section-heading"><i class="bi bi-grid me-2"></i>Quick Actions</h2>
+{% if is_data_entry %}
+<h2 class="section-heading"><i class="bi bi-grid me-2"></i>Your jobs</h2>
+{% if assigned_job_cards %}
 <div class="row g-3">
+    {% for card in assigned_job_cards %}
     <div class="col-md-4 col-sm-6">
-        <a href="{% url 'gate_entry:sheet' %}" class="nav-card">
-            <div class="nav-card-icon"><i class="bi bi-door-open"></i></div>
-            <div class="nav-card-title">Gate Entry</div>
-            <p class="nav-card-desc">Record vehicles and material at the gate</p>
+        <a href="{% url card.url_name %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi {{ card.icon }}"></i></div>
+            <div class="nav-card-title">{{ card.label }}</div>
+            <p class="nav-card-desc">{{ card.description }}</p>
         </a>
     </div>
-    <div class="col-md-4 col-sm-6">
-        <a href="{% url 'receiving:sheet' %}" class="nav-card">
-            <div class="nav-card-icon"><i class="bi bi-table"></i></div>
-            <div class="nav-card-title">Cloth Receiving Spreadsheet</div>
-            <p class="nav-card-desc">Enter multiple cloth receipts at once, like Excel</p>
-        </a>
-    </div>
-    <div class="col-md-4 col-sm-6">
-        <a href="{% url 'receiving:create' %}" class="nav-card">
-            <div class="nav-card-icon"><i class="bi bi-plus-circle"></i></div>
-            <div class="nav-card-title">New Cloth Receiving</div>
-            <p class="nav-card-desc">Record a single incoming lot with full details</p>
-        </a>
-    </div>
-    <div class="col-md-4 col-sm-6">
-        <a href="{% url 'production:lot_list' %}" class="nav-card">
-            <div class="nav-card-icon"><i class="bi bi-diagram-3"></i></div>
-            <div class="nav-card-title">Production Lots</div>
-            <p class="nav-card-desc">Track lots through singeing, dyeing, and finishing</p>
-        </a>
-    </div>
-    <div class="col-md-4 col-sm-6">
-        <a href="{% url 'inventory:purchase_sheet' %}" class="nav-card">
-            <div class="nav-card-icon"><i class="bi bi-cart-plus"></i></div>
-            <div class="nav-card-title">Material Purchase</div>
-            <p class="nav-card-desc">Record purchases and update stock levels</p>
-        </a>
-    </div>
-    <div class="col-md-4 col-sm-6">
-        <a href="{% url 'maintenance:create' %}" class="nav-card">
-            <div class="nav-card-icon"><i class="bi bi-wrench"></i></div>
-            <div class="nav-card-title">Report Breakdown</div>
-            <p class="nav-card-desc">Log a machine breakdown or maintenance job</p>
-        </a>
-    </div>
-    <div class="col-md-4 col-sm-6">
-        <a href="{% url 'electricity:reading_create' %}" class="nav-card">
-            <div class="nav-card-icon"><i class="bi bi-lightning"></i></div>
-            <div class="nav-card-title">Electricity Reading</div>
-            <p class="nav-card-desc">Enter today's meter readings for all units</p>
-        </a>
-    </div>
+    {% endfor %}
 </div>
+{% else %}
+<div class="card"><div class="card-body">
+    <p class="mb-0">No jobs have been assigned to you yet. Ask an administrator or supervisor (Profile → Data-entry staff).</p>
+</div></div>
+{% endif %}
+{% endif %}
 {% endblock %}
