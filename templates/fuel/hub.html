@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Fuel - Ghausia Dyeing{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title="Fuel" rcv_subtitle="Steam and oil boiler registers" rcv_urdu="ایندھن" %}
+
+<div class="row g-3">
+    <div class="col-md-6 col-sm-6">
+        <a href="{% url 'fuel:steam_boiler' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-cloud-haze2"></i></div>
+            <div class="nav-card-title">Steam Boiler</div>
+            <p class="nav-card-desc">Shift-wise Kuttal &amp; Lunda records</p>
+        </a>
+    </div>
+    <div class="col-md-6 col-sm-6">
+        <a href="{% url 'fuel:oil_boiler' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-droplet-half"></i></div>
+            <div class="nav-card-title">Oil Boiler</div>
+            <p class="nav-card-desc">Shift-wise Time, Kuttal, Lunda &amp; Fuel</p>
+        </a>
+    </div>
+</div>
+
+{% include "receiving/_layout_close.html" %}
+{% endblock %}

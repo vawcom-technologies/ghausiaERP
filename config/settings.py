@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "maintenance",
     "electricity",
     "attendance",
+    "fuel",
 ]
 
 MIDDLEWARE = [

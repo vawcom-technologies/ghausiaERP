@@ -108,12 +108,17 @@ def temp_image_url(token: str) -> str:
 
 
 def _to_decimal(value: Any, field_label: str) -> Decimal:
+    from common.forms import extract_number_text
+
     if value is None or value == "":
         return Decimal("0")
+    extracted = extract_number_text(value)
+    if extracted is None:
+        raise ValueError(f"{field_label} must include a number.")
     try:
-        return Decimal(str(value).replace(",", "").strip())
+        return Decimal(extracted)
     except (InvalidOperation, ValueError) as exc:
-        raise ValueError(f"{field_label} must be a number.") from exc
+        raise ValueError(f"{field_label} must include a number.") from exc
 
 
 def _to_date(value: Any) -> date:
@@ -133,12 +138,17 @@ def _to_date(value: Any) -> date:
 
 
 def _to_int(value: Any, field_label: str) -> int:
+    from common.forms import extract_number_text
+
     if value is None or value == "":
         return 0
+    extracted = extract_number_text(value)
+    if extracted is None:
+        raise ValueError(f"{field_label} must include a whole number.")
     try:
-        return int(Decimal(str(value)))
+        return int(Decimal(extracted))
     except (InvalidOperation, ValueError) as exc:
-        raise ValueError(f"{field_label} must be a whole number.") from exc
+        raise ValueError(f"{field_label} must include a whole number.") from exc
 
 
 def resolve_vendor(name: str) -> Vendor:

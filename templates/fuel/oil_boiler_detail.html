@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Oil Boiler {{ object.record_date }} Shift {{ object.shift }} - Ghausia Dyeing{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title="Oil Boiler Record" rcv_subtitle=object rcv_urdu="آئل بوائلر" %}
+
+{% if breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        {% for crumb in breadcrumb %}
+            {% if crumb.url %}
+            <li class="breadcrumb-item"><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+            {% else %}
+            <li class="breadcrumb-item active" aria-current="page">{{ crumb.label }}</li>
+            {% endif %}
+        {% endfor %}
+    </ol>
+</nav>
+{% endif %}
+
+<nav class="rcv-actions" aria-label="Record actions">
+    <a href="{% url 'fuel:oil_boiler_edit' object.pk %}" class="rcv-btn rcv-btn-primary">
+        <i class="bi bi-pencil"></i> Update
+    </a>
+    <a href="{% url 'fuel:oil_boiler' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-arrow-left"></i> Saved Records
+    </a>
+</nav>
+
+<div class="rcv-panel fuel-entry-panel">
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <div class="text-muted small">Date</div>
+            <div class="fw-semibold">{{ object.record_date }}</div>
+        </div>
+        <div class="col-md-4">
+            <div class="text-muted small">Shift</div>
+            <div class="fw-semibold">Shift {{ object.shift }}</div>
+        </div>
+        <div class="col-md-4">
+            <div class="text-muted small">Remarks</div>
+            <div class="fw-semibold">{{ object.remarks|default:"—" }}</div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table fuel-material-table mb-0">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity / Hours</th>
+                    <th class="fuel-col-price">Price</th>
+                    <th class="fuel-col-total">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="fuel-material-name">Time (hours)</td>
+                    <td>{{ object.run_hours }}</td>
+                    <td class="fuel-col-price text-muted">—</td>
+                    <td class="fuel-col-total text-muted">—</td>
+                </tr>
+                <tr>
+                    <td class="fuel-material-name">Kuttal</td>
+                    <td>{{ object.kuttal_quantity }}</td>
+                    <td class="fuel-col-price">{{ object.kuttal_price }}</td>
+                    <td class="fuel-col-total"><strong>{{ object.kuttal_daily_price }}</strong></td>
+                </tr>
+                <tr>
+                    <td class="fuel-material-name">Lunda</td>
+                    <td>{{ object.lunda_quantity }}</td>
+                    <td class="fuel-col-price">{{ object.lunda_price }}</td>
+                    <td class="fuel-col-total"><strong>{{ object.lunda_daily_price }}</strong></td>
+                </tr>
+                <tr>
+                    <td class="fuel-material-name">Fuel</td>
+                    <td>{{ object.fuel_quantity }}</td>
+                    <td class="fuel-col-price">{{ object.fuel_price }}</td>
+                    <td class="fuel-col-total"><strong>{{ object.fuel_daily_price }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% include "receiving/_layout_close.html" %}
+{% endblock %}

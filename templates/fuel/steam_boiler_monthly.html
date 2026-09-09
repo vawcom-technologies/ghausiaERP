@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Steam Boiler Monthly - Fuel - Ghausia Dyeing{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title="Steam Boiler — Monthly Cumulative" rcv_subtitle="Daily usage with running totals for Kuttal & Lunda (resets each calendar month)" rcv_urdu="ماہانہ کل" rcv_compact=True rcv_wide=True %}
+
+{% if breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        {% for crumb in breadcrumb %}
+            {% if crumb.url %}
+            <li class="breadcrumb-item"><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+            {% else %}
+            <li class="breadcrumb-item active" aria-current="page">{{ crumb.label }}</li>
+            {% endif %}
+        {% endfor %}
+    </ol>
+</nav>
+{% endif %}
+
+<nav class="rcv-actions" aria-label="Steam boiler actions">
+    <a href="{% url 'fuel:steam_boiler' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-list-ul"></i> Saved Records
+    </a>
+    <a href="{% url 'fuel:steam_boiler_entry' %}" class="rcv-btn rcv-btn-secondary">
+        <i class="bi bi-plus-lg"></i> New Entry
+    </a>
+    <a href="{% url 'fuel:steam_boiler_monthly' %}" class="rcv-btn rcv-btn-primary">
+        <i class="bi bi-calendar3"></i> Monthly Cumulative
+    </a>
+</nav>
+
+<div class="rcv-hint">
+    <i class="bi bi-info-circle"></i>
+    <div>
+        Each row is one <strong>date</strong> (Shift 1 + Shift 2 combined).
+        <strong>Cumulative</strong> columns add up from the 1st of the month through that date.
+        When the month ends, open the next month — older months stay saved and selectable.
+    </div>
+</div>
+
+<form method="get" class="fuel-month-nav" aria-label="Select month">
+    <a
+        class="rcv-btn rcv-btn-ghost"
+        href="?month={{ prev_month }}&year={{ prev_year }}"
+        title="Previous month"
+    ><i class="bi bi-chevron-left"></i></a>
+    <label class="fuel-month-field">
+        <span class="visually-hidden">Month</span>
+        <select name="month" class="form-select form-select-sm" onchange="this.form.submit()">
+            {% for num, label in month_choices %}
+            <option value="{{ num }}" {% if num == selected_month %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label class="fuel-month-field">
+        <span class="visually-hidden">Year</span>
+        <select name="year" class="form-select form-select-sm" onchange="this.form.submit()">
+            {% for y in year_choices %}
+            <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <a
+        class="rcv-btn rcv-btn-ghost"
+        href="?month={{ next_month }}&year={{ next_year }}"
+        title="Next month"
+    ><i class="bi bi-chevron-right"></i></a>
+    {% if not is_current_month %}
+    <a class="rcv-link ms-2" href="{% url 'fuel:steam_boiler_monthly' %}">This month</a>
+    {% endif %}
+    <span class="fuel-month-label ms-auto">{{ month_label }}</span>
+</form>
+
+<div class="rcv-panel fuel-records-panel">
+    <div class="fuel-records-wrap">
+        <table class="table rcv-table fuel-records-table fuel-monthly-table mb-0">
+            <thead>
+                <tr>
+                    <th rowspan="2">Date</th>
+                    <th colspan="2" class="text-center fuel-th-group">Day — Kuttal</th>
+                    <th colspan="2" class="text-center fuel-th-group">Day — Lunda</th>
+                    <th colspan="2" class="text-center fuel-th-group fuel-col-cum">Cumulative — Kuttal</th>
+                    <th colspan="2" class="text-center fuel-th-group fuel-col-cum">Cumulative — Lunda</th>
+                    <th rowspan="2" class="fuel-col-total">Grand Cum</th>
+                </tr>
+                <tr>
+                    <th>Qty</th>
+                    <th class="fuel-col-total">Price</th>
+                    <th>Qty</th>
+                    <th class="fuel-col-total">Price</th>
+                    <th class="fuel-col-cum">Qty</th>
+                    <th class="fuel-col-cum fuel-col-total">Price</th>
+                    <th class="fuel-col-cum">Qty</th>
+                    <th class="fuel-col-cum fuel-col-total">Price</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in report.rows %}
+                <tr>
+                    <td class="fuel-cell-date">{{ row.record_date }}</td>
+                    <td>{{ row.kuttal_qty }}</td>
+                    <td class="fuel-col-total">{{ row.kuttal_price_total }}</td>
+                    <td>{{ row.lunda_qty }}</td>
+                    <td class="fuel-col-total">{{ row.lunda_price_total }}</td>
+                    <td class="fuel-col-cum"><strong>{{ row.cum_kuttal_qty }}</strong></td>
+                    <td class="fuel-col-cum fuel-col-total"><strong>{{ row.cum_kuttal_price }}</strong></td>
+                    <td class="fuel-col-cum"><strong>{{ row.cum_lunda_qty }}</strong></td>
+                    <td class="fuel-col-cum fuel-col-total"><strong>{{ row.cum_lunda_price }}</strong></td>
+                    <td class="fuel-col-total"><strong>{{ row.cum_grand_price }}</strong></td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="10" class="rcv-empty">
+                        No steam boiler usage in {{ month_label }}.
+                        <a href="{% url 'fuel:steam_boiler_entry' %}">New Entry</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+            {% if report.rows %}
+            <tfoot>
+                <tr class="fuel-month-totals">
+                    <th>Month total</th>
+                    <th>{{ report.totals.kuttal_qty }}</th>
+                    <th class="fuel-col-total">{{ report.totals.kuttal_price }}</th>
+                    <th>{{ report.totals.lunda_qty }}</th>
+                    <th class="fuel-col-total">{{ report.totals.lunda_price }}</th>
+                    <th class="fuel-col-cum">{{ report.totals.kuttal_qty }}</th>
+                    <th class="fuel-col-cum fuel-col-total">{{ report.totals.kuttal_price }}</th>
+                    <th class="fuel-col-cum">{{ report.totals.lunda_qty }}</th>
+                    <th class="fuel-col-cum fuel-col-total">{{ report.totals.lunda_price }}</th>
+                    <th class="fuel-col-total">{{ report.totals.grand_price }}</th>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+{% include "receiving/_layout_close.html" %}
+{% endblock %}
