@@ -9,6 +9,7 @@ urlpatterns = [
     path("transactions/", views.MaterialTransactionListView.as_view(), name="transaction_list"),
     path("transactions/export/", views.TransactionExportView.as_view(), name="transaction_export"),
     path("transactions/<int:pk>/", views.MaterialTransactionDetailView.as_view(), name="transaction_detail"),
+    path("transactions/<int:pk>/cancel/", views.MaterialTransactionCancelView.as_view(), name="transaction_cancel"),
     path("purchase/new/", views.PurchaseCreateView.as_view(), name="purchase_create"),
     path("purchase/sheet/", views.PurchaseSheetView.as_view(), name="purchase_sheet"),
     path("purchase/export-template/", views.PurchaseTemplateDownloadView.as_view(), name="purchase_export_template"),

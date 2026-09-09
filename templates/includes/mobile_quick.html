@@ -1,0 +1,108 @@
+{% if user.is_authenticated %}
+<nav class="mobile-dock d-lg-none" aria-label="Mobile shortcuts">
+    <a href="{% url 'accounts:home' %}" class="mobile-dock-item{% if request.path == '/' %} is-active{% endif %}">
+        <span class="mobile-dock-icon"><i class="bi bi-speedometer2"></i></span>
+        <span class="mobile-dock-label">Dashboard</span>
+    </a>
+    <button type="button" class="mobile-dock-item" data-bs-toggle="offcanvas" data-bs-target="#mobileJobs" aria-controls="mobileJobs">
+        <span class="mobile-dock-icon"><i class="bi bi-grid"></i></span>
+        <span class="mobile-dock-label">Jobs</span>
+    </button>
+    <button type="button" class="mobile-dock-item" data-bs-toggle="offcanvas" data-bs-target="#mobileExcel" aria-controls="mobileExcel">
+        <span class="mobile-dock-icon"><i class="bi bi-file-earmark-excel"></i></span>
+        <span class="mobile-dock-label">Excel</span>
+    </button>
+    <a href="{% url 'accounts:profile' %}" class="mobile-dock-item{% if request.path == '/profile/' %} is-active{% endif %}">
+        <span class="mobile-dock-icon"><i class="bi bi-person"></i></span>
+        <span class="mobile-dock-label">Profile</span>
+    </a>
+</nav>
+
+<div class="offcanvas offcanvas-bottom mobile-sheet d-lg-none" tabindex="-1" id="mobileJobs" aria-labelledby="mobileJobsLabel">
+    <div class="mobile-sheet-handle" aria-hidden="true"></div>
+    <div class="offcanvas-header">
+        <div>
+            <p class="mobile-sheet-kicker">Quick access</p>
+            <h2 class="offcanvas-title" id="mobileJobsLabel">Open a job</h2>
+            <p class="mobile-sheet-sub mb-0">Choose a screen to work in</p>
+        </div>
+        <button type="button" class="btn-close mobile-sheet-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="mobile-sheet-list">
+            <a href="{% url 'accounts:home' %}" class="mobile-sheet-card" data-bs-dismiss="offcanvas">
+                <span class="mobile-sheet-icon"><i class="bi bi-speedometer2"></i></span>
+                <span class="mobile-sheet-copy">
+                    <strong>Dashboard</strong>
+                    <small>What is happening today</small>
+                </span>
+                <i class="bi bi-chevron-right mobile-sheet-go"></i>
+            </a>
+            {% for link in mobile_job_links %}
+            <a href="{% url link.url_name %}" class="mobile-sheet-card">
+                <span class="mobile-sheet-icon"><i class="bi {{ link.icon }}"></i></span>
+                <span class="mobile-sheet-copy">
+                    <strong>{{ link.label }}</strong>
+                    <small>{{ link.description }}</small>
+                </span>
+                <i class="bi bi-chevron-right mobile-sheet-go"></i>
+            </a>
+            {% empty %}
+            <p class="mobile-sheet-empty">No jobs assigned yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-bottom mobile-sheet d-lg-none" tabindex="-1" id="mobileExcel" aria-labelledby="mobileExcelLabel">
+    <div class="mobile-sheet-handle" aria-hidden="true"></div>
+    <div class="offcanvas-header">
+        <div>
+            <p class="mobile-sheet-kicker">Daily files</p>
+            <h2 class="offcanvas-title" id="mobileExcelLabel">Download Excel</h2>
+            <p class="mobile-sheet-sub mb-0">Today's sheets for your jobs</p>
+        </div>
+        <button type="button" class="btn-close mobile-sheet-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="mobile-sheet-list">
+            {% for link in mobile_excel_links %}
+            <a href="{{ link.url }}" class="mobile-sheet-card mobile-sheet-download">
+                <span class="mobile-sheet-icon is-excel"><i class="bi {{ link.icon }}"></i></span>
+                <span class="mobile-sheet-copy">
+                    <strong>{{ link.label }}</strong>
+                    <small>{{ link.hint }}</small>
+                </span>
+                {% if "Today" in link.hint %}
+                <span class="mobile-sheet-chip">Today</span>
+                {% endif %}
+                <i class="bi bi-download mobile-sheet-go"></i>
+            </a>
+            {% empty %}
+            <p class="mobile-sheet-empty">No Excel downloads for your jobs.</p>
+            {% endfor %}
+            {% if "attendance" in allowed_modules %}
+            <a href="{% url 'attendance:hub' %}" class="mobile-sheet-card">
+                <span class="mobile-sheet-icon"><i class="bi bi-calendar-check"></i></span>
+                <span class="mobile-sheet-copy">
+                    <strong>Attendance register</strong>
+                    <small>Open a department, then export</small>
+                </span>
+                <i class="bi bi-chevron-right mobile-sheet-go"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<script>
+document.querySelectorAll(".mobile-sheet").forEach(function (sheet) {
+    var button = document.querySelector('[data-bs-target="#' + sheet.id + '"]');
+    if (!button) return;
+    sheet.addEventListener("show.bs.offcanvas", function () { button.classList.add("is-open"); });
+    sheet.addEventListener("hide.bs.offcanvas", function () {
+        button.classList.remove("is-open");
+        button.blur();
+    });
+});
+</script>
+{% endif %}

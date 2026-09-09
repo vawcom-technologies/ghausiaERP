@@ -7,7 +7,7 @@
     <a href="{% url 'receiving:list' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-arrow-left"></i> Back</a>
     <a href="{% url 'receiving:edit' object.pk %}" class="rcv-btn rcv-btn-secondary"><i class="bi bi-pencil"></i> Edit</a>
     {% if not object.is_cancelled %}
-    <a href="{% url 'receiving:cancel' object.pk %}" class="rcv-btn rcv-btn-danger"><i class="bi bi-x-circle"></i> Cancel Record</a>
+    {% if can_cancel_records %}<a href="{% url 'receiving:cancel' object.pk %}" class="rcv-btn rcv-btn-danger"><i class="bi bi-x-circle"></i> Cancel Record</a>{% endif %}
     {% endif %}
 </nav>
 {% if object.is_cancelled %}<p class="mb-3"><span class="badge badge-cancelled">Cancelled</span></p>{% endif %}

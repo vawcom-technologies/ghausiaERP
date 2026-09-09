@@ -10,7 +10,13 @@ from django.views.generic import DetailView, ListView, UpdateView
 
 from accounts.mixins import AuditUpdateMixin, ERPLoginRequiredMixin, PaginatedListMixin
 from common.excel import build_data_export_response, build_template_response, read_sheet_rows
-from common.selective_export import filter_queryset_by_ids, ordered_by_ids, parse_selected_ids
+from common.selective_export import (
+    apply_today_filter,
+    export_filename,
+    filter_queryset_by_ids,
+    ordered_by_ids,
+    parse_selected_ids,
+)
 from common.views import apply_search
 from gate_entry.forms import GateEntryForm
 from gate_entry.models import GateEntry
@@ -79,8 +85,13 @@ class GateEntryDeleteView(ERPLoginRequiredMixin, View):
     """Soft-delete a gate entry (recoverable from Profile → Recently Deleted)."""
 
     def post(self, request, pk):
+        from django.core.exceptions import PermissionDenied
+
+        from accounts.permissions import can_delete_records
         from common.recycle import soft_delete_record
 
+        if not can_delete_records(request.user):
+            raise PermissionDenied
         entry = get_object_or_404(GateEntry, pk=pk)
         label = entry.gate_number
         soft_delete_record(entry, request.user)
@@ -202,6 +213,7 @@ class GateEntryExportView(ERPLoginRequiredMixin, View):
             )
 
         qs = filter_queryset_by_ids(qs, ids)
+        qs = apply_today_filter(qs, request, "entry_date", ids)
         entries = ordered_by_ids(qs, ids) if ids is not None else list(qs)
 
         rows = []
@@ -217,7 +229,7 @@ class GateEntryExportView(ERPLoginRequiredMixin, View):
                 image_paths.append(None)
 
         return build_data_export_response(
-            filename="gate_entry_export.xlsx",
+            filename=export_filename(request, "gate_entry_export.xlsx"),
             headers=GATE_HEADERS,
             rows=rows,
             sheet_title="Gate Entry",

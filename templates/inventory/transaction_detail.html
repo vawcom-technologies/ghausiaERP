@@ -5,5 +5,12 @@
 <div class="card"><div class="card-body">
     <p><strong>Material:</strong> {{ object.material }}</p><p><strong>Type:</strong> {{ object.transaction_type }}</p>
     <p><strong>Date:</strong> {{ object.transaction_date }}</p><p><strong>In:</strong> {{ object.quantity_in }} | <strong>Out:</strong> {{ object.quantity_out }}</p>
+    {% if object.is_cancelled %}<span class="badge badge-cancelled">Cancelled</span>{% endif %}
 </div></div>
+<div class="d-flex flex-wrap gap-2 mt-3">
+    <a href="{% url 'inventory:transaction_list' %}" class="btn btn-outline-secondary">Back to list</a>
+    {% if can_cancel_records and not object.is_cancelled and object.transaction_type != "Reversal" %}
+    <a href="{% url 'inventory:transaction_cancel' object.pk %}" class="btn btn-cancel-record">Cancel</a>
+    {% endif %}
+</div>
 {% endblock %}

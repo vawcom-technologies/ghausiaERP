@@ -5,7 +5,13 @@
 
 <nav class="rcv-actions" aria-label="Profile actions">
     <a href="{% url 'accounts:home' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-arrow-left"></i> Back</a>
-    <a href="{% url 'accounts:logout' %}" class="rcv-btn rcv-btn-secondary"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    {% if can_manage_staff %}
+    <a href="{% url 'accounts:users' %}" class="rcv-btn rcv-btn-primary"><i class="bi bi-people"></i> Data-entry staff</a>
+    {% endif %}
+    <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
+        {% csrf_token %}
+        <button type="submit" class="rcv-btn rcv-btn-secondary"><i class="bi bi-box-arrow-right"></i> Logout</button>
+    </form>
 </nav>
 
 <div class="rcv-panel rcv-panel-pad profile-card mb-3">
@@ -61,6 +67,19 @@
     </div>
 </div>
 
+{% if can_manage_staff %}
+<div class="rcv-panel rcv-panel-pad profile-staff mb-3">
+    <h2 class="profile-section-title mb-1"><i class="bi bi-people me-2"></i>Data-entry staff</h2>
+    <p class="text-muted small mb-3">Create logins and choose which factory jobs each person can enter.</p>
+    <nav class="rcv-actions" aria-label="Staff management">
+        <a href="{% url 'accounts:users' %}" class="rcv-btn rcv-btn-primary"><i class="bi bi-people"></i> Open staff list</a>
+        <a href="{% url 'accounts:assignments' %}" class="rcv-btn rcv-btn-secondary"><i class="bi bi-diagram-3"></i> Assign jobs</a>
+        <a href="{% url 'accounts:user_create' %}" class="rcv-btn rcv-btn-secondary"><i class="bi bi-person-plus"></i> New user</a>
+    </nav>
+</div>
+{% endif %}
+
+{% if can_delete_records %}
 <div class="rcv-panel mb-3" id="recently-deleted">
     <div class="rcv-panel-pad border-bottom">
         <h2 class="profile-section-title mb-1">
@@ -112,6 +131,8 @@
         </table>
     </div>
 </div>
+
+{% endif %}
 
 {% include "receiving/_layout_close.html" %}
 {% endblock %}

@@ -9,5 +9,5 @@
     <p><strong>Units Consumed:</strong> {{ object.units_consumed }}</p>
     <p><strong>Entered By:</strong> {{ object.entered_by }}</p>
 </div></div>
-{% if not object.is_cancelled %}<a href="{% url 'electricity:reading_cancel' object.pk %}" class="btn btn-cancel-record">Cancel</a>{% endif %}
+{% if can_cancel_records and not object.is_cancelled %}<a href="{% url 'electricity:reading_cancel' object.pk %}" class="btn btn-cancel-record">Cancel</a>{% endif %}
 {% endblock %}

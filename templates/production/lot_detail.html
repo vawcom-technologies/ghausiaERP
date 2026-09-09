@@ -4,7 +4,9 @@
 <h1 class="page-header">Production Lot: {{ lot.lot_number }}</h1>
 <div class="row mb-4">
     <div class="col-md-6"><div class="card"><div class="card-body">
-        <p><strong>Vendor:</strong> {{ lot.vendor }}</p><p><strong>Cloth Type:</strong> {{ lot.cloth_type }}</p>
+        <p><strong>Vendor:</strong> {% if lot.vendor_id %}<a href="{% url 'master_data:vendor_detail' lot.vendor_id %}">{{ lot.vendor }}</a>{% else %}{{ lot.vendor }}{% endif %}</p>
+        <p><strong>Cloth Type:</strong> {% if lot.cloth_type_id %}<a href="{% url 'master_data:clothtype_detail' lot.cloth_type_id %}">{{ lot.cloth_type }}</a>{% else %}{{ lot.cloth_type }}{% endif %}</p>
+        {% if lot.cloth_receipt_id %}<p><strong>Receipt:</strong> <a href="{% url 'receiving:detail' lot.cloth_receipt_id %}">{{ lot.cloth_receipt }}</a></p>{% endif %}
         <p><strong>Initial Metres:</strong> {{ lot.initial_metres }}</p><p><strong>Current Metres:</strong> {{ lot.current_metres }}</p>
         <p><strong>Stage:</strong> {{ lot.current_stage }}</p><p><strong>Status:</strong> {{ lot.status }}</p>
     </div></div></div>
@@ -36,6 +38,19 @@
 {% endif %}
 {% if finished_stock %}
 <h3>Finished Stock</h3>
-<div class="card"><div class="card-body"><p><strong>Final Metres:</strong> {{ finished_stock.final_metres }}</p><p><strong>Grade:</strong> {{ finished_stock.quality_grade }}</p></div></div>
+<div class="card"><div class="card-body">
+    <p><strong>Final Metres:</strong> {{ finished_stock.final_metres }}</p>
+    <p><strong>Grade:</strong> {{ finished_stock.quality_grade }}</p>
+    <a href="{% url 'production:finished_detail' finished_stock.pk %}" class="btn btn-sm btn-outline-primary">View finished stock</a>
+</div></div>
 {% endif %}
+<div class="d-flex flex-wrap gap-2 mt-3">
+    <a href="{% url 'production:lot_list' %}" class="btn btn-outline-secondary">Back to lots</a>
+    <a href="{% url 'production:singeing_create' %}?lot_id={{ lot.pk }}" class="btn btn-outline-primary">Singeing</a>
+    <a href="{% url 'production:dyeing_create' %}?lot_id={{ lot.pk }}" class="btn btn-outline-primary">Dyeing</a>
+    <a href="{% url 'production:sixchamber_create' %}?lot_id={{ lot.pk }}" class="btn btn-outline-primary">Six Chamber</a>
+    <a href="{% url 'production:calender_create' %}?lot_id={{ lot.pk }}" class="btn btn-outline-primary">Calender</a>
+    <a href="{% url 'production:comfort_create' %}?lot_id={{ lot.pk }}" class="btn btn-outline-primary">Comfort</a>
+    <a href="{% url 'production:finished_create' %}?lot_id={{ lot.pk }}" class="btn btn-outline-primary">Finished Stock</a>
+</div>
 {% endblock %}

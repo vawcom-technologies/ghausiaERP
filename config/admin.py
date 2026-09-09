@@ -9,7 +9,8 @@ from production.models import (
     FinishedStock, Mixture, MixtureIngredient, ProcessMaterialUsage,
     ProductionLot, SingeingEntry, SixChamberEntry,
 )
-from inventory.models import MaterialTransaction
+from gate_entry.models import GateEntry
+from inventory.models import ChemicalIssueSlip, ChemicalStock, MaterialTransaction
 from maintenance.models import MaintenanceJob, MaintenanceMaterialUsage
 from electricity.models import DailyElectricityReading, ElectricityMeter
 
@@ -130,6 +131,28 @@ class FinishedStockAdmin(AuditAdminMixin, admin.ModelAdmin):
 @admin.register(ProcessMaterialUsage)
 class ProcessMaterialUsageAdmin(AuditAdminMixin, admin.ModelAdmin):
     list_display = ("production_lot", "stage", "material", "quantity_used")
+
+
+@admin.register(GateEntry)
+class GateEntryAdmin(AuditAdminMixin, admin.ModelAdmin):
+    list_display = ("gate_number", "entry_date", "purchaser", "shop_name", "is_cancelled")
+    list_filter = ("is_cancelled", "entry_date")
+    search_fields = ("gate_number", "purchaser", "shop_name")
+    date_hierarchy = "entry_date"
+
+
+@admin.register(ChemicalIssueSlip)
+class ChemicalIssueSlipAdmin(AuditAdminMixin, admin.ModelAdmin):
+    list_display = ("issue_slip_number", "issue_date", "name", "department", "is_cancelled")
+    list_filter = ("is_cancelled",)
+    search_fields = ("issue_slip_number", "name", "lot_number")
+
+
+@admin.register(ChemicalStock)
+class ChemicalStockAdmin(AuditAdminMixin, admin.ModelAdmin):
+    list_display = ("name", "stock_date", "remaining_stock", "is_cancelled")
+    list_filter = ("is_cancelled",)
+    search_fields = ("name",)
 
 
 @admin.register(MaterialTransaction)

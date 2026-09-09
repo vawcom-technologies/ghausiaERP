@@ -219,3 +219,206 @@ class ERPWorkflowTests(TestCase):
         summary = get_stage_summary(lot.singeing_entries.all())
         self.assertEqual(summary["count"], 1)
         self.assertEqual(summary["output_metres"], Decimal("980"))
+
+
+class RoleAccessTests(TestCase):
+    def setUp(self):
+        from django.contrib.auth.models import User
+
+        from accounts.models import WorkAssignment
+        from accounts.permissions import GROUP_ADMIN, GROUP_SUPERVISOR, ensure_role_groups
+
+        groups = ensure_role_groups()
+        self.admin = User.objects.create_user("admin_role", password="pass123")
+        self.admin.groups.add(groups[GROUP_ADMIN])
+        self.supervisor = User.objects.create_user("super_role", password="pass123")
+        self.supervisor.groups.add(groups[GROUP_SUPERVISOR])
+        self.clerk = User.objects.create_user("clerk_role", password="pass123")
+        self.clerk.groups.add(groups[GROUP_DATA_ENTRY])
+        WorkAssignment.objects.create(user=self.clerk, module="receiving", assigned_by=self.supervisor)
+
+    def test_permission_helpers(self):
+        from accounts.permissions import (
+            can_access_module,
+            can_assign_work,
+            can_delete_records,
+            can_manage_users,
+        )
+
+        self.assertTrue(can_delete_records(self.admin))
+        self.assertFalse(can_delete_records(self.supervisor))
+        self.assertFalse(can_delete_records(self.clerk))
+        self.assertTrue(can_assign_work(self.admin))
+        self.assertTrue(can_assign_work(self.supervisor))
+        self.assertFalse(can_assign_work(self.clerk))
+        self.assertTrue(can_manage_users(self.supervisor))
+        self.assertTrue(can_access_module(self.clerk, "receiving"))
+        self.assertFalse(can_access_module(self.clerk, "dyeing"))
+        self.assertTrue(can_access_module(self.supervisor, "dyeing"))
+
+    def test_data_entry_blocked_from_unassigned_module(self):
+        self.client.force_login(self.clerk)
+        blocked = self.client.get("/production/dyeing/")
+        self.assertEqual(blocked.status_code, 302)
+        self.assertEqual(blocked.url, "/")
+        allowed = self.client.get("/receiving/")
+        self.assertEqual(allowed.status_code, 200)
+
+    def test_supervisor_can_create_data_entry_user(self):
+        self.client.force_login(self.supervisor)
+        response = self.client.post(
+            "/users/new/",
+            {
+                "username": "newclerk",
+                "first_name": "New",
+                "last_name": "Clerk",
+                "password1": "secret1",
+                "password2": "secret1",
+                "role": "Data Entry User",
+                "modules": ["gate_entry", "receiving"],
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        from django.contrib.auth.models import User
+
+        from accounts.models import WorkAssignment
+
+        created = User.objects.get(username="newclerk")
+        self.assertTrue(created.groups.filter(name=GROUP_DATA_ENTRY).exists())
+        self.assertFalse(created.is_superuser)
+        self.assertEqual(
+            set(WorkAssignment.objects.filter(user=created).values_list("module", flat=True)),
+            {"gate_entry", "receiving"},
+        )
+
+    def test_supervisor_cannot_delete_receiving(self):
+        self.client.force_login(self.supervisor)
+        response = self.client.post("/receiving/1/delete/")
+        self.assertEqual(response.status_code, 403)
+
+    def test_create_job_station_accounts(self):
+        self.client.force_login(self.admin)
+        response = self.client.post("/users/job-accounts/")
+        self.assertEqual(response.status_code, 302)
+        from django.contrib.auth.models import User
+
+        from accounts.models import WorkAssignment
+
+        gate = User.objects.get(username="gateentry")
+        self.assertTrue(gate.check_password("gate123"))
+        self.assertEqual(
+            set(WorkAssignment.objects.filter(user=gate).values_list("module", flat=True)),
+            {"gate_entry"},
+        )
+        self.client.logout()
+        self.client.force_login(gate)
+        self.assertEqual(self.client.get("/gate-entry/").status_code, 200)
+        self.assertEqual(self.client.get("/receiving/").status_code, 302)
+
+    def test_assignment_dashboard_updates_jobs(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(
+            "/users/assignments/",
+            {f"modules_{self.clerk.pk}": ["dyeing", "attendance"]},
+        )
+        self.assertEqual(response.status_code, 302)
+        from accounts.models import WorkAssignment
+
+        self.assertEqual(
+            set(WorkAssignment.objects.filter(user=self.clerk).values_list("module", flat=True)),
+            {"dyeing", "attendance"},
+        )
+
+    def test_staff_lives_on_profile_not_dashboard(self):
+        self.client.force_login(self.admin)
+        home = self.client.get("/")
+        self.assertContains(home, "What is happening on the floor today")
+        self.assertContains(home, "Active lots")
+        self.assertContains(home, "Lots in production")
+        self.assertNotContains(home, "Open staff list")
+        self.assertNotContains(home, "No jobs have been assigned to you yet")
+        profile = self.client.get("/profile/")
+        self.assertContains(profile, "Data-entry staff")
+        self.assertContains(profile, "Open staff list")
+        navbar_staff = self.client.get("/").content.decode()
+        self.assertNotIn(">Staff</a>", navbar_staff)
+
+        self.client.force_login(self.clerk)
+        clerk_home = self.client.get("/")
+        self.assertContains(clerk_home, "Your jobs")
+        self.assertContains(clerk_home, "Cloth Receiving")
+        self.assertNotContains(clerk_home, "What is happening on the floor today")
+        clerk_profile = self.client.get("/profile/")
+        self.assertNotContains(clerk_profile, "Open staff list")
+
+    def test_mobile_quick_actions_match_assigned_jobs(self):
+        self.client.force_login(self.clerk)
+        home = self.client.get("/").content.decode()
+        self.assertIn("mobile-dock", home)
+        self.assertIn("receiving/export/?today=1", home)
+        self.assertNotIn("electricity/readings/export/?today=1", home)
+        self.client.force_login(self.admin)
+        admin_home = self.client.get("/").content.decode()
+        self.assertIn("electricity/readings/export/?today=1", admin_home)
+        self.assertIn("Open a job", admin_home)
+        excel = self.client.get("/electricity/readings/export/?today=1")
+        self.assertEqual(excel.status_code, 200)
+        self.assertIn(".xlsx", excel["Content-Disposition"])
+
+
+class HostingAndLoginTests(TestCase):
+    def test_csrf_origins_include_https_railway_host(self):
+        from config.hosting import csrf_trusted_origins, parse_host_list
+
+        hosts = parse_host_list("localhost,127.0.0.1", "https://ghausia.up.railway.app")
+        self.assertIn("ghausia.up.railway.app", hosts)
+        origins = csrf_trusted_origins(hosts)
+        self.assertIn("https://ghausia.up.railway.app", origins)
+        self.assertIn("http://127.0.0.1:8000", origins)
+
+    def test_login_page_and_sign_in(self):
+        from django.contrib.auth.models import User
+
+        User.objects.create_user("admin", password="admin123")
+        page = self.client.get("/login/")
+        self.assertEqual(page.status_code, 200)
+        self.assertContains(page, "csrfmiddlewaretoken")
+        self.assertContains(page, "admin123")
+        self.assertContains(page, "no public sign-up")
+        self.assertNotContains(page, "mobile-dock")
+
+        rejected = self.client.post("/login/", {"username": "admin", "password": "wrong"})
+        self.assertEqual(rejected.status_code, 200)
+        self.assertContains(rejected, "admin")
+
+        accepted = self.client.post("/login/", {"username": "admin", "password": "admin123"})
+        self.assertEqual(accepted.status_code, 302)
+        self.assertEqual(accepted.url, "/")
+
+    def test_new_user_page_requires_sign_in(self):
+        page = self.client.get("/users/new/")
+        self.assertEqual(page.status_code, 302)
+        self.assertIn("/login/", page.url)
+
+    def test_seed_keeps_existing_password(self):
+        from django.contrib.auth.models import User
+        from django.core.management import call_command
+
+        user = User.objects.create_user("admin", password="keep-me-please")
+        call_command("seed_demo_data")
+        user.refresh_from_db()
+        self.assertTrue(user.check_password("keep-me-please"))
+        self.assertTrue(User.objects.get(username="supervisor").check_password("super123"))
+
+    def test_today_export_query_renames_file(self):
+        from django.test import RequestFactory
+        from django.utils import timezone
+
+        from common.selective_export import export_filename, request_wants_today
+
+        request = RequestFactory().get("/export/", {"today": "1"})
+        self.assertTrue(request_wants_today(request))
+        self.assertEqual(
+            export_filename(request, "gate_entry_export.xlsx"),
+            f"gate_entry_export_{timezone.localdate().isoformat()}.xlsx",
+        )

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}New user - Ghausia Dyeing{% endblock %}
+{% block content %}
+<div class="page-header-block">
+    <h1 class="page-title">New user</h1>
+    <p class="page-subtitle">
+        {% if is_administrator %}Create an administrator, supervisor, or data-entry user.
+        {% else %}Create a data-entry user and choose the jobs they can enter.{% endif %}
+    </p>
+</div>
+<div class="card form-card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {% include "includes/form_errors.html" %}
+            <div class="row">
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
+                    {{ form.username }}
+                </div>
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="{{ form.role.id_for_label }}">Role</label>
+                    {{ form.role }}
+                    {% if not is_administrator %}<div class="form-text">Supervisors can only create data-entry users.</div>{% endif %}
+                </div>
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="{{ form.first_name.id_for_label }}">First name</label>
+                    {{ form.first_name }}
+                </div>
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="{{ form.last_name.id_for_label }}">Last name</label>
+                    {{ form.last_name }}
+                </div>
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="{{ form.password1.id_for_label }}">Password</label>
+                    {{ form.password1 }}
+                </div>
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="{{ form.password2.id_for_label }}">Confirm password</label>
+                    {{ form.password2 }}
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="form-label">Assigned jobs (data-entry users)</div>
+                <p class="form-text">Tick only the area this person should enter. Example: a gate clerk gets Gate Entry only. You can change this later under Assign jobs.</p>
+                <div class="row">
+                    {% for checkbox in form.modules %}
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <div class="form-check">{{ checkbox }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-save btn-lg-action">Create user</button>
+                <a href="{% url 'accounts:users' %}" class="btn btn-outline-secondary btn-lg-action">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

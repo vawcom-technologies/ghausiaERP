@@ -13,40 +13,71 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'accounts:home' %}"><i class="bi bi-house-door"></i><span>Home</span></a>
                 </li>
+                {% if "gate_entry" in allowed_modules %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'gate_entry:list' %}">
                         <i class="bi bi-door-open"></i><span>Gate Entry</span>
                     </a>
                 </li>
+                {% endif %}
+                {% if "receiving" in allowed_modules %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'receiving:list' %}">
                         <i class="bi bi-box-arrow-in-down"></i>
                         <span class="nav-link-main">Cloth Receiving</span>
                         <span class="nav-link-urdu">غزانہ</span>
-                    </a> 
+                    </a>
                 </li>
+                {% endif %}
+                {% if "production_lots" in allowed_modules or "singeing" in allowed_modules or "dyeing" in allowed_modules or "six_chamber" in allowed_modules or "calender" in allowed_modules or "comfort" in allowed_modules or "finished_stock" in allowed_modules %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Production</a>
                     <ul class="dropdown-menu">
+                        {% if "production_lots" in allowed_modules %}
                         <li><a class="dropdown-item" href="{% url 'production:lot_list' %}">Production Lots</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url 'production:singeing_list' %}">Singeing</a></li>
-                        <li><a class="dropdown-item" href="{% url 'production:dyeing_list' %}">Dyeing</a></li>
-                        <li><a class="dropdown-item" href="{% url 'production:sixchamber_list' %}">Six Chamber</a></li>
-                        <li><a class="dropdown-item" href="{% url 'production:calender_list' %}">Calender</a></li>
-                        <li><a class="dropdown-item" href="{% url 'production:comfort_list' %}">Comfort</a></li>
-                        <li><a class="dropdown-item" href="{% url 'production:finished_list' %}">Finished Stock</a></li>
+                        {% endif %}
+                        {% if "singeing" in allowed_modules %}<li><a class="dropdown-item" href="{% url 'production:singeing_list' %}">Singeing</a></li>{% endif %}
+                        {% if "dyeing" in allowed_modules %}<li><a class="dropdown-item" href="{% url 'production:dyeing_list' %}">Dyeing</a></li>{% endif %}
+                        {% if "six_chamber" in allowed_modules %}<li><a class="dropdown-item" href="{% url 'production:sixchamber_list' %}">Six Chamber</a></li>{% endif %}
+                        {% if "calender" in allowed_modules %}<li><a class="dropdown-item" href="{% url 'production:calender_list' %}">Calender</a></li>{% endif %}
+                        {% if "comfort" in allowed_modules %}<li><a class="dropdown-item" href="{% url 'production:comfort_list' %}">Comfort</a></li>{% endif %}
+                        {% if "finished_stock" in allowed_modules %}<li><a class="dropdown-item" href="{% url 'production:finished_list' %}">Finished Stock</a></li>{% endif %}
                     </ul>
                 </li>
+                {% endif %}
+                {% if "inventory" in allowed_modules or "chemicals" in allowed_modules %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Stock</a>
                     <ul class="dropdown-menu">
+                        {% if "inventory" in allowed_modules %}
+                        <li><a class="dropdown-item" href="{% url 'inventory:home' %}">Purchases & Adjustments</a></li>
+                        <li><a class="dropdown-item" href="{% url 'inventory:transaction_list' %}">Transaction History</a></li>
+                        <li><a class="dropdown-item" href="{% url 'inventory:stock_overview' %}">Current Stock</a></li>
+                        {% endif %}
+                        {% if "inventory" in allowed_modules and "chemicals" in allowed_modules %}
+                        <li><hr class="dropdown-divider"></li>
+                        {% endif %}
+                        {% if "chemicals" in allowed_modules %}
                         <li><a class="dropdown-item" href="{% url 'inventory:stock_chemicals' %}">Chemicals</a></li>
+                        {% endif %}
+                        {% if "inventory" in allowed_modules %}
                         <li><a class="dropdown-item" href="{% url 'inventory:stock_mechanical_electrical' %}">Mechanical, Electrical</a></li>
+                        {% endif %}
                     </ul>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'electricity:reading_list' %}"><i class="bi bi-lightning-charge"></i><span>Electricity</span></a>
+                {% endif %}
+                {% if "electricity" in allowed_modules %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-lightning-charge"></i><span>Electricity</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{% url 'electricity:reading_list' %}">Daily Readings</a></li>
+                        {% if is_manager %}
+                        <li><a class="dropdown-item" href="{% url 'electricity:meter_list' %}">Meters</a></li>
+                        {% endif %}
+                    </ul>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -62,6 +93,8 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'maintenance:list' %}"><i class="bi bi-tools"></i><span>Maintenance</span></a>
                 </li>
+                {% endif %}
+                {% if "attendance" in allowed_modules %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         <i class="bi bi-calendar-check"></i><span>Attendance</span>
@@ -75,13 +108,18 @@
                         <li><a class="dropdown-item" href="{% url 'attendance:department' 'dyeing' %}">Dyeing</a></li>
                     </ul>
                 </li>
+                {% endif %}
+                {% if can_manage_setup %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Setup</a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="{% url 'master_data:setup' %}">Basic Setup</a></li>
-                        <li><a class="dropdown-item" href="{% url 'accounts:users' %}">Users</a></li>
+                        {% if is_administrator %}
+                        <li><a class="dropdown-item" href="/admin/">Django Admin</a></li>
+                        {% endif %}
                     </ul>
                 </li>
+                {% endif %}
             </ul>
             <ul class="navbar-nav align-items-lg-center gap-lg-1">
                 <li class="nav-item">
@@ -91,16 +129,9 @@
                             <span class="user-badge-name">{{ user.get_full_name|default:user.username }}</span>
                             <span class="user-badge-meta">
                                 @{{ user.username }}
-                                {% with groups=user.groups.all %}
-                                {% if groups %} · {{ groups.0.name }}{% elif user.is_superuser %} · Administrator{% endif %}
-                                {% endwith %}
+                                {% if erp_role_label %} · {{ erp_role_label }}{% endif %}
                             </span>
                         </span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'accounts:logout' %}">
-                        <i class="bi bi-box-arrow-right"></i><span>Logout</span>
                     </a>
                 </li>
             </ul>

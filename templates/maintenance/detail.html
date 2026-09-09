@@ -22,5 +22,5 @@
 </div></div></div>
 </div>
 <a href="{% url 'maintenance:edit' object.pk %}" class="btn btn-primary btn-lg-action">Edit</a>
-{% if not object.is_cancelled %}<a href="{% url 'maintenance:cancel' object.pk %}" class="btn btn-cancel-record btn-lg-action ms-2">Cancel</a>{% endif %}
+{% if can_cancel_records and not object.is_cancelled %}<a href="{% url 'maintenance:cancel' object.pk %}" class="btn btn-cancel-record btn-lg-action ms-2">Cancel</a>{% endif %}
 {% endblock %}

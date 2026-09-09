@@ -5,6 +5,8 @@ from decimal import Decimal
 from django.contrib.auth.models import Group, User
 from django.core.management.base import BaseCommand
 
+from accounts.models import WorkAssignment
+from accounts.modules import MODULE_KEYS
 from accounts.permissions import GROUP_ADMIN, GROUP_DATA_ENTRY, GROUP_SUPERVISOR
 from electricity.models import ElectricityMeter
 from master_data.models import ClothType, Employee, Machine, Material, Vendor
@@ -29,14 +31,31 @@ class Command(BaseCommand):
             user.first_name = first_name
             user.last_name = last_name
             user.email = email
-            user.set_password(password)
+            if created:
+                user.set_password(password)
             user.is_superuser = is_super
             user.is_staff = is_super or user.is_staff
             user.is_active = True
             user.save()
             user.groups.add(group)
+            if group.name == GROUP_DATA_ENTRY:
+                for module in MODULE_KEYS:
+                    WorkAssignment.objects.get_or_create(
+                        user=user,
+                        module=module,
+                        defaults={"assigned_by": user},
+                    )
             status = "created" if created else "updated"
-            self.stdout.write(f"  User ({status}): {username} / {password} — {user.get_full_name()}")
+            if created:
+                self.stdout.write(f"  User ({status}): {username} / {password} — {user.get_full_name()}")
+            else:
+                self.stdout.write(f"  User ({status}): {username} (password unchanged) — {user.get_full_name()}")
+
+        from accounts.job_accounts import ensure_job_station_accounts
+
+        admin_user = User.objects.filter(username="admin").first()
+        created_jobs, _updated_jobs = ensure_job_station_accounts(assigned_by=admin_user, reset_passwords=False)
+        self.stdout.write(f"  Job station accounts ready ({len(created_jobs)} new).")
 
         vendors = ["Alpha Textiles", "Beta Fabrics", "Gamma Mills"]
         for name in vendors:

@@ -15,7 +15,13 @@ from accounts.mixins import (
     PaginatedListMixin,
 )
 from common.excel import build_data_export_response, build_template_response, read_sheet_rows
-from common.selective_export import filter_queryset_by_ids, ordered_by_ids, parse_selected_ids
+from common.selective_export import (
+    apply_today_filter,
+    export_filename,
+    filter_queryset_by_ids,
+    ordered_by_ids,
+    parse_selected_ids,
+)
 from common.views import apply_search
 from master_data.models import ClothType, Vendor
 from receiving.forms import ClothReceiptForm
@@ -108,8 +114,13 @@ class ClothReceiptDeleteView(ERPLoginRequiredMixin, View):
     )
 
     def post(self, request, pk):
+        from django.core.exceptions import PermissionDenied
+
+        from accounts.permissions import can_delete_records
         from common.recycle import soft_delete_record
 
+        if not can_delete_records(request.user):
+            raise PermissionDenied
         receipt = get_object_or_404(
             ClothReceipt.objects.select_related("production_lot"),
             pk=pk,
@@ -256,6 +267,7 @@ class ReceivingExportView(ERPLoginRequiredMixin, View):
             qs = qs.distinct().order_by("-receipt_date", "-id")
 
         qs = filter_queryset_by_ids(qs, ids)
+        qs = apply_today_filter(qs, request, "receipt_date", ids)
         receipts = ordered_by_ids(qs, ids) if ids is not None else list(qs)
 
         rows = []
@@ -271,7 +283,7 @@ class ReceivingExportView(ERPLoginRequiredMixin, View):
                 image_paths.append(None)
 
         return build_data_export_response(
-            filename="cloth_receiving_export.xlsx",
+            filename=export_filename(request, "cloth_receiving_export.xlsx"),
             headers=RECEIVING_HEADERS,
             rows=rows,
             sheet_title="Cloth Receiving",

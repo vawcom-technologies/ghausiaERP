@@ -30,10 +30,10 @@ The same production lot number connects every stage. The system also tracks chem
 |-----------|--------|
 | Python | 3.12+ |
 | Django | 5.1+ (tested with 6.0) |
-| Database | SQLite |
+| Database | SQLite locally, PostgreSQL on Railway |
 | UI | Django templates + Bootstrap 5 |
 | Auth | Django built-in |
-| Deployment | Waitress (Windows) |
+| Deployment | Waitress (Windows factory PC or Railway) |
 
 **Not used:** React, DRF, Docker, Redis, Celery, barcode systems, APIs.
 
@@ -54,6 +54,8 @@ The same production lot number connects every stage. The system also tracks chem
 ├── static/            # CSS
 ├── logs/              # Application and error logs
 ├── backups/           # Database backups (via batch script)
+├── start.py           # Railway / production start (migrate, static, seed, Waitress)
+├── Procfile
 ├── requirements.txt
 ├── setup_windows.bat
 ├── start_windows.bat
@@ -90,6 +92,29 @@ Production-style start (all platforms):
 ```bash
 waitress-serve --listen=0.0.0.0:8000 config.wsgi:application
 ```
+
+## Deploy on Railway (login from anywhere)
+
+This is the right way to open the ERP from home, the factory, or a phone. Railway gives a public HTTPS URL. Staff still sign in with a username and password; new people are added by an administrator (Users → New user), not by a public sign-up page.
+
+1. Create a Railway project from this repo.
+2. Add a **PostgreSQL** plugin/service and attach it so `DATABASE_URL` is set. Do not rely on `db.sqlite3` on Railway — that file is wiped on deploy.
+3. Set variables on the web service:
+
+   ```
+   SECRET_KEY=<long random string>
+   DEBUG=False
+   ALLOWED_HOSTS=your-app.up.railway.app
+   CSRF_TRUSTED_ORIGINS=https://your-app.up.railway.app
+   ```
+
+   If you use a custom domain, add that host to `ALLOWED_HOSTS` and `https://your-domain` to `CSRF_TRUSTED_ORIGINS`.
+4. Deploy. The start command (`python start.py`) runs migrations, collects CSS, seeds demo users if they do not already exist, and serves the app.
+5. Open `https://your-app.up.railway.app` and sign in. Demo logins stay the same until you change them: `admin` / `admin123`, `supervisor` / `super123`, `dataentry` / `data123`.
+
+Re-deploys do **not** reset passwords that already exist.
+
+Optional: add a Railway volume and set `MEDIA_ROOT` to a path on that volume if you need receipt photos to survive restarts.
 
 ## Demo Users (after seed_demo_data)
 
@@ -183,6 +208,7 @@ copy db.sqlite3 backups\db_backup_YYYY-MM-DD.sqlite3
 | Problem | Solution |
 |---------|----------|
 | `DisallowedHost` error | Add your IP/hostname to `ALLOWED_HOSTS` in `.env` |
+| Login fails on Railway | Set `CSRF_TRUSTED_ORIGINS=https://your-app.up.railway.app` and `DEBUG=False` |
 | Cannot login | Run `createsuperuser` or `seed_demo_data` |
 | Static files missing | Run `python manage.py collectstatic --noinput` |
 | Port 8000 in use | Change port in `start_windows.bat` |
@@ -194,7 +220,7 @@ copy db.sqlite3 backups\db_backup_YYYY-MM-DD.sqlite3
 - **Time zone** defaults to `Asia/Karachi` — change in `config/settings.py` if needed.
 - **Secure cookies** are disabled in DEBUG mode so local HTTP works without HTTPS.
 - **Process material usage** for Six Chamber is supported via model but optional in UI (simplest path documented here).
-- **User management** is primarily via Django Admin; the Users page lists accounts for reference.
+- **User management** is in-app: sign in, then Users → New user. There is no public self-registration.
 
 ## License
 

@@ -244,6 +244,50 @@ main.app-main {
     color: var(--rcv-ink, #1a3a5c);
 }
 
+.profile-staff .rcv-actions {
+    margin-top: 0.15rem;
+}
+
+.dash-pipeline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.dash-pipe {
+    flex: 1 1 6.5rem;
+    min-width: 6.25rem;
+    background: var(--erp-bg);
+    border: 1px solid var(--erp-border);
+    border-radius: 10px;
+    padding: 0.85rem 0.6rem;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+}
+
+.dash-pipe:hover {
+    border-color: var(--erp-primary-light);
+    color: inherit;
+}
+
+.dash-pipe.is-zero {
+    opacity: 0.5;
+}
+
+.dash-pipe-count {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--erp-primary);
+    line-height: 1.1;
+}
+
+.dash-pipe-label {
+    font-size: 0.78rem;
+    color: var(--erp-text-muted);
+    margin-top: 0.2rem;
+}
+
 /* Page header */
 .page-header-block,
 .page-header {
@@ -668,6 +712,10 @@ h1.page-header {
     background: #f1f5f9;
     padding: 0.1rem 0.35rem;
     border-radius: 4px;
+}
+
+.login-toggle-password {
+    border-color: var(--erp-border);
 }
 
 /* Footer */

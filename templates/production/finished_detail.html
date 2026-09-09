@@ -7,5 +7,12 @@
     <p><strong>Quality Grade:</strong> {{ object.quality_grade }}</p>
     <p><strong>Total Metre Loss:</strong> {{ total_metre_loss }}</p>
     <p><strong>Shrinkage:</strong> {{ shrinkage_percentage|floatformat:2 }}%</p>
+    <p><strong>Lot:</strong> <a href="{% url 'production:lot_detail' object.production_lot.pk %}">{{ object.production_lot.lot_number }}</a></p>
 </div></div>
+<div class="d-flex flex-wrap gap-2 mt-3">
+    <a href="{% url 'production:finished_list' %}" class="btn btn-outline-secondary">Back to list</a>
+    {% if can_cancel_records and not object.is_cancelled %}
+    <a href="{% url 'production:finished_cancel' object.pk %}" class="btn btn-cancel-record">Cancel</a>
+    {% endif %}
+</div>
 {% endblock %}

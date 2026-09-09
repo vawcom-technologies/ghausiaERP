@@ -77,8 +77,43 @@ def get_deleted_object(model_key: str, pk: int) -> AuditModel | None:
 def _ensure_registry() -> None:
     if RECYCLE_REGISTRY:
         return
+    from attendance.models import AttendanceRow
+    from electricity.models import DailyElectricityReading
     from gate_entry.models import GateEntry
+    from inventory.models import ChemicalIssueSlip, ChemicalStock, MaterialTransaction
+    from maintenance.models import MaintenanceJob, MaintenanceMaterialUsage
+    from production.models import (
+        CalenderEntry,
+        ComfortEntry,
+        DyeingBatch,
+        DyeingMaterialUsage,
+        FinishedStock,
+        Mixture,
+        MixtureIngredient,
+        ProcessMaterialUsage,
+        ProductionLot,
+        SingeingEntry,
+        SixChamberEntry,
+    )
     from receiving.models import ClothReceipt
 
     register_recycle_model(GateEntry, "Gate Entry", "accounts:restore_deleted", "gate_entry")
     register_recycle_model(ClothReceipt, "Cloth Receiving", "accounts:restore_deleted", "cloth_receipt")
+    register_recycle_model(ProductionLot, "Production Lots", "accounts:restore_deleted", "production_lot")
+    register_recycle_model(SingeingEntry, "Singeing", "accounts:restore_deleted", "singeing")
+    register_recycle_model(DyeingBatch, "Dyeing", "accounts:restore_deleted", "dyeing_batch")
+    register_recycle_model(DyeingMaterialUsage, "Dyeing Materials", "accounts:restore_deleted", "dyeing_material")
+    register_recycle_model(Mixture, "Mixtures", "accounts:restore_deleted", "mixture")
+    register_recycle_model(MixtureIngredient, "Mixture Ingredients", "accounts:restore_deleted", "mixture_ingredient")
+    register_recycle_model(SixChamberEntry, "Six Chamber", "accounts:restore_deleted", "sixchamber")
+    register_recycle_model(CalenderEntry, "Calender", "accounts:restore_deleted", "calender")
+    register_recycle_model(ComfortEntry, "Comfort", "accounts:restore_deleted", "comfort")
+    register_recycle_model(FinishedStock, "Finished Stock", "accounts:restore_deleted", "finished_stock")
+    register_recycle_model(ProcessMaterialUsage, "Process Materials", "accounts:restore_deleted", "process_material")
+    register_recycle_model(MaterialTransaction, "Inventory", "accounts:restore_deleted", "material_transaction")
+    register_recycle_model(ChemicalIssueSlip, "Chemical Issue Slips", "accounts:restore_deleted", "chemical_issue_slip")
+    register_recycle_model(ChemicalStock, "Chemical Stock", "accounts:restore_deleted", "chemical_stock")
+    register_recycle_model(MaintenanceJob, "Maintenance", "accounts:restore_deleted", "maintenance_job")
+    register_recycle_model(MaintenanceMaterialUsage, "Maintenance Materials", "accounts:restore_deleted", "maintenance_material")
+    register_recycle_model(DailyElectricityReading, "Electricity", "accounts:restore_deleted", "electricity_reading")
+    register_recycle_model(AttendanceRow, "Attendance", "accounts:restore_deleted", "attendance_row")

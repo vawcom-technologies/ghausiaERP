@@ -7,6 +7,7 @@ from typing import Any, Callable, Iterable
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
+from django.utils import timezone
 
 from common.excel import build_data_export_response
 
@@ -69,6 +70,29 @@ def ordered_by_ids(queryset, ids: Iterable[int]):
     return [by_pk[pk] for pk in id_list if pk in by_pk]
 
 
+def request_wants_today(request: HttpRequest) -> bool:
+    raw = (request.POST.get("today") or request.GET.get("today") or "").strip().lower()
+    return raw in {"1", "true", "yes", "on"}
+
+
+def local_today():
+    return timezone.localdate()
+
+
+def apply_today_filter(queryset, request: HttpRequest, field: str, ids=None):
+    """Limit an unselected export to today's rows when ?today=1."""
+    if ids is not None or not request_wants_today(request):
+        return queryset
+    return queryset.filter(**{field: local_today()})
+
+
+def export_filename(request: HttpRequest, base_name: str) -> str:
+    stem = base_name[:-5] if base_name.endswith(".xlsx") else base_name
+    if request_wants_today(request):
+        return f"{stem}_{local_today().isoformat()}.xlsx"
+    return f"{stem}.xlsx"
+
+
 def selective_excel_response(
     request: HttpRequest,
     *,
@@ -79,6 +103,7 @@ def selective_excel_response(
     sheet_title: str,
     list_redirect: str,
     list_redirect_kwargs: dict | None = None,
+    today_field: str | None = None,
 ) -> HttpResponse:
     """Shared selected-or-all Excel export response."""
     ids = parse_selected_ids(request)
@@ -86,10 +111,11 @@ def selective_excel_response(
         messages.error(request, "Select at least one row to export.")
         return redirect(list_redirect, **(list_redirect_kwargs or {}))
 
-    qs = filter_queryset_by_ids(queryset, ids)
+    qs = apply_today_filter(queryset, request, today_field, ids) if today_field else queryset
+    qs = filter_queryset_by_ids(qs, ids)
     objects = ordered_by_ids(qs, ids) if ids is not None else list(qs)
     return build_data_export_response(
-        filename=filename,
+        filename=export_filename(request, filename),
         headers=headers,
         rows=[row_builder(obj) for obj in objects],
         sheet_title=sheet_title,

@@ -44,11 +44,26 @@ class ElectricityMeterListView(ERPLoginRequiredMixin, PaginatedListMixin, ListVi
         return apply_search(ElectricityMeter.objects.all(), self.request.GET.get("q", ""), ["name", "meter_number"])
 
 
-class ElectricityMeterCreateView(ERPLoginRequiredMixin, AuditCreateMixin, CreateView):
+class ElectricityMeterCreateView(ERPLoginRequiredMixin, CreateView):
     model = ElectricityMeter
     form_class = ElectricityMeterForm
     template_name = "electricity/meter_form.html"
     success_url = reverse_lazy("electricity:meter_list")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Electricity meter saved.")
+        return super().form_valid(form)
+
+
+class ElectricityMeterUpdateView(ERPLoginRequiredMixin, UpdateView):
+    model = ElectricityMeter
+    form_class = ElectricityMeterForm
+    template_name = "electricity/meter_form.html"
+    success_url = reverse_lazy("electricity:meter_list")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Electricity meter updated.")
+        return super().form_valid(form)
 
 
 class ElectricityReadingListView(ERPLoginRequiredMixin, PaginatedListMixin, ListView):
@@ -84,6 +99,7 @@ class ElectricityReadingExportView(ERPLoginRequiredMixin, View):
             filename="electricity_readings_export.xlsx",
             sheet_title="Readings",
             list_redirect="electricity:reading_list",
+            today_field="reading_date",
         )
 
 

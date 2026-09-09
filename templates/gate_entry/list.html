@@ -128,11 +128,13 @@
                     <div class="gate-action-box" role="group" aria-label="Actions for {{ obj.gate_number }}">
                         <a href="{% url 'gate_entry:detail' obj.pk %}" class="gate-action-btn gate-action-view">View</a>
                         <a href="{% url 'gate_entry:edit' obj.pk %}" class="gate-action-btn gate-action-update">Update</a>
+                        {% if can_delete_records %}
                         <button type="button"
                                 class="gate-action-btn gate-action-delete"
                                 data-delete-url="{% url 'gate_entry:delete' obj.pk %}"
                                 data-delete-label="{{ obj.gate_number }}"
                                 data-confirm-message="Delete {{ obj.gate_number }}?&#10;&#10;This cannot be undone.&#10;&#10;یہ گیٹ اندراج حذف ہو جائے گی۔ کیا آپ یقینی ہیں؟">Delete</button>
+                        {% endif %}
                     </div>
                 </td>
             </tr>
