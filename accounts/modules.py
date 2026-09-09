@@ -16,11 +16,38 @@ WORK_MODULES = (
     ("electricity", "Electricity", "bi-lightning-charge"),
     ("maintenance", "Maintenance", "bi-tools"),
     ("attendance", "Attendance", "bi-calendar-check"),
+    ("fuel", "Fuel", "bi-fuel-pump"),
 )
 
 MODULE_CHOICES = [(key, label) for key, label, _icon in WORK_MODULES]
 MODULE_LABELS = {key: label for key, label, _icon in WORK_MODULES}
 MODULE_KEYS = [key for key, _label, _icon in WORK_MODULES]
+
+WORK_MODULE_GROUPS = (
+    ("Incoming", ("gate_entry", "receiving")),
+    (
+        "Production",
+        (
+            "production_lots",
+            "singeing",
+            "dyeing",
+            "six_chamber",
+            "calender",
+            "comfort",
+            "finished_stock",
+        ),
+    ),
+    ("Stores", ("inventory", "chemicals")),
+    ("Factory", ("electricity", "fuel", "maintenance", "attendance")),
+)
+
+
+def grouped_work_modules():
+    by_key = {key: (key, label, icon) for key, label, icon in WORK_MODULES}
+    return [
+        {"title": title, "modules": [by_key[key] for key in keys if key in by_key]}
+        for title, keys in WORK_MODULE_GROUPS
+    ]
 
 MODULE_HOME_LINKS = {
     "gate_entry": ("gate_entry:sheet", "Record vehicles and material at the gate"),
@@ -34,9 +61,10 @@ MODULE_HOME_LINKS = {
     "finished_stock": ("production:finished_list", "Finished stock records"),
     "inventory": ("inventory:home", "Purchases, adjustments, and stock"),
     "chemicals": ("inventory:stock_chemicals", "Issue slips and chemical stock"),
-    "electricity": ("electricity:reading_list", "Daily meter readings"),
+    "electricity": ("electricity:hub", "WAPDA and solar daily readings"),
     "maintenance": ("maintenance:list", "Breakdowns and repair jobs"),
     "attendance": ("attendance:hub", "Department attendance registers"),
+    "fuel": ("fuel:hub", "Steam and oil boiler readings"),
 }
 
 # Longest / most specific prefixes first.
@@ -56,6 +84,7 @@ MODULE_PATH_PREFIXES = (
     ("/electricity/", "electricity"),
     ("/maintenance/", "maintenance"),
     ("/attendance/", "attendance"),
+    ("/fuel/", "fuel"),
 )
 
 

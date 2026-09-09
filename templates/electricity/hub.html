@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Electricity - Ghausia Dyeing{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title="Electricity" rcv_subtitle="Daily WAPDA and solar readings in kWh" rcv_urdu="بجلی" %}
+
+<nav class="rcv-actions rcv-actions-center mb-3" aria-label="Electricity actions">
+    <a href="{% url 'electricity:daily_list' %}" class="rcv-btn rcv-btn-secondary">
+        <i class="bi bi-list-ul"></i> Daily readings
+    </a>
+    <a href="{% url 'electricity:monthly' %}" class="rcv-btn rcv-btn-secondary">
+        <i class="bi bi-calendar3"></i> Monthly readings
+    </a>
+    {% if is_manager %}
+    <a href="{% url 'electricity:meter_list' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-speedometer"></i> Meters
+    </a>
+    {% endif %}
+</nav>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <a href="{% url 'electricity:daily_entry' %}?mode=wapda" class="nav-card elec-hub-card">
+            <div class="nav-card-icon"><i class="bi bi-plug"></i></div>
+            <div class="nav-card-title">WAPDA only</div>
+            <p class="nav-card-desc">Add today’s WAPDA peak and non-peak kWh, plus factory run hours</p>
+        </a>
+    </div>
+    <div class="col-md-6">
+        <a href="{% url 'electricity:daily_entry' %}?mode=wapda_solar" class="nav-card elec-hub-card">
+            <div class="nav-card-icon"><i class="bi bi-sun"></i></div>
+            <div class="nav-card-title">WAPDA + Solar</div>
+            <p class="nav-card-desc">Add WAPDA and solar kWh together for the same day</p>
+        </a>
+    </div>
+</div>
+
+{% include "receiving/_layout_close.html" %}
+{% endblock %}

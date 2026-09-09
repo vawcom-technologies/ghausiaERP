@@ -79,14 +79,67 @@
 </div>
 {% endif %}
 
-{% if can_delete_records %}
+{% if can_view_recycle_bin %}
+{% if can_permanently_delete and pending_delete_requests %}
+<div class="rcv-panel mb-3" id="delete-approvals">
+    <div class="rcv-panel-pad border-bottom">
+        <h2 class="profile-section-title mb-1">
+            <i class="bi bi-shield-exclamation me-2"></i>Waiting for your approval
+        </h2>
+        <p class="text-muted mb-0 small">
+            A supervisor asked to permanently delete these records. Approve only if they should never come back.
+        </p>
+    </div>
+    <div class="table-responsive">
+        <table class="table rcv-table mb-0">
+            <thead>
+                <tr>
+                    <th>Module</th>
+                    <th>Record</th>
+                    <th>Asked by</th>
+                    <th>Asked at</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for req in pending_delete_requests %}
+                <tr>
+                    <td>{{ req.module }}</td>
+                    <td class="fw-semibold">{{ req.label }}</td>
+                    <td>{{ req.requested_by.get_full_name|default:req.requested_by.username }}</td>
+                    <td>{{ req.requested_at }}</td>
+                    <td>
+                        <form method="post" action="{% url 'accounts:review_permanent_delete' req.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" name="decision" value="approve" class="btn btn-sm btn-danger">Delete permanently</button>
+                        </form>
+                        <form method="post" action="{% url 'accounts:review_permanent_delete' req.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" name="decision" value="reject" class="btn btn-sm btn-outline-secondary">Keep in bin</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
 <div class="rcv-panel mb-3" id="recently-deleted">
     <div class="rcv-panel-pad border-bottom">
         <h2 class="profile-section-title mb-1">
             <i class="bi bi-trash3 me-2"></i>Recently Deleted
         </h2>
         <p class="text-muted mb-0 small">
-            Records deleted from Gate Entry or Cloth Receiving appear here. Restore brings them back.
+            Temporary deletes stay here. Restore brings a record back.
+            {% if can_permanently_delete %}
+            Only you can delete a record permanently.
+            {% elif can_request_permanent_delete %}
+            Ask an administrator if a record should be deleted permanently.
+            {% else %}
+            An administrator must approve before anything is deleted permanently.
+            {% endif %}
         </p>
     </div>
     <div class="table-responsive">
@@ -97,7 +150,7 @@
                     <th>Record</th>
                     <th>Deleted at</th>
                     <th>Deleted by</th>
-                    <th class="text-end">Action</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -113,13 +166,26 @@
                             —
                         {% endif %}
                     </td>
-                    <td class="text-end">
+                    <td>
                         <form method="post" action="{% url 'accounts:restore_deleted' item.model_key item.object.pk %}" class="d-inline">
                             {% csrf_token %}
-                            <button type="submit" class="gate-action-btn gate-action-update" style="display:inline-block;width:auto;min-width:5.5rem;">
-                                Restore
-                            </button>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Restore</button>
                         </form>
+                        {% if can_permanently_delete %}
+                        <form method="post" action="{% url 'accounts:purge_deleted' item.model_key item.object.pk %}" class="d-inline" onsubmit="return confirm('Permanently delete {{ item.label }}? This cannot be undone.');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger">Delete permanently</button>
+                        </form>
+                        {% elif can_request_permanent_delete %}
+                            {% if item.pending_request %}
+                            <span class="badge bg-warning text-dark">Waiting for admin</span>
+                            {% else %}
+                            <form method="post" action="{% url 'accounts:request_permanent_delete' item.model_key item.object.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Ask admin to delete</button>
+                            </form>
+                            {% endif %}
+                        {% endif %}
                     </td>
                 </tr>
             {% empty %}
@@ -131,7 +197,6 @@
         </table>
     </div>
 </div>
-
 {% endif %}
 
 {% include "receiving/_layout_close.html" %}

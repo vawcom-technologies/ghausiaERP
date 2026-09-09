@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Monthly Electricity - Ghausia Dyeing{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title="Monthly Electricity" rcv_subtitle="Daily kWh with running totals for the selected month" rcv_urdu="ماہانہ بجلی" rcv_compact=True rcv_wide=True %}
+
+{% if breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        {% for crumb in breadcrumb %}
+            {% if crumb.url %}
+            <li class="breadcrumb-item"><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+            {% else %}
+            <li class="breadcrumb-item active" aria-current="page">{{ crumb.label }}</li>
+            {% endif %}
+        {% endfor %}
+    </ol>
+</nav>
+{% endif %}
+
+<nav class="rcv-actions">
+    <a href="{% url 'electricity:daily_list' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-list-ul"></i> Daily readings
+    </a>
+    <a href="{% url 'electricity:daily_entry' %}?mode=wapda" class="rcv-btn rcv-btn-secondary">
+        <i class="bi bi-plus-lg"></i> New entry
+    </a>
+    <a href="{% url 'electricity:monthly' %}" class="rcv-btn rcv-btn-primary">
+        <i class="bi bi-calendar3"></i> Monthly readings
+    </a>
+</nav>
+
+<div class="rcv-hint">
+    <i class="bi bi-info-circle"></i>
+    <div>
+        Each row is one <strong>date</strong>.
+        <strong>Cumulative</strong> columns add kWh from the 1st of the month through that date.
+        Older months stay saved and selectable.
+    </div>
+</div>
+
+<form method="get" class="fuel-month-nav" aria-label="Select month">
+    <a class="rcv-btn rcv-btn-ghost" href="?month={{ prev_month }}&year={{ prev_year }}" title="Previous month">
+        <i class="bi bi-chevron-left"></i>
+    </a>
+    <label class="fuel-month-field">
+        <span class="visually-hidden">Month</span>
+        <select name="month" class="form-select form-select-sm" onchange="this.form.submit()">
+            {% for num, label in month_choices %}
+            <option value="{{ num }}" {% if num == selected_month %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label class="fuel-month-field">
+        <span class="visually-hidden">Year</span>
+        <select name="year" class="form-select form-select-sm" onchange="this.form.submit()">
+            {% for y in year_choices %}
+            <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <a class="rcv-btn rcv-btn-ghost" href="?month={{ next_month }}&year={{ next_year }}" title="Next month">
+        <i class="bi bi-chevron-right"></i>
+    </a>
+    {% if not is_current_month %}
+    <a class="rcv-link ms-2" href="{% url 'electricity:monthly' %}">This month</a>
+    {% endif %}
+    <span class="fuel-month-label ms-auto">{{ month_label }}</span>
+</form>
+
+<div class="rcv-panel fuel-records-panel">
+    <div class="fuel-records-wrap">
+        <table class="table rcv-table fuel-records-table fuel-monthly-table mb-0">
+            <thead>
+                <tr>
+                    <th rowspan="2">Date</th>
+                    <th rowspan="2">Source</th>
+                    <th colspan="3" class="text-center fuel-th-group">Day — kWh</th>
+                    <th colspan="2" class="text-center fuel-th-group">Factory hours</th>
+                    <th colspan="3" class="text-center fuel-th-group fuel-col-cum">Cumulative kWh</th>
+                </tr>
+                <tr>
+                    <th>WAPDA Peak</th>
+                    <th>WAPDA Non-peak</th>
+                    <th class="fuel-col-total">Total</th>
+                    <th>Peak</th>
+                    <th>Non-peak</th>
+                    <th class="fuel-col-cum">WAPDA</th>
+                    <th class="fuel-col-cum">Solar</th>
+                    <th class="fuel-col-cum fuel-col-total">Grand</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in report.rows %}
+                <tr>
+                    <td class="fuel-cell-date">{{ row.record_date }}</td>
+                    <td>{{ row.source_mode }}</td>
+                    <td>{{ row.wapda_peak_kwh }}</td>
+                    <td>{{ row.wapda_offpeak_kwh }}</td>
+                    <td class="fuel-col-total"><strong>{{ row.total_kwh }}</strong></td>
+                    <td>{{ row.peak_hours }}</td>
+                    <td>{{ row.offpeak_hours }}</td>
+                    <td class="fuel-col-cum">{{ row.cum_wapda_kwh }}</td>
+                    <td class="fuel-col-cum">{{ row.cum_solar_kwh }}</td>
+                    <td class="fuel-col-cum fuel-col-total"><strong>{{ row.cum_total_kwh }}</strong></td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="10" class="rcv-empty">
+                        No readings this month.
+                        <a href="{% url 'electricity:daily_entry' %}?mode=wapda">New entry</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+            {% if report.rows %}
+            <tfoot>
+                <tr class="fuel-month-totals">
+                    <th colspan="2">Month total</th>
+                    <th>{{ report.totals.wapda_peak_kwh }}</th>
+                    <th>{{ report.totals.wapda_offpeak_kwh }}</th>
+                    <th class="fuel-col-total">{{ report.totals.total_kwh }}</th>
+                    <th>{{ report.totals.peak_hours }}</th>
+                    <th>{{ report.totals.offpeak_hours }}</th>
+                    <th class="fuel-col-cum">{{ report.totals.wapda_total_kwh }}</th>
+                    <th class="fuel-col-cum">{{ report.totals.solar_kwh }}</th>
+                    <th class="fuel-col-total">{{ report.totals.total_kwh }}</th>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+{% include "receiving/_layout_close.html" %}
+{% endblock %}

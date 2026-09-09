@@ -1,8 +1,37 @@
 {% extends "base.html" %}
 {% block title %}Electricity Meters{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between page-header"><h1>Electricity Meters</h1><a href="{% url 'electricity:meter_create' %}" class="btn btn-save btn-lg-action">+ Add Meter</a></div>
-<div class="card"><table class="table mb-0"><thead><tr><th>Name</th><th>Number</th><th>Department</th><th>Multiplier</th><th></th></tr></thead>
-<tbody>{% for obj in objects %}<tr><td>{{ obj.name }}</td><td>{{ obj.meter_number }}</td><td>{{ obj.department }}</td><td>{{ obj.multiplier }}</td>
-<td><a href="{% url 'electricity:meter_edit' obj.pk %}" class="btn btn-sm btn-outline-primary">Edit</a></td></tr>{% empty %}<tr><td colspan="5" class="text-center">No meters.</td></tr>{% endfor %}</tbody></table></div>
+<div class="page-header-block d-flex flex-wrap justify-content-between align-items-start gap-3">
+    <div>
+        <h1 class="page-title">Electricity Meters</h1>
+        <p class="page-subtitle">Meters used for the older unit readings</p>
+    </div>
+    <a href="{% url 'electricity:meter_create' %}" class="btn btn-save btn-lg-action">+ Add Meter</a>
+</div>
+<div class="table-wrap">
+    <table class="table mb-0">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Number</th>
+                <th>Department</th>
+                <th>Multiplier</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for obj in objects %}
+            <tr>
+                <td>{{ obj.name }}</td>
+                <td>{{ obj.meter_number }}</td>
+                <td>{{ obj.department }}</td>
+                <td>{{ obj.multiplier }}</td>
+                <td><a href="{% url 'electricity:meter_edit' obj.pk %}" class="btn btn-sm btn-outline-primary">Edit</a></td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5" class="table-empty">No meters.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

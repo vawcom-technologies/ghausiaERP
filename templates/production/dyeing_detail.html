@@ -10,7 +10,7 @@
 </div></div>
 <h3>Material Usage</h3>
 <a href="{% url 'production:dyeing_material_create' %}?batch_id={{ object.pk }}" class="btn btn-save mb-2">+ Add Material</a>
-<div class="card mb-3"><table class="table mb-0"><thead><tr><th>Material</th><th>Qty</th><th>Actions</th></tr></thead>
+<div class="table-wrap mb-3"><table class="table mb-0"><thead><tr><th>Material</th><th>Qty</th><th>Actions</th></tr></thead>
 <tbody>{% for u in material_usages %}<tr><td>{{ u.material }}</td><td>{{ u.quantity_used }} {{ u.unit }}</td>
 <td>{% if can_cancel_records and not u.is_cancelled %}<a href="{% url 'production:dyeing_material_cancel' u.pk %}" class="btn btn-sm btn-cancel-record">Cancel</a>{% endif %}</td></tr>
 {% empty %}<tr><td colspan="3" class="text-center">No materials recorded.</td></tr>{% endfor %}</tbody></table></div>

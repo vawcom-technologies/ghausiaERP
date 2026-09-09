@@ -11,7 +11,7 @@ from accounts.forms import StaffUserCreateForm
 from accounts.job_accounts import JOB_STATION_ACCOUNTS, ensure_job_station_accounts
 from accounts.mixins import ERPLoginRequiredMixin
 from accounts.models import WorkAssignment
-from accounts.modules import MODULE_KEYS, MODULE_LABELS, WORK_MODULES
+from accounts.modules import MODULE_KEYS, MODULE_LABELS, WORK_MODULES, grouped_work_modules
 from accounts.permissions import (
     GROUP_ADMIN,
     GROUP_DATA_ENTRY,
@@ -123,6 +123,7 @@ class AssignmentDashboardView(StaffRequiredMixin, View):
             {
                 "rows": _user_rows(users),
                 "work_modules": WORK_MODULES,
+                "work_module_groups": grouped_work_modules(),
             },
         )
 

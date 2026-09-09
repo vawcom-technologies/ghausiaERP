@@ -232,8 +232,12 @@ class SteamBoilerDeleteView(ERPLoginRequiredMixin, View):
     """Soft-delete a steam boiler shift record."""
 
     def post(self, request, pk):
+        from accounts.permissions import can_soft_delete_records
         from common.recycle import soft_delete_record
+        from django.core.exceptions import PermissionDenied
 
+        if not can_soft_delete_records(request.user):
+            raise PermissionDenied
         obj = get_object_or_404(SteamBoilerShiftRecord, pk=pk)
         label = f"{obj.record_date} Shift {obj.shift}"
         soft_delete_record(obj, request.user)
@@ -429,8 +433,13 @@ class OilBoilerUpdateRedirectView(ERPLoginRequiredMixin, View):
 
 class OilBoilerDeleteView(ERPLoginRequiredMixin, View):
     def post(self, request, pk):
+        from django.core.exceptions import PermissionDenied
+
+        from accounts.permissions import can_soft_delete_records
         from common.recycle import soft_delete_record
 
+        if not can_soft_delete_records(request.user):
+            raise PermissionDenied
         obj = get_object_or_404(OilBoilerShiftRecord, pk=pk)
         label = f"{obj.record_date} Shift {obj.shift}"
         soft_delete_record(obj, request.user)

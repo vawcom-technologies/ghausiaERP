@@ -1,13 +1,22 @@
 {% extends "base.html" %}
 {% block title %}Reading Detail{% endblock %}
 {% block content %}
-<h1>Reading - {{ object.meter }} ({{ object.reading_date }})</h1>
-<div class="card"><div class="card-body">
-    <p><strong>Opening:</strong> {{ object.opening_reading }}</p>
-    <p><strong>Closing:</strong> {{ object.closing_reading }}</p>
-    <p><strong>Multiplier:</strong> {{ object.multiplier }}</p>
-    <p><strong>Units Consumed:</strong> {{ object.units_consumed }}</p>
-    <p><strong>Entered By:</strong> {{ object.entered_by }}</p>
-</div></div>
-{% if can_cancel_records and not object.is_cancelled %}<a href="{% url 'electricity:reading_cancel' object.pk %}" class="btn btn-cancel-record">Cancel</a>{% endif %}
+<div class="page-header-block">
+    <h1 class="page-title">Reading — {{ object.meter }}</h1>
+    <p class="page-subtitle">{{ object.reading_date }}</p>
+</div>
+<div class="card form-card">
+    <div class="card-body">
+        <p><strong>Opening:</strong> {{ object.opening_reading }}</p>
+        <p><strong>Closing:</strong> {{ object.closing_reading }}</p>
+        <p><strong>Multiplier:</strong> {{ object.multiplier }}</p>
+        <p><strong>Units Consumed:</strong> {{ object.units_consumed }}</p>
+        <p><strong>Entered By:</strong> {{ object.entered_by }}</p>
+    </div>
+</div>
+{% if can_cancel_records and not object.is_cancelled %}
+<div class="form-actions mt-3">
+    <a href="{% url 'electricity:reading_cancel' object.pk %}" class="btn btn-cancel-record">Cancel</a>
+</div>
+{% endif %}
 {% endblock %}

@@ -19,6 +19,7 @@ JOB_STATION_ACCOUNTS = (
     ("inventory", "inv123", "Inventory", "Store", "inventory"),
     ("chemicals", "chem123", "Chemicals", "Store", "chemicals"),
     ("electricity", "elec123", "Electricity", "Readings", "electricity"),
+    ("fuel", "fuel123", "Fuel", "Boilers", "fuel"),
     ("maintenance", "maint123", "Maintenance", "Staff", "maintenance"),
     ("attendance", "attn123", "Attendance", "Clerk", "attendance"),
 )

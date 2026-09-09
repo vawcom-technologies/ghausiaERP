@@ -5,6 +5,9 @@ from accounts.permissions import (
     can_cancel_records,
     can_delete_records,
     can_manage_setup,
+    can_permanently_delete,
+    can_request_permanent_delete,
+    can_view_recycle_bin,
     is_administrator,
     is_data_entry,
     is_supervisor,
@@ -18,7 +21,7 @@ _MOBILE_EXCEL = (
     ("production_lots", "Lots today", "bi-diagram-3", "production:lot_export", True),
     ("inventory", "Purchases today", "bi-cart-plus", "inventory:transaction_export", True),
     ("chemicals", "Chemical stock", "bi-eyedropper", "inventory:chemical_stock_export", False),
-    ("electricity", "Electricity today", "bi-lightning-charge", "electricity:reading_export", True),
+    ("electricity", "Electricity today", "bi-lightning-charge", "electricity:daily_export", True),
     ("maintenance", "Maintenance today", "bi-tools", "maintenance:export", True),
 )
 
@@ -64,6 +67,9 @@ def erp_roles(request):
         "is_data_entry": is_data_entry(user) if authenticated else False,
         "can_manage_staff": can_assign_work(user) if authenticated else False,
         "can_delete_records": can_delete_records(user) if authenticated else False,
+        "can_view_recycle_bin": can_view_recycle_bin(user) if authenticated else False,
+        "can_permanently_delete": can_permanently_delete(user) if authenticated else False,
+        "can_request_permanent_delete": can_request_permanent_delete(user) if authenticated else False,
         "can_cancel_records": can_cancel_records(user) if authenticated else False,
         "can_manage_setup": can_manage_setup(user) if authenticated else False,
         "allowed_modules": allowed,

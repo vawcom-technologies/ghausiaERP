@@ -133,7 +133,7 @@
                                 class="gate-action-btn gate-action-delete"
                                 data-delete-url="{% url 'gate_entry:delete' obj.pk %}"
                                 data-delete-label="{{ obj.gate_number }}"
-                                data-confirm-message="Delete {{ obj.gate_number }}?&#10;&#10;This cannot be undone.&#10;&#10;یہ گیٹ اندراج حذف ہو جائے گی۔ کیا آپ یقینی ہیں؟">Delete</button>
+                                data-confirm-message="Delete {{ obj.gate_number }}?&#10;&#10;It will move to Recently Deleted until an administrator permanently deletes it.&#10;&#10;یہ گیٹ اندراج عارضی طور پر حذف ہو گی۔">Delete</button>
                         {% endif %}
                     </div>
                 </td>

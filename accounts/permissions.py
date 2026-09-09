@@ -58,8 +58,31 @@ def can_assign_work(user) -> bool:
     return is_supervisor(user)
 
 
+def can_soft_delete_records(user) -> bool:
+    """Any signed-in staff can move a record to Recently Deleted."""
+    return bool(user and user.is_authenticated)
+
+
+def can_view_recycle_bin(user) -> bool:
+    return bool(user and user.is_authenticated)
+
+
+def can_restore_deleted(user) -> bool:
+    return bool(user and user.is_authenticated)
+
+
 def can_delete_records(user) -> bool:
+    """Show the temporary Delete button on lists."""
+    return can_soft_delete_records(user)
+
+
+def can_permanently_delete(user) -> bool:
     return is_administrator(user)
+
+
+def can_request_permanent_delete(user) -> bool:
+    """Supervisor can ask admin to wipe a recycled record."""
+    return is_supervisor_role(user)
 
 
 def can_cancel_records(user) -> bool:

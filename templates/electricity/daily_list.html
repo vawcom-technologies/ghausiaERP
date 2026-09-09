@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Daily Electricity - Ghausia Dyeing{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title="Daily Electricity" rcv_subtitle="Saved WAPDA and solar readings" rcv_urdu="روزانہ بجلی" rcv_compact=True rcv_wide=True %}
+
+{% if breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        {% for crumb in breadcrumb %}
+            {% if crumb.url %}
+            <li class="breadcrumb-item"><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+            {% else %}
+            <li class="breadcrumb-item active" aria-current="page">{{ crumb.label }}</li>
+            {% endif %}
+        {% endfor %}
+    </ol>
+</nav>
+{% endif %}
+
+<nav class="rcv-actions" aria-label="Electricity actions">
+    <a href="{% url 'electricity:daily_entry' %}?mode=wapda" class="rcv-btn rcv-btn-primary">
+        <i class="bi bi-plus-lg"></i> WAPDA only
+    </a>
+    <a href="{% url 'electricity:daily_entry' %}?mode=wapda_solar" class="rcv-btn rcv-btn-secondary">
+        <i class="bi bi-sun"></i> WAPDA + Solar
+    </a>
+    <a href="{% url 'electricity:monthly' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-calendar3"></i> Monthly readings
+    </a>
+    <a href="{% url 'electricity:daily_export' %}"
+       class="rcv-btn rcv-btn-ghost"
+       data-export-select-trigger
+       data-export-url="{% url 'electricity:daily_export' %}">
+        <i class="bi bi-file-earmark-excel"></i> Export Excel
+    </a>
+    <a href="{% url 'electricity:hub' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-arrow-left"></i> Electricity
+    </a>
+</nav>
+
+<form method="get" class="rcv-search">
+    <i class="bi bi-search rcv-search-icon" aria-hidden="true"></i>
+    <input type="text" name="q" class="rcv-search-input" placeholder="Search remarks…" value="{{ request.GET.q }}" autocomplete="off">
+    <button class="rcv-btn rcv-btn-primary rcv-search-btn" type="submit">Search</button>
+</form>
+
+<div data-export-select>
+{% csrf_token %}
+<div class="rcv-panel fuel-records-panel">
+    <div class="fuel-records-wrap">
+        <table class="table rcv-table fuel-records-table mb-0" data-export-select-table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Source</th>
+                    <th>WAPDA Peak</th>
+                    <th>WAPDA Non-peak</th>
+                    <th>Solar</th>
+                    <th class="fuel-col-total">Total kWh</th>
+                    <th>Peak hrs</th>
+                    <th>Non-peak hrs</th>
+                    <th class="th-actions">Actions<span class="rcv-th-urdu">عمل</span></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for obj in objects %}
+                <tr data-export-id="{{ obj.pk }}">
+                    <td class="fuel-cell-date">{{ obj.record_date }}</td>
+                    <td>{{ obj.get_source_mode_display }}</td>
+                    <td>{{ obj.wapda_peak_kwh }} kWh</td>
+                    <td>{{ obj.wapda_offpeak_kwh }} kWh</td>
+                    <td>{% if obj.includes_solar %}{{ obj.solar_kwh }} kWh{% else %}—{% endif %}</td>
+                    <td class="fuel-col-total"><strong>{{ obj.total_kwh }} kWh</strong></td>
+                    <td>{{ obj.peak_hours }}</td>
+                    <td>{{ obj.offpeak_hours }}</td>
+                    <td class="gate-actions-cell fuel-actions-cell">
+                        <div class="gate-action-box" role="group" aria-label="Actions for {{ obj.record_date }}">
+                            <a href="{% url 'electricity:daily_detail' obj.pk %}" class="gate-action-btn gate-action-view">View</a>
+                            <a href="{% url 'electricity:daily_edit' obj.pk %}" class="gate-action-btn gate-action-update">Update</a>
+                            {% if can_delete_records %}
+                            <button type="button"
+                                    class="gate-action-btn gate-action-delete"
+                                    data-delete-url="{% url 'electricity:daily_delete' obj.pk %}"
+                                    data-delete-label="{{ obj.record_date }}"
+                                    data-confirm-message="Delete electricity reading for {{ obj.record_date }}?&#10;&#10;It will move to Recently Deleted until an administrator permanently deletes it.">Delete</button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="9" class="rcv-empty">
+                        No daily electricity readings yet.
+                        <a href="{% url 'electricity:daily_entry' %}?mode=wapda">Add WAPDA</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+{% include "includes/pagination.html" %}
+
+{% include "receiving/_layout_close.html" %}
+
+<form id="row-delete-form" method="post" hidden>
+    {% csrf_token %}
+</form>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/gate_list_actions.js' %}?v=3"></script>
+<script src="{% static 'js/export_select.js' %}?v=3"></script>
+{% endblock %}

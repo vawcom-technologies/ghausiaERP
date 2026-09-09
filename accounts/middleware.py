@@ -9,8 +9,10 @@ from accounts.modules import module_for_path
 from accounts.permissions import (
     can_access_module,
     can_assign_work,
-    can_delete_records,
     can_manage_setup,
+    can_permanently_delete,
+    can_request_permanent_delete,
+    can_view_recycle_bin,
     is_administrator,
 )
 
@@ -49,7 +51,17 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             return None
 
         if path.startswith("/profile/restore/"):
-            if not can_delete_records(user):
+            if not can_view_recycle_bin(user):
+                return _deny(request)
+            return None
+
+        if path.startswith("/profile/ask-delete/") or path.startswith("/profile/purge/"):
+            if not (can_permanently_delete(user) or can_request_permanent_delete(user)):
+                return _deny(request)
+            return None
+
+        if path.startswith("/profile/delete-request/"):
+            if not can_permanently_delete(user):
                 return _deny(request)
             return None
 

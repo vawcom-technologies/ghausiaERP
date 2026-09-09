@@ -67,11 +67,13 @@
                         <div class="gate-action-box" role="group" aria-label="Actions for {{ obj.record_date }} Shift {{ obj.shift }}">
                             <a href="{% url 'fuel:steam_boiler_detail' obj.pk %}" class="gate-action-btn gate-action-view">View</a>
                             <a href="{% url 'fuel:steam_boiler_edit' obj.pk %}" class="gate-action-btn gate-action-update">Update</a>
+                            {% if can_delete_records %}
                             <button type="button"
                                     class="gate-action-btn gate-action-delete"
                                     data-delete-url="{% url 'fuel:steam_boiler_delete' obj.pk %}"
                                     data-delete-label="{{ obj.record_date }} Shift {{ obj.shift }}"
-                                    data-confirm-message="Delete {{ obj.record_date }} Shift {{ obj.shift }}?&#10;&#10;This cannot be undone.&#10;&#10;یہ ریکارڈ حذف ہو جائے گا۔ کیا آپ یقینی ہیں؟">Delete</button>
+                                    data-confirm-message="Delete {{ obj.record_date }} Shift {{ obj.shift }}?&#10;&#10;It will move to Recently Deleted until an administrator permanently deletes it.&#10;&#10;یہ ریکارڈ عارضی طور پر حذف ہو گا۔">Delete</button>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>

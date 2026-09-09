@@ -116,10 +116,10 @@ class ClothReceiptDeleteView(ERPLoginRequiredMixin, View):
     def post(self, request, pk):
         from django.core.exceptions import PermissionDenied
 
-        from accounts.permissions import can_delete_records
+        from accounts.permissions import can_soft_delete_records
         from common.recycle import soft_delete_record
 
-        if not can_delete_records(request.user):
+        if not can_soft_delete_records(request.user):
             raise PermissionDenied
         receipt = get_object_or_404(
             ClothReceipt.objects.select_related("production_lot"),

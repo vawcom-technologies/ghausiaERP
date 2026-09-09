@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Electricity {{ object.record_date }} - Ghausia Dyeing{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title="Electricity Reading" rcv_subtitle=object.record_date rcv_urdu="بجلی" rcv_compact=True %}
+
+{% if breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        {% for crumb in breadcrumb %}
+            {% if crumb.url %}
+            <li class="breadcrumb-item"><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+            {% else %}
+            <li class="breadcrumb-item active" aria-current="page">{{ crumb.label }}</li>
+            {% endif %}
+        {% endfor %}
+    </ol>
+</nav>
+{% endif %}
+
+<nav class="rcv-actions">
+    <a href="{% url 'electricity:daily_edit' object.pk %}" class="rcv-btn rcv-btn-primary">
+        <i class="bi bi-pencil"></i> Update
+    </a>
+    <a href="{% url 'electricity:daily_list' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-list-ul"></i> Daily readings
+    </a>
+</nav>
+
+<div class="rcv-panel fuel-entry-panel elec-entry-panel">
+    <p class="mb-3"><strong>{{ object.get_source_mode_display }}</strong> · {{ object.record_date }}</p>
+    <div class="elec-box">
+        <h2 class="elec-box-title">WAPDA</h2>
+        <div class="elec-detail-grid">
+            <div><span>Peak</span><strong>{{ object.wapda_peak_kwh }} kWh</strong></div>
+            <div><span>Non-peak</span><strong>{{ object.wapda_offpeak_kwh }} kWh</strong></div>
+            <div><span>WAPDA total</span><strong>{{ object.wapda_total_kwh }} kWh</strong></div>
+        </div>
+    </div>
+    {% if object.includes_solar %}
+    <div class="elec-box">
+        <h2 class="elec-box-title">Solar</h2>
+        <div class="elec-detail-grid">
+            <div><span>Solar</span><strong>{{ object.solar_kwh }} kWh</strong></div>
+            <div><span>Day total</span><strong>{{ object.total_kwh }} kWh</strong></div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="elec-box">
+        <h2 class="elec-box-title">Factory ran</h2>
+        <div class="elec-detail-grid">
+            <div><span>Peak hours</span><strong>{{ object.peak_hours }}</strong></div>
+            <div><span>Non-peak hours</span><strong>{{ object.offpeak_hours }}</strong></div>
+            <div><span>Total hours</span><strong>{{ object.total_hours }}</strong></div>
+        </div>
+    </div>
+    {% if object.remarks %}
+    <p class="mb-0 mt-3"><span class="text-muted">Remarks:</span> {{ object.remarks }}</p>
+    {% endif %}
+</div>
+
+{% include "receiving/_layout_close.html" %}
+{% endblock %}

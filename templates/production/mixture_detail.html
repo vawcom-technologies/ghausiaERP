@@ -8,7 +8,7 @@
     <p><strong>Total Quantity:</strong> {{ object.total_quantity }} {{ object.unit }}</p>
 </div></div>
 <a href="{% url 'production:mixture_ingredient_create' %}?mixture_id={{ object.pk }}" class="btn btn-save">+ Add Ingredient</a>
-<div class="card mt-2"><table class="table mb-0"><thead><tr><th>Material</th><th>Qty</th><th>Actions</th></tr></thead>
+<div class="table-wrap mt-2"><table class="table mb-0"><thead><tr><th>Material</th><th>Qty</th><th>Actions</th></tr></thead>
 <tbody>{% for i in object.ingredients.all %}{% if not i.is_cancelled %}<tr><td>{{ i.material }}</td><td>{{ i.quantity }} {{ i.unit }}</td>
 <td>{% if can_cancel_records %}<a href="{% url 'production:mixture_ingredient_cancel' i.pk %}" class="btn btn-sm btn-cancel-record">Cancel</a>{% endif %}</td></tr>{% endif %}{% endfor %}</tbody></table></div>
 <div class="d-flex flex-wrap gap-2 mt-3">

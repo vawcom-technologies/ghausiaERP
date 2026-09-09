@@ -243,11 +243,23 @@ class RoleAccessTests(TestCase):
             can_assign_work,
             can_delete_records,
             can_manage_users,
+            can_permanently_delete,
+            can_request_permanent_delete,
+            can_view_recycle_bin,
         )
 
         self.assertTrue(can_delete_records(self.admin))
-        self.assertFalse(can_delete_records(self.supervisor))
-        self.assertFalse(can_delete_records(self.clerk))
+        self.assertTrue(can_delete_records(self.supervisor))
+        self.assertTrue(can_delete_records(self.clerk))
+        self.assertTrue(can_view_recycle_bin(self.admin))
+        self.assertTrue(can_view_recycle_bin(self.supervisor))
+        self.assertTrue(can_view_recycle_bin(self.clerk))
+        self.assertTrue(can_permanently_delete(self.admin))
+        self.assertFalse(can_permanently_delete(self.supervisor))
+        self.assertFalse(can_permanently_delete(self.clerk))
+        self.assertFalse(can_request_permanent_delete(self.admin))
+        self.assertTrue(can_request_permanent_delete(self.supervisor))
+        self.assertFalse(can_request_permanent_delete(self.clerk))
         self.assertTrue(can_assign_work(self.admin))
         self.assertTrue(can_assign_work(self.supervisor))
         self.assertFalse(can_assign_work(self.clerk))
@@ -291,9 +303,138 @@ class RoleAccessTests(TestCase):
             {"gate_entry", "receiving"},
         )
 
-    def test_supervisor_cannot_delete_receiving(self):
+    def _deleted_power_reading(self):
+        from electricity.models import DailyPowerReading
+
+        row = DailyPowerReading.objects.create(
+            record_date=date(2026, 9, 14),
+            source_mode=DailyPowerReading.MODE_WAPDA,
+            created_by=self.admin,
+            updated_by=self.admin,
+        )
+        row.soft_delete(self.supervisor)
+        return row
+
+    def test_supervisor_can_soft_delete_electricity(self):
+        from electricity.models import DailyPowerReading
+
+        row = DailyPowerReading.objects.create(
+            record_date=date(2026, 9, 15),
+            source_mode=DailyPowerReading.MODE_WAPDA,
+            created_by=self.admin,
+            updated_by=self.admin,
+        )
         self.client.force_login(self.supervisor)
-        response = self.client.post("/receiving/1/delete/")
+        response = self.client.post(f"/electricity/daily/{row.pk}/delete/")
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(DailyPowerReading.objects.filter(pk=row.pk).exists())
+        self.assertTrue(DailyPowerReading.objects.deleted().filter(pk=row.pk).exists())
+
+    def test_clerk_can_soft_delete_assigned_job(self):
+        from accounts.models import WorkAssignment
+        from electricity.models import DailyPowerReading
+
+        WorkAssignment.objects.create(user=self.clerk, module="electricity", assigned_by=self.admin)
+        row = DailyPowerReading.objects.create(
+            record_date=date(2026, 9, 16),
+            source_mode=DailyPowerReading.MODE_WAPDA,
+            created_by=self.clerk,
+            updated_by=self.clerk,
+        )
+        self.client.force_login(self.clerk)
+        response = self.client.post(f"/electricity/daily/{row.pk}/delete/")
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(DailyPowerReading.objects.deleted().filter(pk=row.pk).exists())
+
+    def test_recycle_bin_is_visible_by_role(self):
+        row = self._deleted_power_reading()
+        self.client.force_login(self.admin)
+        admin_profile = self.client.get("/profile/")
+        self.assertContains(admin_profile, "Recently Deleted")
+        self.assertContains(admin_profile, "Electricity")
+        self.assertContains(admin_profile, "Delete permanently")
+        self.assertContains(admin_profile, str(row.record_date))
+
+        self.client.force_login(self.supervisor)
+        supervisor_profile = self.client.get("/profile/")
+        self.assertContains(supervisor_profile, "Recently Deleted")
+        self.assertContains(supervisor_profile, "Ask admin to delete")
+        self.assertNotContains(supervisor_profile, "Delete permanently")
+
+        self.client.force_login(self.clerk)
+        clerk_profile = self.client.get("/profile/")
+        self.assertContains(clerk_profile, "Recently Deleted")
+        self.assertNotContains(clerk_profile, str(row.record_date))
+        self.assertNotContains(clerk_profile, "Delete permanently")
+        self.assertNotContains(clerk_profile, "Ask admin to delete")
+
+    def test_clerk_sees_deleted_rows_for_assigned_job(self):
+        from accounts.models import WorkAssignment
+
+        WorkAssignment.objects.create(user=self.clerk, module="electricity", assigned_by=self.admin)
+        row = self._deleted_power_reading()
+        self.client.force_login(self.clerk)
+        clerk_profile = self.client.get("/profile/")
+        self.assertContains(clerk_profile, str(row.record_date))
+        self.assertContains(clerk_profile, "Restore")
+        self.assertNotContains(clerk_profile, "Delete permanently")
+
+    def test_supervisor_permanent_delete_asks_admin(self):
+        from accounts.models import PermanentDeleteRequest
+        from electricity.models import DailyPowerReading
+
+        row = self._deleted_power_reading()
+        self.client.force_login(self.supervisor)
+        response = self.client.post(f"/profile/purge/electricity_daily/{row.pk}/")
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(DailyPowerReading.objects.deleted().filter(pk=row.pk).exists())
+        req = PermanentDeleteRequest.objects.get(model_key="electricity_daily", object_pk=row.pk)
+        self.assertEqual(req.status, PermanentDeleteRequest.STATUS_PENDING)
+        self.assertEqual(req.requested_by, self.supervisor)
+
+        self.client.force_login(self.admin)
+        admin_profile = self.client.get("/profile/")
+        self.assertContains(admin_profile, "Waiting for your approval")
+        self.assertContains(admin_profile, "super_role")
+
+        approve = self.client.post(f"/profile/delete-request/{req.pk}/", {"decision": "approve"})
+        self.assertEqual(approve.status_code, 302)
+        self.assertFalse(DailyPowerReading.all_objects.filter(pk=row.pk).exists())
+        req.refresh_from_db()
+        self.assertEqual(req.status, PermanentDeleteRequest.STATUS_APPROVED)
+
+    def test_admin_can_purge_deleted_record(self):
+        from electricity.models import DailyPowerReading
+
+        row = self._deleted_power_reading()
+        self.client.force_login(self.admin)
+        response = self.client.post(f"/profile/purge/electricity_daily/{row.pk}/")
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(DailyPowerReading.all_objects.filter(pk=row.pk).exists())
+
+    def test_clerk_cannot_purge_or_ask_admin(self):
+        row = self._deleted_power_reading()
+        self.client.force_login(self.clerk)
+        purge = self.client.post(f"/profile/purge/electricity_daily/{row.pk}/")
+        self.assertEqual(purge.status_code, 403)
+        ask = self.client.post(f"/profile/ask-delete/electricity_daily/{row.pk}/")
+        self.assertEqual(ask.status_code, 403)
+
+    def test_clerk_can_restore_assigned_deleted_row(self):
+        from accounts.models import WorkAssignment
+        from electricity.models import DailyPowerReading
+
+        WorkAssignment.objects.create(user=self.clerk, module="electricity", assigned_by=self.admin)
+        row = self._deleted_power_reading()
+        self.client.force_login(self.clerk)
+        response = self.client.post(f"/profile/restore/electricity_daily/{row.pk}/")
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(DailyPowerReading.objects.filter(pk=row.pk).exists())
+
+    def test_clerk_cannot_restore_unassigned_deleted_row(self):
+        row = self._deleted_power_reading()
+        self.client.force_login(self.clerk)
+        response = self.client.post(f"/profile/restore/electricity_daily/{row.pk}/")
         self.assertEqual(response.status_code, 403)
 
     def test_create_job_station_accounts(self):
@@ -332,7 +473,7 @@ class RoleAccessTests(TestCase):
     def test_staff_lives_on_profile_not_dashboard(self):
         self.client.force_login(self.admin)
         home = self.client.get("/")
-        self.assertContains(home, "What is happening on the floor today")
+        self.assertContains(home, "What is happening in the factory today")
         self.assertContains(home, "Active lots")
         self.assertContains(home, "Lots in production")
         self.assertNotContains(home, "Open staff list")
@@ -340,6 +481,8 @@ class RoleAccessTests(TestCase):
         profile = self.client.get("/profile/")
         self.assertContains(profile, "Data-entry staff")
         self.assertContains(profile, "Open staff list")
+        self.assertContains(profile, "Recently Deleted")
+        self.assertContains(profile, "Only you can delete a record permanently")
         navbar_staff = self.client.get("/").content.decode()
         self.assertNotIn(">Staff</a>", navbar_staff)
 
@@ -347,21 +490,31 @@ class RoleAccessTests(TestCase):
         clerk_home = self.client.get("/")
         self.assertContains(clerk_home, "Your jobs")
         self.assertContains(clerk_home, "Cloth Receiving")
-        self.assertNotContains(clerk_home, "What is happening on the floor today")
+        self.assertContains(clerk_home, "Jobs assigned to you")
         clerk_profile = self.client.get("/profile/")
         self.assertNotContains(clerk_profile, "Open staff list")
+        self.assertContains(clerk_profile, "Recently Deleted")
+        self.assertContains(clerk_profile, "An administrator must approve")
+
+        self.client.force_login(self.supervisor)
+        supervisor_profile = self.client.get("/profile/")
+        self.assertContains(supervisor_profile, "Recently Deleted")
+        self.assertContains(supervisor_profile, "Ask an administrator")
+        self.assertNotContains(supervisor_profile, "Delete permanently")
 
     def test_mobile_quick_actions_match_assigned_jobs(self):
         self.client.force_login(self.clerk)
         home = self.client.get("/").content.decode()
         self.assertIn("mobile-dock", home)
+        self.assertIn('data-mobile-open="mobileJobs"', home)
+        self.assertIn("js/mobile_dock.js", home)
         self.assertIn("receiving/export/?today=1", home)
-        self.assertNotIn("electricity/readings/export/?today=1", home)
+        self.assertNotIn("electricity/daily/export/?today=1", home)
         self.client.force_login(self.admin)
         admin_home = self.client.get("/").content.decode()
-        self.assertIn("electricity/readings/export/?today=1", admin_home)
+        self.assertIn("electricity/daily/export/?today=1", admin_home)
         self.assertIn("Open a job", admin_home)
-        excel = self.client.get("/electricity/readings/export/?today=1")
+        excel = self.client.get("/electricity/daily/export/?today=1")
         self.assertEqual(excel.status_code, 200)
         self.assertIn(".xlsx", excel["Content-Disposition"])
 

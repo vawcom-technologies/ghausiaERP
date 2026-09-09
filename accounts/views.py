@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.views import LoginView
 from django.db import transaction
 from django.db.models import Count
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import TemplateView, View
@@ -14,11 +14,14 @@ from accounts.modules import MODULE_HOME_LINKS, WORK_MODULES, module_for_path
 from accounts.permissions import (
     assigned_modules,
     can_access_module,
-    can_delete_records,
+    can_permanently_delete,
+    can_request_permanent_delete,
+    can_restore_deleted,
+    can_view_recycle_bin,
     is_data_entry,
     is_supervisor,
 )
-from electricity.services.electricity import active_meters_count, today_readings_count
+from electricity.services.electricity import today_power_reading_exists
 from gate_entry.models import GateEntry
 from inventory.services.stock import get_materials_below_minimum
 from maintenance.models import MaintenanceJob
@@ -65,8 +68,6 @@ class HomeView(ERPLoginRequiredMixin, TemplateView):
             for row in active_lot_qs.values("current_stage").annotate(count=Count("id"))
         }
         low_stock = get_materials_below_minimum() if is_supervisor(user) else []
-        meters = active_meters_count()
-        today_readings = today_readings_count()
         assigned = assigned_modules(user)
         ctx.update({
             "active_lots": active_lot_qs.count(),
@@ -78,9 +79,7 @@ class HomeView(ERPLoginRequiredMixin, TemplateView):
             "broken_machines": Machine.objects.filter(status="Broken Down", is_active=True).count(),
             "low_stock_count": len(low_stock),
             "low_stock_items": low_stock[:10],
-            "electricity_today_entered": today_readings >= meters if meters > 0 else today_readings > 0,
-            "today_readings": today_readings,
-            "active_meters": meters,
+            "electricity_today_entered": today_power_reading_exists(today),
             "today_gate_entries": GateEntry.objects.filter(
                 is_cancelled=False, entry_date=today
             ).count(),
@@ -116,7 +115,19 @@ class ProfileView(ERPLoginRequiredMixin, TemplateView):
 
         ctx = super().get_context_data(**kwargs)
         ctx["profile_user"] = self.request.user
-        ctx["recently_deleted"] = list_recently_deleted(limit=40) if can_delete_records(self.request.user) else []
+        ctx["recently_deleted"] = (
+            list_recently_deleted(self.request.user, limit=40)
+            if can_view_recycle_bin(self.request.user)
+            else []
+        )
+        if can_permanently_delete(self.request.user):
+            from accounts.models import PermanentDeleteRequest
+
+            ctx["pending_delete_requests"] = PermanentDeleteRequest.objects.filter(
+                status=PermanentDeleteRequest.STATUS_PENDING
+            ).select_related("requested_by")
+        else:
+            ctx["pending_delete_requests"] = []
         return ctx
 
 
@@ -124,10 +135,10 @@ class RestoreDeletedView(ERPLoginRequiredMixin, View):
     """Restore a soft-deleted record from the profile recycle bin."""
 
     def post(self, request, model_key, pk):
-        if not can_delete_records(request.user):
+        if not can_restore_deleted(request.user):
             from django.core.exceptions import PermissionDenied
             raise PermissionDenied
-        from common.recycle import get_deleted_object, restore_record
+        from common.recycle import get_deleted_object, get_registry_row, restore_record
         from production.models import (
             CalenderEntry,
             ComfortEntry,
@@ -146,6 +157,11 @@ class RestoreDeletedView(ERPLoginRequiredMixin, View):
         if obj is None:
             messages.error(request, "Deleted record not found or already restored.")
             return redirect("accounts:profile")
+        if is_data_entry(request.user):
+            row = get_registry_row(model_key)
+            if row is None or row[4] not in assigned_modules(request.user):
+                from django.core.exceptions import PermissionDenied
+                raise PermissionDenied
 
         label = str(obj)
         try:
@@ -195,6 +211,102 @@ class RestoreDeletedView(ERPLoginRequiredMixin, View):
             return redirect("accounts:profile")
 
         messages.success(request, f"Restored {label}.")
+        return redirect("accounts:profile")
+
+
+class RequestPermanentDeleteView(ERPLoginRequiredMixin, View):
+    """Supervisor asks an administrator to wipe a recycled record."""
+
+    def post(self, request, model_key, pk):
+        from django.core.exceptions import PermissionDenied
+
+        from common.recycle import request_permanent_delete
+
+        if can_permanently_delete(request.user):
+            return PurgeDeletedView.as_view()(request, model_key=model_key, pk=pk)
+        if not can_request_permanent_delete(request.user):
+            raise PermissionDenied
+        req = request_permanent_delete(request.user, model_key, pk)
+        if req is None:
+            messages.error(request, "Deleted record not found or already restored.")
+        else:
+            messages.success(
+                request,
+                f"Asked an administrator to permanently delete {req.label}.",
+            )
+        return redirect("accounts:profile")
+
+
+class PurgeDeletedView(ERPLoginRequiredMixin, View):
+    """Administrator permanently removes a recycled record."""
+
+    def post(self, request, model_key, pk):
+        from django.core.exceptions import PermissionDenied
+
+        from accounts.models import PermanentDeleteRequest
+        from common.recycle import purge_deleted_object
+
+        if not can_permanently_delete(request.user):
+            if can_request_permanent_delete(request.user):
+                return RequestPermanentDeleteView.as_view()(request, model_key=model_key, pk=pk)
+            raise PermissionDenied
+        try:
+            label = purge_deleted_object(model_key, pk)
+        except Exception as exc:  # noqa: BLE001
+            messages.error(request, f"Could not permanently delete that record: {exc}")
+            return redirect("accounts:profile")
+        if label is None:
+            messages.error(request, "Deleted record not found or already restored.")
+            return redirect("accounts:profile")
+        PermanentDeleteRequest.objects.filter(
+            model_key=model_key,
+            object_pk=pk,
+            status=PermanentDeleteRequest.STATUS_PENDING,
+        ).update(
+            status=PermanentDeleteRequest.STATUS_APPROVED,
+            reviewed_by=request.user,
+            reviewed_at=timezone.now(),
+        )
+        messages.success(request, f"Permanently deleted {label}.")
+        return redirect("accounts:profile")
+
+
+class ReviewPermanentDeleteView(ERPLoginRequiredMixin, View):
+    """Admin approves or rejects a supervisor's permanent-delete request."""
+
+    def post(self, request, pk):
+        from django.core.exceptions import PermissionDenied
+
+        from accounts.models import PermanentDeleteRequest
+        from common.recycle import purge_deleted_object
+
+        if not can_permanently_delete(request.user):
+            raise PermissionDenied
+        req = get_object_or_404(
+            PermanentDeleteRequest,
+            pk=pk,
+            status=PermanentDeleteRequest.STATUS_PENDING,
+        )
+        decision = (request.POST.get("decision") or "").strip()
+        if decision == "reject":
+            req.status = PermanentDeleteRequest.STATUS_REJECTED
+            req.reviewed_by = request.user
+            req.reviewed_at = timezone.now()
+            req.review_note = request.POST.get("note") or "Rejected by administrator."
+            req.save(update_fields=["status", "reviewed_by", "reviewed_at", "review_note"])
+            messages.success(request, f"Kept {req.label} in Recently Deleted.")
+            return redirect("accounts:profile")
+
+        try:
+            label = purge_deleted_object(req.model_key, req.object_pk)
+        except Exception as exc:  # noqa: BLE001
+            messages.error(request, f"Could not permanently delete that record: {exc}")
+            return redirect("accounts:profile")
+        req.status = PermanentDeleteRequest.STATUS_APPROVED
+        req.reviewed_by = request.user
+        req.reviewed_at = timezone.now()
+        req.save(update_fields=["status", "reviewed_by", "reviewed_at"])
+        messages.success(request, f"Permanently deleted {label or req.label}.")
         return redirect("accounts:profile")
 
 

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}Electricity Entry - Ghausia Dyeing{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title="Electricity Entry" rcv_subtitle="Peak and non-peak kWh for WAPDA, with optional solar" rcv_urdu="بجلی اندراج" %}
+
+{% if breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        {% for crumb in breadcrumb %}
+            {% if crumb.url %}
+            <li class="breadcrumb-item"><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+            {% else %}
+            <li class="breadcrumb-item active" aria-current="page">{{ crumb.label }}</li>
+            {% endif %}
+        {% endfor %}
+    </ol>
+</nav>
+{% endif %}
+
+<nav class="rcv-actions" aria-label="Electricity actions">
+    <a href="{% url 'electricity:daily_list' %}" class="rcv-btn rcv-btn-secondary">
+        <i class="bi bi-list-ul"></i> Daily readings
+    </a>
+    <a href="{% url 'electricity:monthly' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-calendar3"></i> Monthly readings
+    </a>
+    <a href="{% url 'electricity:hub' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-arrow-left"></i> Electricity
+    </a>
+</nav>
+
+<div class="rcv-hint">
+    <i class="bi bi-info-circle"></i>
+    <div>
+        Choose <strong>WAPDA only</strong> or <strong>WAPDA + Solar</strong>.
+        Enter <strong>peak</strong> and <strong>non-peak</strong> units in <strong>kWh</strong>,
+        and how long the factory ran in those hours.
+        One saved row per date — saving again updates that day.
+    </div>
+</div>
+
+<div class="fuel-shift-tabs elec-mode-tabs mb-3" role="tablist" aria-label="Source">
+    <a
+        href="?date={{ selected_date }}&mode=wapda"
+        class="fuel-shift-tab{% if selected_mode == 'wapda' %} is-active{% endif %}"
+        role="tab"
+        aria-selected="{% if selected_mode == 'wapda' %}true{% else %}false{% endif %}"
+    >WAPDA only</a>
+    <a
+        href="?date={{ selected_date }}&mode=wapda_solar"
+        class="fuel-shift-tab{% if selected_mode == 'wapda_solar' %} is-active{% endif %}"
+        role="tab"
+        aria-selected="{% if selected_mode == 'wapda_solar' %}true{% else %}false{% endif %}"
+    >WAPDA + Solar</a>
+</div>
+
+<form method="post" class="rcv-sheet-form" data-elec-form>
+    {% csrf_token %}
+    {{ form.source_mode }}
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger py-2">{{ form.non_field_errors|striptags }}</div>
+    {% endif %}
+
+    <div class="rcv-panel fuel-entry-panel elec-entry-panel">
+        <div class="fuel-entry-header">
+            <div class="fuel-date-field">
+                <label class="form-label mb-1" for="{{ form.record_date.id_for_label }}">Date</label>
+                {{ form.record_date }}
+                {% if form.record_date.errors %}<div class="text-danger small">{{ form.record_date.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="fuel-shift-badge">
+                {% if selected_mode == 'wapda_solar' %}Recording <strong>WAPDA + Solar</strong>
+                {% else %}Recording <strong>WAPDA only</strong>{% endif %}
+                {% if existing %}<span class="badge bg-secondary ms-1">Updating saved row</span>{% endif %}
+            </div>
+        </div>
+
+        <section class="elec-box" aria-labelledby="elec-wapda-label">
+            <h2 class="elec-box-title" id="elec-wapda-label"><i class="bi bi-plug me-1"></i>WAPDA</h2>
+            <div class="elec-box-grid">
+                <label class="elec-field">
+                    <span>Peak kWh</span>
+                    {{ form.wapda_peak_kwh }}
+                    {% if form.wapda_peak_kwh.errors %}<small class="text-danger">{{ form.wapda_peak_kwh.errors|striptags }}</small>{% endif %}
+                </label>
+                <label class="elec-field">
+                    <span>Non-peak kWh</span>
+                    {{ form.wapda_offpeak_kwh }}
+                    {% if form.wapda_offpeak_kwh.errors %}<small class="text-danger">{{ form.wapda_offpeak_kwh.errors|striptags }}</small>{% endif %}
+                </label>
+                <label class="elec-field elec-field-total">
+                    <span>WAPDA total</span>
+                    <input type="text" class="form-control" data-elec-total="wapda" readonly tabindex="-1" value="{% if existing %}{{ existing.wapda_total_kwh }}{% endif %}" aria-label="WAPDA total kWh">
+                </label>
+            </div>
+        </section>
+
+        {% if includes_solar %}
+        <section class="elec-box" aria-labelledby="elec-solar-label">
+            <h2 class="elec-box-title" id="elec-solar-label"><i class="bi bi-sun me-1"></i>Solar</h2>
+            <div class="elec-box-grid elec-box-grid-2">
+                <label class="elec-field">
+                    <span>Solar kWh</span>
+                    {{ form.solar_kwh }}
+                    {% if form.solar_kwh.errors %}<small class="text-danger">{{ form.solar_kwh.errors|striptags }}</small>{% endif %}
+                </label>
+                <label class="elec-field elec-field-total">
+                    <span>Day total kWh</span>
+                    <input type="text" class="form-control" data-elec-total="day" readonly tabindex="-1" value="{% if existing %}{{ existing.total_kwh }}{% endif %}" aria-label="Day total kWh">
+                </label>
+            </div>
+        </section>
+        {% else %}
+        <input type="hidden" name="solar_kwh" value="0">
+        {% endif %}
+
+        <section class="elec-box" aria-labelledby="elec-hours-label">
+            <h2 class="elec-box-title" id="elec-hours-label"><i class="bi bi-clock me-1"></i>Factory ran</h2>
+            <div class="elec-box-grid">
+                <label class="elec-field">
+                    <span>Peak hours</span>
+                    {{ form.peak_hours }}
+                    {% if form.peak_hours.errors %}<small class="text-danger">{{ form.peak_hours.errors|striptags }}</small>{% endif %}
+                </label>
+                <label class="elec-field">
+                    <span>Non-peak hours</span>
+                    {{ form.offpeak_hours }}
+                    {% if form.offpeak_hours.errors %}<small class="text-danger">{{ form.offpeak_hours.errors|striptags }}</small>{% endif %}
+                </label>
+                <label class="elec-field elec-field-total">
+                    <span>Total hours</span>
+                    <input type="text" class="form-control" data-elec-total="hours" readonly tabindex="-1" value="{% if existing %}{{ existing.total_hours }}{% endif %}" aria-label="Total factory hours">
+                </label>
+            </div>
+        </section>
+
+        <div class="fuel-remarks mt-3">
+            <label class="form-label mb-1" for="{{ form.remarks.id_for_label }}">Remarks</label>
+            {{ form.remarks }}
+        </div>
+
+        <div class="rcv-actions rcv-actions-inline mt-3">
+            <button type="submit" class="rcv-btn rcv-btn-primary">
+                <i class="bi bi-check-lg"></i> Save reading
+            </button>
+        </div>
+    </div>
+</form>
+
+{% include "receiving/_layout_close.html" %}
+{% endblock %}
+{% block extra_js %}
+<script>
+(function () {
+  var form = document.querySelector("[data-elec-form]");
+  if (!form) return;
+
+  function num(name) {
+    var field = form.querySelector('[name="' + name + '"]');
+    if (!field || field.value === "") return 0;
+    var value = parseFloat(String(field.value).replace(",", "."));
+    return isNaN(value) ? 0 : value;
+  }
+
+  function setTotal(key, value) {
+    var out = form.querySelector('[data-elec-total="' + key + '"]');
+    if (out) out.value = value ? value.toFixed(3).replace(/\.?0+$/, "") : "";
+  }
+
+  function refresh() {
+    var peak = num("wapda_peak_kwh");
+    var offpeak = num("wapda_offpeak_kwh");
+    var solar = num("solar_kwh");
+    var peakH = num("peak_hours");
+    var offH = num("offpeak_hours");
+    setTotal("wapda", peak + offpeak);
+    setTotal("day", peak + offpeak + solar);
+    var hoursOut = form.querySelector('[data-elec-total="hours"]');
+    if (hoursOut) hoursOut.value = (peakH + offH) ? (peakH + offH).toFixed(2).replace(/\.?0+$/, "") : "";
+  }
+
+  form.addEventListener("input", refresh);
+  refresh();
+})();
+</script>
+{% endblock %}

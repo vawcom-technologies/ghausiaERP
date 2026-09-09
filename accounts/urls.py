@@ -8,7 +8,15 @@ from accounts.staff_views import (
     ToggleUserActiveView,
     UserListView,
 )
-from accounts.views import ERPLoginView, HomeView, ProfileView, RestoreDeletedView
+from accounts.views import (
+    ERPLoginView,
+    HomeView,
+    ProfileView,
+    PurgeDeletedView,
+    RequestPermanentDeleteView,
+    RestoreDeletedView,
+    ReviewPermanentDeleteView,
+)
 
 app_name = "accounts"
 
@@ -21,6 +29,21 @@ urlpatterns = [
         "profile/restore/<str:model_key>/<int:pk>/",
         RestoreDeletedView.as_view(),
         name="restore_deleted",
+    ),
+    path(
+        "profile/purge/<str:model_key>/<int:pk>/",
+        PurgeDeletedView.as_view(),
+        name="purge_deleted",
+    ),
+    path(
+        "profile/ask-delete/<str:model_key>/<int:pk>/",
+        RequestPermanentDeleteView.as_view(),
+        name="request_permanent_delete",
+    ),
+    path(
+        "profile/delete-request/<int:pk>/",
+        ReviewPermanentDeleteView.as_view(),
+        name="review_permanent_delete",
     ),
     path("users/", UserListView.as_view(), name="users"),
     path("users/new/", StaffUserCreateView.as_view(), name="user_create"),

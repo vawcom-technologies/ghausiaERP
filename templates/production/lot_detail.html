@@ -21,7 +21,7 @@
     </div></div></div>
 </div>
 <h3>Stage Summary</h3>
-<div class="card mb-3"><div class="table-responsive"><table class="table mb-0">
+<div class="table-wrap mb-3"><table class="table mb-0">
     <thead><tr><th>Stage</th><th>Input m</th><th>Output m</th><th>Loss m</th><th>Loss %</th></tr></thead>
     <tbody>
     <tr><td>Singeing</td><td>{{ singeing.input_metres }}</td><td>{{ singeing.output_metres }}</td><td>{{ singeing.loss_metres }}</td><td>{{ singeing.loss_percentage|floatformat:2 }}%</td></tr>
@@ -30,10 +30,10 @@
     <tr><td>Calender</td><td>{{ calender.input_metres }}</td><td>{{ calender.output_metres }}</td><td>{{ calender.loss_metres }}</td><td>{{ calender.loss_percentage|floatformat:2 }}%</td></tr>
     <tr><td>Comfort</td><td>{{ comfort.input_metres }}</td><td>{{ comfort.output_metres }}</td><td>{{ comfort.loss_metres }}</td><td>{{ comfort.loss_percentage|floatformat:2 }}%</td></tr>
     </tbody>
-</table></div></div>
+</table></div>
 {% if dyeing_materials %}
 <h3>Dyeing Materials Used</h3>
-<div class="card mb-3"><table class="table mb-0"><thead><tr><th>Material</th><th>Batch</th><th>Qty</th></tr></thead>
+<div class="table-wrap mb-3"><table class="table mb-0"><thead><tr><th>Material</th><th>Batch</th><th>Qty</th></tr></thead>
 <tbody>{% for u in dyeing_materials %}<tr><td>{{ u.material }}</td><td>{{ u.dyeing_batch.batch_number }}</td><td>{{ u.quantity_used }} {{ u.unit }}</td></tr>{% endfor %}</tbody></table></div>
 {% endif %}
 {% if finished_stock %}

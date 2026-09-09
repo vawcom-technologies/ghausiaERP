@@ -12,7 +12,7 @@ from production.models import (
 from gate_entry.models import GateEntry
 from inventory.models import ChemicalIssueSlip, ChemicalStock, MaterialTransaction
 from maintenance.models import MaintenanceJob, MaintenanceMaterialUsage
-from electricity.models import DailyElectricityReading, ElectricityMeter
+from electricity.models import DailyElectricityReading, DailyPowerReading, ElectricityMeter
 
 
 class AuditAdminMixin:
@@ -186,3 +186,20 @@ class DailyElectricityReadingAdmin(AuditAdminMixin, admin.ModelAdmin):
     list_filter = ("is_cancelled",)
     date_hierarchy = "reading_date"
     readonly_fields = AuditAdminMixin.readonly_fields + ("units_consumed",)
+
+
+@admin.register(DailyPowerReading)
+class DailyPowerReadingAdmin(AuditAdminMixin, admin.ModelAdmin):
+    list_display = (
+        "record_date",
+        "source_mode",
+        "wapda_peak_kwh",
+        "wapda_offpeak_kwh",
+        "solar_kwh",
+        "total_kwh",
+        "peak_hours",
+        "offpeak_hours",
+    )
+    list_filter = ("source_mode", "is_cancelled")
+    date_hierarchy = "record_date"
+    readonly_fields = AuditAdminMixin.readonly_fields + ("wapda_total_kwh", "total_kwh", "total_hours")

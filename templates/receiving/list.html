@@ -70,7 +70,7 @@
                                 class="gate-action-btn gate-action-delete"
                                 data-delete-url="{% url 'receiving:delete' obj.pk %}"
                                 data-delete-label="{{ obj.production_lot_number }}"
-                                data-confirm-message="Delete {{ obj.production_lot_number }}?&#10;&#10;This cannot be undone.&#10;&#10;یہ لاٹ حذف ہو جائے گی۔ کیا آپ یقینی ہیں؟">Delete</button>
+                                data-confirm-message="Delete {{ obj.production_lot_number }}?&#10;&#10;It will move to Recently Deleted until an administrator permanently deletes it.&#10;&#10;یہ لاٹ عارضی طور پر حذف ہو گی۔">Delete</button>
                         {% endif %}
                     </div>
                 </td>
