@@ -49,12 +49,17 @@ def transaction_to_excel_row(tx) -> list[Any]:
 
 
 def _to_decimal(value: Any, field_label: str) -> Decimal:
+    from common.forms import extract_number_text
+
     if value is None or value == "":
         raise ValueError(f"{field_label} is required.")
+    extracted = extract_number_text(value)
+    if extracted is None:
+        raise ValueError(f"{field_label} must include a number.")
     try:
-        qty = Decimal(str(value).replace(",", "").strip())
+        qty = Decimal(extracted)
     except (InvalidOperation, ValueError) as exc:
-        raise ValueError(f"{field_label} must be a number.") from exc
+        raise ValueError(f"{field_label} must include a number.") from exc
     if qty <= 0:
         raise ValueError(f"{field_label} must be greater than zero.")
     return qty

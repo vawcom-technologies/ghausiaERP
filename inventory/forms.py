@@ -60,6 +60,7 @@ class PurchaseForm(MaterialTransactionForm):
         super().__init__(*args, **kwargs)
         self.fields["quantity_out"].widget = forms.HiddenInput()
         self.fields["quantity_out"].initial = Decimal("0")
+        self.initial["quantity_out"] = Decimal("0")
 
 
 class AdjustmentInForm(MaterialTransactionForm):
@@ -68,6 +69,7 @@ class AdjustmentInForm(MaterialTransactionForm):
         super().__init__(*args, **kwargs)
         self.fields["quantity_out"].widget = forms.HiddenInput()
         self.fields["quantity_out"].initial = Decimal("0")
+        self.initial["quantity_out"] = Decimal("0")
 
 
 class AdjustmentOutForm(MaterialTransactionForm):
@@ -76,3 +78,4 @@ class AdjustmentOutForm(MaterialTransactionForm):
         super().__init__(*args, **kwargs)
         self.fields["quantity_in"].widget = forms.HiddenInput()
         self.fields["quantity_in"].initial = Decimal("0")
+        self.initial["quantity_in"] = Decimal("0")

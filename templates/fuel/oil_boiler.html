@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Oil Boiler Entry - Fuel - Ghausia Dyeing{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title="Oil Boiler Entry" rcv_subtitle="Enter run time, Kuttal, Lunda & Fuel for Shift 1 or Shift 2" rcv_urdu="آئل بوائلر" %}
+
+{% if breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        {% for crumb in breadcrumb %}
+            {% if crumb.url %}
+            <li class="breadcrumb-item"><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+            {% else %}
+            <li class="breadcrumb-item active" aria-current="page">{{ crumb.label }}</li>
+            {% endif %}
+        {% endfor %}
+    </ol>
+</nav>
+{% endif %}
+
+<nav class="rcv-actions" aria-label="Oil boiler actions">
+    <a href="{% url 'fuel:oil_boiler' %}" class="rcv-btn rcv-btn-primary">
+        <i class="bi bi-list-ul"></i> Saved Records
+    </a>
+    <a href="{% url 'fuel:oil_boiler_monthly' %}" class="rcv-btn rcv-btn-secondary">
+        <i class="bi bi-calendar3"></i> Monthly Cumulative
+    </a>
+    <a href="{% url 'fuel:hub' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-arrow-left"></i> All boilers
+    </a>
+</nav>
+
+<div class="rcv-hint">
+    <i class="bi bi-info-circle"></i>
+    <div>
+        Choose <strong>Shift 1</strong> or <strong>Shift 2</strong>, then enter
+        <strong>run time (hours)</strong> and <strong>quantity + price</strong> for
+        Kuttal, Lunda, and Fuel. Material totals are quantity × price.
+    </div>
+</div>
+
+<div class="fuel-shift-tabs mb-3" role="tablist" aria-label="Shift">
+    <a
+        href="?date={{ selected_date }}&shift=1"
+        class="fuel-shift-tab{% if selected_shift == 1 %} is-active{% endif %}"
+        role="tab"
+        aria-selected="{% if selected_shift == 1 %}true{% else %}false{% endif %}"
+    >Shift 1</a>
+    <a
+        href="?date={{ selected_date }}&shift=2"
+        class="fuel-shift-tab{% if selected_shift == 2 %} is-active{% endif %}"
+        role="tab"
+        aria-selected="{% if selected_shift == 2 %}true{% else %}false{% endif %}"
+    >Shift 2</a>
+</div>
+
+<form method="post" class="rcv-sheet-form fuel-oil-form" data-fuel-oil-form>
+    {% csrf_token %}
+    {{ form.shift }}
+    <div class="rcv-panel fuel-entry-panel">
+        <div class="fuel-entry-header">
+            <div class="fuel-date-field">
+                <label class="form-label mb-1" for="{{ form.record_date.id_for_label }}">Date</label>
+                {{ form.record_date }}
+                {% if form.record_date.errors %}<div class="text-danger small">{{ form.record_date.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="fuel-shift-badge">
+                Recording <strong>Shift {{ selected_shift }}</strong>
+                {% if existing %}<span class="badge bg-secondary ms-1">Updating saved row</span>{% endif %}
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table fuel-material-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantity / Hours</th>
+                        <th class="fuel-col-price">Price</th>
+                        <th class="fuel-col-total">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fuel-material-name">Time <span class="text-muted fw-normal">(hours)</span></td>
+                        <td>
+                            {{ form.run_hours }}
+                            {% if form.run_hours.errors %}<div class="text-danger small">{{ form.run_hours.errors|striptags }}</div>{% endif %}
+                        </td>
+                        <td class="fuel-col-price text-muted">—</td>
+                        <td class="fuel-col-total text-muted">—</td>
+                    </tr>
+                    <tr>
+                        <td class="fuel-material-name">Kuttal</td>
+                        <td>
+                            {{ form.kuttal_quantity }}
+                            {% if form.kuttal_quantity.errors %}<div class="text-danger small">{{ form.kuttal_quantity.errors|striptags }}</div>{% endif %}
+                        </td>
+                        <td class="fuel-col-price">
+                            {{ form.kuttal_price }}
+                            {% if form.kuttal_price.errors %}<div class="text-danger small">{{ form.kuttal_price.errors|striptags }}</div>{% endif %}
+                        </td>
+                        <td class="fuel-col-total">
+                            <input type="text" class="form-control fuel-daily-calc" data-daily="kuttal" readonly tabindex="-1" value="{% if existing %}{{ existing.kuttal_daily_price }}{% endif %}" aria-label="Kuttal total">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fuel-material-name">Lunda</td>
+                        <td>
+                            {{ form.lunda_quantity }}
+                            {% if form.lunda_quantity.errors %}<div class="text-danger small">{{ form.lunda_quantity.errors|striptags }}</div>{% endif %}
+                        </td>
+                        <td class="fuel-col-price">
+                            {{ form.lunda_price }}
+                            {% if form.lunda_price.errors %}<div class="text-danger small">{{ form.lunda_price.errors|striptags }}</div>{% endif %}
+                        </td>
+                        <td class="fuel-col-total">
+                            <input type="text" class="form-control fuel-daily-calc" data-daily="lunda" readonly tabindex="-1" value="{% if existing %}{{ existing.lunda_daily_price }}{% endif %}" aria-label="Lunda total">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fuel-material-name">Fuel</td>
+                        <td>
+                            {{ form.fuel_quantity }}
+                            {% if form.fuel_quantity.errors %}<div class="text-danger small">{{ form.fuel_quantity.errors|striptags }}</div>{% endif %}
+                        </td>
+                        <td class="fuel-col-price">
+                            {{ form.fuel_price }}
+                            {% if form.fuel_price.errors %}<div class="text-danger small">{{ form.fuel_price.errors|striptags }}</div>{% endif %}
+                        </td>
+                        <td class="fuel-col-total">
+                            <input type="text" class="form-control fuel-daily-calc" data-daily="fuel" readonly tabindex="-1" value="{% if existing %}{{ existing.fuel_daily_price }}{% endif %}" aria-label="Fuel total">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="fuel-remarks mt-3">
+            <label class="form-label mb-1" for="{{ form.remarks.id_for_label }}">Remarks</label>
+            {{ form.remarks }}
+        </div>
+
+        <div class="rcv-actions rcv-actions-inline mt-3">
+            <button type="submit" class="rcv-btn rcv-btn-primary">
+                <i class="bi bi-check-lg"></i> Save Shift {{ selected_shift }}
+            </button>
+        </div>
+    </div>
+</form>
+
+{% include "receiving/_layout_close.html" %}
+{% endblock %}
+{% block extra_js %}
+<script>
+(function () {
+  var form = document.querySelector("[data-fuel-oil-form]");
+  if (!form) return;
+
+  var dateInput = form.querySelector('[name="record_date"]');
+  if (dateInput) {
+    dateInput.addEventListener("change", function () {
+      var shift = {{ selected_shift }};
+      var url = new URL(window.location.href);
+      url.searchParams.set("date", dateInput.value);
+      url.searchParams.set("shift", String(shift));
+      window.location.href = url.pathname + "?" + url.searchParams.toString();
+    });
+  }
+
+  function num(el) {
+    if (!el) return 0;
+    var n = parseFloat(String(el.value || "").replace(/,/g, ""));
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function money(n) {
+    return (Math.round(n * 100) / 100).toFixed(2);
+  }
+
+  function recalc() {
+    var pairs = [
+      ["kuttal_quantity", "kuttal_price", "kuttal"],
+      ["lunda_quantity", "lunda_price", "lunda"],
+      ["fuel_quantity", "fuel_price", "fuel"],
+    ];
+    pairs.forEach(function (pair) {
+      var qtyEl = form.querySelector('[name="' + pair[0] + '"]');
+      var priceEl = form.querySelector('[name="' + pair[1] + '"]');
+      var qty = num(qtyEl);
+      var price = num(priceEl);
+      var out = form.querySelector('[data-daily="' + pair[2] + '"]');
+      if (out) out.value = (qty || price) ? money(qty * price) : "";
+    });
+  }
+
+  [
+    "kuttal_quantity", "kuttal_price",
+    "lunda_quantity", "lunda_price",
+    "fuel_quantity", "fuel_price",
+  ].forEach(function (name) {
+    var el = form.querySelector('[name="' + name + '"]');
+    if (!el) return;
+    el.addEventListener("input", recalc);
+    el.addEventListener("change", recalc);
+  });
+  recalc();
+})();
+</script>
+{% endblock %}

@@ -61,14 +61,14 @@
                     <td><input type="text" name="lot_number" class="form-control" value="{{ row.lot_number }}"></td>
                     <td><input type="date" name="receipt_date" class="form-control" value="{{ row.receipt_date }}"></td>
                     <td><input type="text" name="vendor_name" class="form-control" list="vendor-suggestions" value="{{ row.vendor_name }}"></td>
-                    <td class="col-cloth col-cloth-start"><input type="text" name="cloth_pv" class="form-control" inputmode="text" value="{{ row.cloth_pv }}"></td>
-                    <td class="col-cloth col-cloth-end"><input type="text" name="cloth_read_pick" class="form-control" inputmode="text" value="{{ row.cloth_read_pick }}"></td>
-                    <td class="col-rolls col-rolls-start"><input type="text" name="rolls" class="form-control" inputmode="numeric" placeholder="0" value="{{ row.rolls }}"></td>
-                    <td class="col-rolls col-rolls-end"><input type="text" name="factory_rolls" class="form-control" inputmode="numeric" placeholder="0" value="{{ row.factory_rolls }}"></td>
-                    <td class="col-metres"><input type="text" name="vendor_metres" class="form-control" inputmode="decimal" value="{{ row.vendor_metres }}"></td>
-                    <td class="col-metres"><input type="text" name="factory_metres" class="form-control" inputmode="decimal" value="{{ row.factory_metres }}"></td>
-                    <td class="col-weight"><input type="text" name="vendor_weight" class="form-control" inputmode="text" placeholder="0" value="{{ row.vendor_weight }}"></td>
-                    <td class="col-weight"><input type="text" name="factory_weight" class="form-control" inputmode="text" placeholder="0" value="{{ row.factory_weight }}"></td>
+                    <td class="col-cloth col-cloth-start"><input type="text" name="cloth_pv" class="form-control" value="{{ row.cloth_pv }}"></td>
+                    <td class="col-cloth col-cloth-end"><input type="text" name="cloth_read_pick" class="form-control" value="{{ row.cloth_read_pick }}"></td>
+                    <td class="col-rolls col-rolls-start"><input type="text" name="rolls" class="form-control" value="{{ row.rolls }}"></td>
+                    <td class="col-rolls col-rolls-end"><input type="text" name="factory_rolls" class="form-control" value="{{ row.factory_rolls }}"></td>
+                    <td class="col-metres"><input type="text" name="vendor_metres" class="form-control" value="{{ row.vendor_metres }}"></td>
+                    <td class="col-metres"><input type="text" name="factory_metres" class="form-control" value="{{ row.factory_metres }}"></td>
+                    <td class="col-weight"><input type="text" name="vendor_weight" class="form-control" value="{{ row.vendor_weight }}"></td>
+                    <td class="col-weight"><input type="text" name="factory_weight" class="form-control" value="{{ row.factory_weight }}"></td>
                     <td class="col-remarks"><input type="text" name="remarks" class="form-control" value="{{ row.remarks }}"></td>
                     <td class="col-photo">
                         <div class="sheet-photo-cell{% if row.photo_preview_url %} has-preview{% endif %}">
@@ -115,14 +115,14 @@
         <td><input type="text" name="lot_number" class="form-control"></td>
         <td><input type="date" name="receipt_date" class="form-control" value="{{ today }}"></td>
         <td><input type="text" name="vendor_name" class="form-control" list="vendor-suggestions"></td>
-        <td class="col-cloth col-cloth-start"><input type="text" name="cloth_pv" class="form-control" inputmode="text"></td>
-        <td class="col-cloth col-cloth-end"><input type="text" name="cloth_read_pick" class="form-control" inputmode="text"></td>
-        <td class="col-rolls col-rolls-start"><input type="text" name="rolls" class="form-control" inputmode="numeric" placeholder="0"></td>
-        <td class="col-rolls col-rolls-end"><input type="text" name="factory_rolls" class="form-control" inputmode="numeric" placeholder="0"></td>
-        <td class="col-metres"><input type="text" name="vendor_metres" class="form-control" inputmode="decimal"></td>
-        <td class="col-metres"><input type="text" name="factory_metres" class="form-control" inputmode="decimal"></td>
-        <td class="col-weight"><input type="text" name="vendor_weight" class="form-control" inputmode="text" placeholder="0"></td>
-        <td class="col-weight"><input type="text" name="factory_weight" class="form-control" inputmode="text" placeholder="0"></td>
+        <td class="col-cloth col-cloth-start"><input type="text" name="cloth_pv" class="form-control"></td>
+        <td class="col-cloth col-cloth-end"><input type="text" name="cloth_read_pick" class="form-control"></td>
+        <td class="col-rolls col-rolls-start"><input type="text" name="rolls" class="form-control"></td>
+        <td class="col-rolls col-rolls-end"><input type="text" name="factory_rolls" class="form-control"></td>
+        <td class="col-metres"><input type="text" name="vendor_metres" class="form-control"></td>
+        <td class="col-metres"><input type="text" name="factory_metres" class="form-control"></td>
+        <td class="col-weight"><input type="text" name="vendor_weight" class="form-control"></td>
+        <td class="col-weight"><input type="text" name="factory_weight" class="form-control"></td>
         <td class="col-remarks"><input type="text" name="remarks" class="form-control"></td>
         <td class="col-photo">
             <div class="sheet-photo-cell">

@@ -154,10 +154,59 @@
 <div class="row g-3">
     {% for card in assigned_job_cards %}
     <div class="col-md-4 col-sm-6">
-        <a href="{% url card.url_name %}" class="nav-card">
-            <div class="nav-card-icon"><i class="bi {{ card.icon }}"></i></div>
-            <div class="nav-card-title">{{ card.label }}</div>
-            <p class="nav-card-desc">{{ card.description }}</p>
+        <a href="{% url 'gate_entry:sheet' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-door-open"></i></div>
+            <div class="nav-card-title">Gate Entry</div>
+            <p class="nav-card-desc">Record vehicles and material at the gate</p>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'receiving:sheet' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-table"></i></div>
+            <div class="nav-card-title">Cloth Receiving Spreadsheet</div>
+            <p class="nav-card-desc">Enter multiple cloth receipts at once, like Excel</p>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'receiving:create' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-plus-circle"></i></div>
+            <div class="nav-card-title">New Cloth Receiving</div>
+            <p class="nav-card-desc">Record a single incoming lot with full details</p>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'production:lot_list' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-diagram-3"></i></div>
+            <div class="nav-card-title">Production Lots</div>
+            <p class="nav-card-desc">Track lots through singeing, dyeing, and finishing</p>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'inventory:purchase_sheet' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-cart-plus"></i></div>
+            <div class="nav-card-title">Material Purchase</div>
+            <p class="nav-card-desc">Record purchases and update stock levels</p>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'fuel:hub' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-fuel-pump"></i></div>
+            <div class="nav-card-title">Fuel</div>
+            <p class="nav-card-desc">Steam boiler and oil boiler registers</p>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'maintenance:create' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-wrench"></i></div>
+            <div class="nav-card-title">Report Breakdown</div>
+            <p class="nav-card-desc">Log a machine breakdown or maintenance job</p>
+        </a>
+    </div>
+    <div class="col-md-4 col-sm-6">
+        <a href="{% url 'electricity:reading_create' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-lightning"></i></div>
+            <div class="nav-card-title">Electricity Reading</div>
+            <p class="nav-card-desc">Enter today's meter readings for all units</p>
         </a>
     </div>
     {% endfor %}

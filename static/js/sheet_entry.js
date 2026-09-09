@@ -37,7 +37,10 @@
 
   function positiveNumber(value) {
     if (value === "") return false;
-    const n = Number(String(value).replace(",", ""));
+    const text = String(value).replace(/,/g, "");
+    const match = text.match(/-?\d+(?:\.\d+)?/);
+    if (!match) return false;
+    const n = Number(match[0]);
     return Number.isFinite(n) && n > 0;
   }
 

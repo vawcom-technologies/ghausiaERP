@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ boiler.name }} - Fuel - Ghausia Dyeing{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title=boiler.name rcv_subtitle=boiler.description rcv_urdu=boiler.urdu %}
+
+{% if breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        {% for crumb in breadcrumb %}
+            {% if crumb.url %}
+            <li class="breadcrumb-item"><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+            {% else %}
+            <li class="breadcrumb-item active" aria-current="page">{{ crumb.label }}</li>
+            {% endif %}
+        {% endfor %}
+    </ol>
+</nav>
+{% endif %}
+
+<nav class="rcv-actions" aria-label="Fuel actions">
+    <a href="{% url 'fuel:hub' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-arrow-left"></i> All boilers
+    </a>
+</nav>
+
+<div class="rcv-hint">
+    <i class="bi bi-info-circle"></i>
+    <div>
+        <strong>{{ boiler.name }}</strong> section is ready.
+        Spreadsheet / register columns can be added next.
+    </div>
+</div>
+
+{% include "receiving/_layout_close.html" %}
+{% endblock %}

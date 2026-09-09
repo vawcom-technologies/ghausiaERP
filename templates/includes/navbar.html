@@ -79,8 +79,17 @@
                         {% endif %}
                     </ul>
                 </li>
-                {% endif %}
-                {% if "maintenance" in allowed_modules %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-fuel-pump"></i><span>Fuel</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{% url 'fuel:hub' %}">All boilers</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'fuel:steam_boiler' %}">Steam Boiler</a></li>
+                        <li><a class="dropdown-item" href="{% url 'fuel:oil_boiler' %}">Oil Boiler</a></li>
+                    </ul>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'maintenance:list' %}"><i class="bi bi-tools"></i><span>Maintenance</span></a>
                 </li>

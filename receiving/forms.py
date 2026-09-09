@@ -49,14 +49,10 @@ class ClothReceiptForm(BootstrapFormMixin, forms.ModelForm):
             ),
             "pv_blend_qty": forms.TextInput(attrs={"autocomplete": "off"}),
             "read_pick_qty": forms.TextInput(attrs={"autocomplete": "off"}),
-            "number_of_rolls": forms.TextInput(attrs={"inputmode": "numeric", "autocomplete": "off"}),
-            "factory_number_of_rolls": forms.TextInput(
-                attrs={"inputmode": "numeric", "autocomplete": "off"}
-            ),
-            "vendor_metres": forms.TextInput(attrs={"inputmode": "decimal", "autocomplete": "off"}),
-            "factory_measured_metres": forms.TextInput(
-                attrs={"inputmode": "decimal", "autocomplete": "off"}
-            ),
+            "number_of_rolls": forms.TextInput(attrs={"autocomplete": "off"}),
+            "factory_number_of_rolls": forms.TextInput(attrs={"autocomplete": "off"}),
+            "vendor_metres": forms.TextInput(attrs={"autocomplete": "off"}),
+            "factory_measured_metres": forms.TextInput(attrs={"autocomplete": "off"}),
             "vendor_weight": forms.TextInput(attrs={"autocomplete": "off"}),
             "factory_measured_weight": forms.TextInput(attrs={"autocomplete": "off"}),
         }
@@ -96,7 +92,7 @@ class ClothReceiptForm(BootstrapFormMixin, forms.ModelForm):
         self.fields["pv_blend_qty"].required = False
         self.fields["read_pick_qty"].required = False
 
-        # Clear instructional help; use faint "0" hint that disappears when typing
+        # Clear instructional help / zero placeholders on entry fields
         for name in self.fields:
             self.fields[name].help_text = ""
             self.fields[name].widget.attrs.pop("placeholder", None)
@@ -111,7 +107,6 @@ class ClothReceiptForm(BootstrapFormMixin, forms.ModelForm):
         self.fields["factory_measured_weight"].required = False
         if not self.is_bound:
             for name in zero_hint_fields:
-                self.fields[name].widget.attrs["placeholder"] = "0"
                 current = getattr(self.instance, name, None) if self.instance.pk else None
                 if current in (None, "", 0, "0", Decimal("0")):
                     self.fields[name].initial = None

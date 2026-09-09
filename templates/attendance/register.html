@@ -121,16 +121,16 @@
                         </td>
 
                         <td class="col-hours">
-                            <input type="text" name="total_overtime_hours" class="form-control" value="{{ row.total_overtime_hours }}" inputmode="decimal" aria-label="Total overtime hours row {{ forloop.counter }}">
+                            <input type="text" name="total_overtime_hours" class="form-control" value="{{ row.total_overtime_hours }}" aria-label="Total overtime hours row {{ forloop.counter }}">
                         </td>
                         <td class="col-status">
                             <input type="text" name="work_status" class="form-control" value="{{ row.work_status }}" autocomplete="off" aria-label="Work status row {{ forloop.counter }}">
                         </td>
                         <td class="col-salary">
-                            <input type="text" name="decided_salary" class="form-control" value="{{ row.decided_salary }}" inputmode="decimal" aria-label="Decided salary row {{ forloop.counter }}">
+                            <input type="text" name="decided_salary" class="form-control" value="{{ row.decided_salary }}" aria-label="Decided salary row {{ forloop.counter }}">
                         </td>
                         <td class="col-hours">
-                            <input type="text" name="total_hours" class="form-control attendance-total-hours" value="{{ row.total_hours }}" inputmode="decimal" readonly tabindex="-1" aria-label="Cumulative total hours row {{ forloop.counter }}" title="Sum of hours worked across all 15 days">
+                            <input type="text" name="total_hours" class="form-control attendance-total-hours" value="{{ row.total_hours }}" readonly tabindex="-1" aria-label="Cumulative total hours row {{ forloop.counter }}" title="Sum of hours worked across all 15 days">
                         </td>
 
                         <td class="attendance-day-store" hidden>

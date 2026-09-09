@@ -53,10 +53,10 @@
                 <tr class="{% if row.is_invalid %}sheet-row-invalid{% endif %}" data-sheet-row>
                     <td><input type="date" name="stock_date" class="form-control" value="{{ row.stock_date }}"></td>
                     <td><input type="text" name="name" class="form-control" value="{{ row.name }}" autocomplete="off"></td>
-                    <td><input type="text" name="closing_stock" class="form-control stock-qty" value="{{ row.closing_stock }}" inputmode="decimal" autocomplete="off"></td>
-                    <td><input type="text" name="new_stock" class="form-control stock-qty" value="{{ row.new_stock }}" inputmode="decimal" autocomplete="off"></td>
+                    <td><input type="text" name="closing_stock" class="form-control stock-qty" value="{{ row.closing_stock }}" autocomplete="off"></td>
+                    <td><input type="text" name="new_stock" class="form-control stock-qty" value="{{ row.new_stock }}" autocomplete="off"></td>
                     <td><input type="text" name="total_stock" class="form-control stock-calc" value="{{ row.total_stock }}" readonly tabindex="-1"></td>
-                    <td><input type="text" name="issued_stock" class="form-control stock-qty" value="{{ row.issued_stock }}" inputmode="decimal" autocomplete="off"></td>
+                    <td><input type="text" name="issued_stock" class="form-control stock-qty" value="{{ row.issued_stock }}" autocomplete="off"></td>
                     <td><input type="text" name="remaining_stock" class="form-control stock-calc" value="{{ row.remaining_stock }}" readonly tabindex="-1"></td>
                     <td class="sheet-row-actions">
                         <button type="button" class="btn btn-sm btn-outline-danger" data-sheet-remove-row title="Remove row">&times;</button>
@@ -79,10 +79,10 @@
     <tr data-sheet-row>
         <td><input type="date" name="stock_date" class="form-control" value="{{ today }}"></td>
         <td><input type="text" name="name" class="form-control" autocomplete="off"></td>
-        <td><input type="text" name="closing_stock" class="form-control stock-qty" inputmode="decimal" autocomplete="off"></td>
-        <td><input type="text" name="new_stock" class="form-control stock-qty" inputmode="decimal" autocomplete="off"></td>
+        <td><input type="text" name="closing_stock" class="form-control stock-qty" autocomplete="off"></td>
+        <td><input type="text" name="new_stock" class="form-control stock-qty" autocomplete="off"></td>
         <td><input type="text" name="total_stock" class="form-control stock-calc" readonly tabindex="-1"></td>
-        <td><input type="text" name="issued_stock" class="form-control stock-qty" inputmode="decimal" autocomplete="off"></td>
+        <td><input type="text" name="issued_stock" class="form-control stock-qty" autocomplete="off"></td>
         <td><input type="text" name="remaining_stock" class="form-control stock-calc" readonly tabindex="-1"></td>
         <td class="sheet-row-actions">
             <button type="button" class="btn btn-sm btn-outline-danger" data-sheet-remove-row title="Remove row">&times;</button>
