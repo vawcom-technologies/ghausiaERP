@@ -5,6 +5,7 @@
 <div class="d-flex flex-wrap justify-content-between align-items-center page-header gap-2">
     <h1 class="mb-0">Material Purchase Spreadsheet</h1>
     <div>
+        <a href="{% url 'inventory:transaction_list' %}?export_select=1" class="btn btn-outline-success">Export Excel</a>
         <a href="{% url 'inventory:purchase_export_template' %}" class="btn btn-outline-primary">Download Excel Template</a>
         <a href="{% url 'inventory:purchase_import' %}" class="btn btn-outline-secondary">Import Excel</a>
         <a href="{% url 'inventory:home' %}" class="btn btn-secondary">Back</a>

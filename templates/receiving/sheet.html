@@ -5,7 +5,7 @@
 {% include "receiving/_layout_open.html" with rcv_title="Spreadsheet Entry" rcv_subtitle="Enter multiple lots at once — paste from Excel with Ctrl+V / Cmd+V" rcv_subtitle_urdu="دستی اندراج — ایک ساتھ کئی لاٹ" rcv_wide=True %}
 
 <nav class="rcv-actions" aria-label="Spreadsheet actions">
-    <a href="{% url 'receiving:export' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-file-earmark-excel"></i> Export Excel</a>
+    <a href="{% url 'receiving:list' %}?export_select=1" class="rcv-btn rcv-btn-ghost"><i class="bi bi-file-earmark-excel"></i> Export Excel</a>
     <a href="{% url 'receiving:export_template' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-download"></i> Excel Template</a>
     <a href="{% url 'receiving:import' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-upload"></i> Import Excel</a>
     <a href="{% url 'receiving:create' %}" class="rcv-btn rcv-btn-ghost"><i class="bi bi-plus-lg"></i> Single Entry</a>

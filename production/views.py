@@ -4,6 +4,7 @@ from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView, View
 
 from accounts.mixins import AuditCreateMixin, AuditUpdateMixin, CancelRecordView, ERPLoginRequiredMixin, PaginatedListMixin
+from common.selective_export import selective_excel_response
 from common.views import apply_search
 from inventory.models import MaterialTransaction
 from inventory.services.stock import reverse_material_transaction
@@ -43,6 +44,31 @@ def _form_kwargs(view):
 
 
 # --- Production Lots ---
+LOT_EXPORT_HEADERS = [
+    "Lot #",
+    "Vendor",
+    "Cloth",
+    "Stage",
+    "Status",
+    "Initial m",
+    "Current m",
+    "Start Date",
+]
+
+
+def _lot_excel_row(obj: ProductionLot) -> list:
+    return [
+        obj.lot_number or "",
+        str(obj.vendor) if obj.vendor_id else "",
+        str(obj.cloth_type) if obj.cloth_type_id else "",
+        obj.current_stage or "",
+        obj.status or "",
+        str(obj.initial_metres),
+        str(obj.current_metres),
+        obj.start_date.isoformat() if obj.start_date else "",
+    ]
+
+
 class ProductionLotListView(ERPLoginRequiredMixin, PaginatedListMixin, ListView):
     model = ProductionLot
     template_name = "production/lot_list.html"
@@ -65,6 +91,35 @@ class ProductionLotListView(ERPLoginRequiredMixin, PaginatedListMixin, ListView)
         ctx["stage_choices"] = ProductionLot.STAGE_CHOICES
         ctx["status_choices"] = ProductionLot.STATUS_CHOICES
         return ctx
+
+
+class ProductionLotExportView(ERPLoginRequiredMixin, View):
+    def get(self, request):
+        return self._export(request)
+
+    def post(self, request):
+        return self._export(request)
+
+    def _export(self, request):
+        qs = ProductionLot.objects.select_related("vendor", "cloth_type").order_by("-start_date", "-id")
+        search = (request.POST.get("q") or request.GET.get("q") or "").strip()
+        if search:
+            qs = apply_search(qs, search, ["lot_number"])
+        stage = (request.POST.get("stage") or request.GET.get("stage") or "").strip()
+        status = (request.POST.get("status") or request.GET.get("status") or "").strip()
+        if stage:
+            qs = qs.filter(current_stage=stage)
+        if status:
+            qs = qs.filter(status=status)
+        return selective_excel_response(
+            request,
+            queryset=qs,
+            headers=LOT_EXPORT_HEADERS,
+            row_builder=_lot_excel_row,
+            filename="production_lots_export.xlsx",
+            sheet_title="Lots",
+            list_redirect="production:lot_list",
+        )
 
 
 class ProductionLotDetailView(ERPLoginRequiredMixin, DetailView):

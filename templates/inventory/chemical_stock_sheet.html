@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Chemical Stock - Ghausia Dyeing{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title="Stock" rcv_subtitle="Chemicals — stock spreadsheet" rcv_urdu="اسٹاک" rcv_wide=True %}
+
+<nav class="rcv-actions" aria-label="Chemical stock actions">
+    <a href="{% url 'inventory:chemical_stock_list' %}?export_select=1" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-file-earmark-excel"></i> Export Excel
+    </a>
+    <a href="{% url 'inventory:chemical_stock_list' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-list-ul"></i> Saved Rows
+    </a>
+    <a href="{% url 'inventory:stock_chemicals' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-arrow-left"></i> Back to Chemicals
+    </a>
+</nav>
+
+<div class="rcv-hint">
+    <i class="bi bi-info-circle"></i>
+    <div>
+        Enter <strong>Closing Stock</strong>, <strong>New Stock</strong>, and <strong>Issued Stock</strong> — <strong>kgs</strong> is added automatically.
+        <strong>Total Stock</strong> = closing + new; <strong>Remaining Stock</strong> = total − issued.
+    </div>
+</div>
+
+<form method="post" data-simple-sheet data-chemical-stock data-row-template="chemical-stock-row-template" class="rcv-sheet-form">
+    {% csrf_token %}
+    <div class="sheet-toolbar rcv-sheet-toolbar">
+        <button type="button" class="rcv-btn rcv-btn-secondary" data-sheet-add-row>
+            <i class="bi bi-plus-lg"></i> Add Row
+        </button>
+        <button type="submit" class="rcv-btn rcv-btn-primary">
+            <i class="bi bi-check-lg"></i> Save All Rows
+        </button>
+    </div>
+    <div class="sheet-wrap rcv-panel rcv-sheet-wrap">
+        <table class="table sheet-table chemical-stock-sheet">
+            <thead>
+                <tr>
+                    <th>Date<span class="th-urdu">تاریخ</span></th>
+                    <th>Name<span class="th-urdu">نام</span></th>
+                    <th>Closing Stock<span class="th-urdu">کلوزنگ اسٹاک</span></th>
+                    <th>New Stock<span class="th-urdu">نیا اسٹاک</span></th>
+                    <th>Total Stock<span class="th-urdu">کل اسٹاک (کلو)</span></th>
+                    <th>Issued Stock<span class="th-urdu">جاری شدہ اسٹاک</span></th>
+                    <th>Remaining Stock<span class="th-urdu">باقی اسٹاک (کلو)</span></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody data-sheet-body>
+                {% for row in sheet_rows %}
+                <tr class="{% if row.is_invalid %}sheet-row-invalid{% endif %}" data-sheet-row>
+                    <td><input type="date" name="stock_date" class="form-control" value="{{ row.stock_date }}"></td>
+                    <td><input type="text" name="name" class="form-control" value="{{ row.name }}" autocomplete="off"></td>
+                    <td><input type="text" name="closing_stock" class="form-control stock-qty" value="{{ row.closing_stock }}" inputmode="decimal" autocomplete="off"></td>
+                    <td><input type="text" name="new_stock" class="form-control stock-qty" value="{{ row.new_stock }}" inputmode="decimal" autocomplete="off"></td>
+                    <td><input type="text" name="total_stock" class="form-control stock-calc" value="{{ row.total_stock }}" readonly tabindex="-1"></td>
+                    <td><input type="text" name="issued_stock" class="form-control stock-qty" value="{{ row.issued_stock }}" inputmode="decimal" autocomplete="off"></td>
+                    <td><input type="text" name="remaining_stock" class="form-control stock-calc" value="{{ row.remaining_stock }}" readonly tabindex="-1"></td>
+                    <td class="sheet-row-actions">
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-sheet-remove-row title="Remove row">&times;</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="rcv-actions rcv-actions-inline mt-3">
+        <button type="submit" class="rcv-btn rcv-btn-primary">
+            <i class="bi bi-check-lg"></i> Save All Rows
+        </button>
+    </div>
+</form>
+
+{% include "receiving/_layout_close.html" %}
+
+<template id="chemical-stock-row-template">
+    <tr data-sheet-row>
+        <td><input type="date" name="stock_date" class="form-control" value="{{ today }}"></td>
+        <td><input type="text" name="name" class="form-control" autocomplete="off"></td>
+        <td><input type="text" name="closing_stock" class="form-control stock-qty" inputmode="decimal" autocomplete="off"></td>
+        <td><input type="text" name="new_stock" class="form-control stock-qty" inputmode="decimal" autocomplete="off"></td>
+        <td><input type="text" name="total_stock" class="form-control stock-calc" readonly tabindex="-1"></td>
+        <td><input type="text" name="issued_stock" class="form-control stock-qty" inputmode="decimal" autocomplete="off"></td>
+        <td><input type="text" name="remaining_stock" class="form-control stock-calc" readonly tabindex="-1"></td>
+        <td class="sheet-row-actions">
+            <button type="button" class="btn btn-sm btn-outline-danger" data-sheet-remove-row title="Remove row">&times;</button>
+        </td>
+    </tr>
+</template>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/simple_sheet.js' %}"></script>
+<script src="{% static 'js/chemical_stock_sheet.js' %}"></script>
+{% endblock %}

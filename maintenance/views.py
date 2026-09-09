@@ -1,15 +1,39 @@
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
+from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
 from accounts.mixins import AuditCreateMixin, AuditUpdateMixin, CancelRecordView, ERPLoginRequiredMixin, PaginatedListMixin
+from common.selective_export import selective_excel_response
 from common.views import apply_search
 from inventory.models import MaterialTransaction
 from inventory.services.stock import reverse_material_transaction
 from maintenance.forms import MaintenanceJobForm, MaintenanceMaterialUsageForm
 from maintenance.models import MaintenanceJob, MaintenanceMaterialUsage
 from maintenance.services.maintenance import get_breakdown_duration, get_repair_duration
+
+MAINTENANCE_EXPORT_HEADERS = [
+    "Job #",
+    "Machine",
+    "Type",
+    "Status",
+    "Fault Category",
+    "Reported",
+    "Fault Description",
+]
+
+
+def _maintenance_excel_row(obj: MaintenanceJob) -> list:
+    return [
+        obj.job_number or "",
+        str(obj.machine) if obj.machine_id else "",
+        obj.maintenance_type or "",
+        obj.status or "",
+        obj.fault_category or "",
+        obj.reported_datetime.isoformat(sep=" ", timespec="minutes") if obj.reported_datetime else "",
+        obj.fault_description or "",
+    ]
 
 
 class MaintenanceJobListView(ERPLoginRequiredMixin, PaginatedListMixin, ListView):
@@ -25,6 +49,29 @@ class MaintenanceJobListView(ERPLoginRequiredMixin, PaginatedListMixin, ListView
         if status:
             qs = qs.filter(status=status)
         return qs.order_by("-reported_datetime")
+
+
+class MaintenanceJobExportView(ERPLoginRequiredMixin, View):
+    def get(self, request):
+        return self._export(request)
+
+    def post(self, request):
+        return self._export(request)
+
+    def _export(self, request):
+        qs = MaintenanceJob.objects.select_related("machine").order_by("-reported_datetime", "-id")
+        search = (request.POST.get("q") or request.GET.get("q") or "").strip()
+        if search:
+            qs = apply_search(qs, search, ["job_number", "fault_description"])
+        return selective_excel_response(
+            request,
+            queryset=qs,
+            headers=MAINTENANCE_EXPORT_HEADERS,
+            row_builder=_maintenance_excel_row,
+            filename="maintenance_jobs_export.xlsx",
+            sheet_title="Maintenance",
+            list_redirect="maintenance:list",
+        )
 
 
 class MaintenanceJobCreateView(ERPLoginRequiredMixin, AuditCreateMixin, CreateView):

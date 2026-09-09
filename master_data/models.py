@@ -88,6 +88,8 @@ class Material(models.Model):
         ("Dye", "Dye"),
         ("Oil", "Oil"),
         ("Grease", "Grease"),
+        ("Mechanical", "Mechanical"),
+        ("Electrical", "Electrical"),
         ("Maintenance Item", "Maintenance Item"),
         ("Other", "Other"),
     ]

@@ -1,19 +1,43 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Production Lots{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between page-header"><h1>Production Lots</h1></div>
+<div data-export-select>
+{% csrf_token %}
+<div class="d-flex flex-wrap justify-content-between page-header gap-2">
+    <h1 class="mb-0">Production Lots</h1>
+    <a href="{% url 'production:lot_export' %}"
+       class="btn btn-outline-success"
+       data-export-select-trigger
+       data-export-url="{% url 'production:lot_export' %}">Export Excel</a>
+</div>
 <form method="get" class="row g-2 mb-3">
     <div class="col-md-4"><input type="text" name="q" class="form-control" placeholder="Search lot number..." value="{{ request.GET.q }}"></div>
     <div class="col-md-3"><select name="stage" class="form-select"><option value="">All Stages</option>{% for val, label in stage_choices %}<option value="{{ val }}" {% if request.GET.stage == val %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
     <div class="col-md-3"><select name="status" class="form-select"><option value="">All Status</option>{% for val, label in status_choices %}<option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
     <div class="col-md-2"><button class="btn btn-primary w-100">Filter</button></div>
 </form>
-<div class="card"><div class="table-responsive"><table class="table table-hover mb-0">
+<div class="card"><div class="table-responsive"><table class="table table-hover mb-0" data-export-select-table>
     <thead><tr><th>Lot #</th><th>Vendor</th><th>Cloth</th><th>Stage</th><th>Status</th><th>Current m</th><th></th></tr></thead>
-    <tbody>{% for obj in objects %}
-    <tr><td>{{ obj.lot_number }}</td><td>{{ obj.vendor }}</td><td>{{ obj.cloth_type }}</td><td>{{ obj.current_stage }}</td><td>{{ obj.status }}</td><td>{{ obj.current_metres }}</td>
-    <td><a href="{% url 'production:lot_detail' obj.pk %}" class="btn btn-sm btn-primary">View</a></td></tr>
-    {% empty %}<tr><td colspan="7" class="text-center">No lots.</td></tr>{% endfor %}</tbody>
+    <tbody>
+    {% for obj in objects %}
+    <tr data-export-id="{{ obj.pk }}">
+        <td>{{ obj.lot_number }}</td>
+        <td>{{ obj.vendor }}</td>
+        <td>{{ obj.cloth_type }}</td>
+        <td>{{ obj.current_stage }}</td>
+        <td>{{ obj.status }}</td>
+        <td>{{ obj.current_metres }}</td>
+        <td><a href="{% url 'production:lot_detail' obj.pk %}" class="btn btn-sm btn-primary">View</a></td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="7" class="text-center">No lots.</td></tr>
+    {% endfor %}
+    </tbody>
 </table></div></div>
 {% include "includes/pagination.html" %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/export_select.js' %}?v=3"></script>
 {% endblock %}

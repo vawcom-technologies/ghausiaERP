@@ -4,6 +4,8 @@
 {% block content %}
 {% include "receiving/_layout_open.html" with rcv_title="Cloth Receiving" rcv_subtitle="Incoming lots from parties" rcv_compact=True rcv_wide=True %}
 
+<div data-export-select>
+{% csrf_token %}
 <nav class="rcv-actions" aria-label="Receiving actions">
     <a href="{% url 'receiving:sheet' %}" class="rcv-btn rcv-btn-primary">
         <i class="bi bi-table"></i> Spreadsheet
@@ -12,7 +14,10 @@
         <i class="bi bi-plus-lg"></i> Single Entry
     </a>
     <div class="rcv-actions-more">
-        <a href="{% url 'receiving:export' %}{% if request.GET.q %}?q={{ request.GET.q|urlencode }}{% endif %}" class="rcv-link">Export</a>
+        <a href="{% url 'receiving:export' %}"
+           class="rcv-link"
+           data-export-select-trigger
+           data-export-url="{% url 'receiving:export' %}">Export Excel</a>
         <span class="rcv-dot" aria-hidden="true">·</span>
         <a href="{% url 'receiving:export_template' %}" class="rcv-link">Template</a>
         <span class="rcv-dot" aria-hidden="true">·</span>
@@ -28,7 +33,7 @@
 
 <div class="rcv-panel">
     <div class="table-responsive rcv-list-wrap">
-        <table class="table rcv-table rcv-list-table mb-0">
+        <table class="table rcv-table rcv-list-table mb-0" data-export-select-table>
             <thead>
                 <tr>
                     <th>Lot / Palli</th>
@@ -41,7 +46,7 @@
             </thead>
             <tbody>
             {% for obj in objects %}
-            <tr>
+            <tr data-export-id="{{ obj.pk }}">
                 <td>
                     <a href="{% url 'receiving:detail' obj.pk %}" class="rcv-lot-link">{{ obj.production_lot_number }}</a>
                     {% if obj.is_cancelled %}<span class="badge badge-cancelled ms-1">Cancelled</span>{% endif %}
@@ -83,6 +88,7 @@
     </div>
 </div>
 {% include "includes/pagination.html" %}
+</div>
 {% include "receiving/_layout_close.html" %}
 
 <form id="row-delete-form" method="post" hidden>
@@ -91,4 +97,5 @@
 {% endblock %}
 {% block extra_js %}
 <script src="{% static 'js/gate_list_actions.js' %}?v=3"></script>
+<script src="{% static 'js/export_select.js' %}?v=3"></script>
 {% endblock %}

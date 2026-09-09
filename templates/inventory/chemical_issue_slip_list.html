@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Chemical Issue Slips - Ghausia Dyeing{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title="Issue Slips" rcv_subtitle="Saved chemical issue slip rows" rcv_urdu="ایشو سلپ" rcv_compact=True rcv_wide=True %}
+
+<div data-export-select>
+{% csrf_token %}
+<nav class="rcv-actions" aria-label="Issue slip actions">
+    <a href="{% url 'inventory:chemical_issue_slip' %}" class="rcv-btn rcv-btn-primary">
+        <i class="bi bi-table"></i> Spreadsheet
+    </a>
+    <a href="{% url 'inventory:stock_chemicals' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-arrow-left"></i> Chemicals
+    </a>
+    <div class="rcv-actions-more">
+        <a href="{% url 'inventory:chemical_issue_slip_export' %}"
+           class="rcv-link"
+           data-export-select-trigger
+           data-export-url="{% url 'inventory:chemical_issue_slip_export' %}">Export Excel</a>
+    </div>
+</nav>
+
+<form method="get" class="rcv-search">
+    <i class="bi bi-search rcv-search-icon" aria-hidden="true"></i>
+    <input type="text" name="q" class="rcv-search-input" placeholder="Search slip, name, department…" value="{{ request.GET.q }}" autocomplete="off">
+    <button class="rcv-btn rcv-btn-primary rcv-search-btn" type="submit">Search</button>
+</form>
+
+<div class="rcv-panel">
+    <div class="table-responsive rcv-list-wrap">
+        <table class="table rcv-table rcv-list-table mb-0" data-export-select-table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Slip No.</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Weight</th>
+                    <th>Lot</th>
+                    <th>Total Issued</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for obj in objects %}
+            <tr data-export-id="{{ obj.pk }}">
+                <td>{{ obj.issue_date }}</td>
+                <td>{{ obj.issue_slip_number }}</td>
+                <td>{{ obj.name }}</td>
+                <td>{{ obj.department }}</td>
+                <td>{{ obj.weight_kgs|default:"—" }}</td>
+                <td>{{ obj.lot_number|default:"—" }}</td>
+                <td>{{ obj.total_issued|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="rcv-empty">
+                    No issue slips yet.
+                    <a href="{% url 'inventory:chemical_issue_slip' %}">Open Spreadsheet</a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/pagination.html" %}
+</div>
+{% include "receiving/_layout_close.html" %}
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/export_select.js' %}?v=3"></script>
+{% endblock %}

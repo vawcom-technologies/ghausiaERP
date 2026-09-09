@@ -21,6 +21,32 @@ PURCHASE_HEADERS = [
     "Remarks",
 ]
 
+TRANSACTION_EXPORT_HEADERS = [
+    "Number",
+    "Date",
+    "Material",
+    "Type",
+    "Quantity In",
+    "Quantity Out",
+    "Unit",
+    "Reference",
+    "Remarks",
+]
+
+
+def transaction_to_excel_row(tx) -> list[Any]:
+    return [
+        tx.transaction_number or "",
+        tx.transaction_date.isoformat() if tx.transaction_date else "",
+        tx.material.name if getattr(tx, "material_id", None) else "",
+        tx.transaction_type or "",
+        str(tx.quantity_in) if tx.quantity_in is not None else "",
+        str(tx.quantity_out) if tx.quantity_out is not None else "",
+        tx.unit or "",
+        tx.related_reference or "",
+        tx.remarks or "",
+    ]
+
 
 def _to_decimal(value: Any, field_label: str) -> Decimal:
     if value is None or value == "":

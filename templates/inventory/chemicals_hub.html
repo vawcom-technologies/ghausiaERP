@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Chemicals - Ghausia Dyeing{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title="Chemicals" rcv_subtitle="Issue slips and chemical stock" rcv_urdu="کیمیکلز" %}
+
+<div class="row g-3">
+    <div class="col-md-6 col-sm-6">
+        <a href="{% url 'inventory:chemical_issue_slip' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-file-earmark-text"></i></div>
+            <div class="nav-card-title">Issue Slip Spreadsheet</div>
+            <p class="nav-card-desc">Enter new chemical issue slips</p>
+        </a>
+    </div>
+    <div class="col-md-6 col-sm-6">
+        <a href="{% url 'inventory:chemical_issue_slip_list' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-list-ul"></i></div>
+            <div class="nav-card-title">Saved Issue Slips</div>
+            <p class="nav-card-desc">Browse database rows and export Excel</p>
+        </a>
+    </div>
+    <div class="col-md-6 col-sm-6">
+        <a href="{% url 'inventory:chemical_stock' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-boxes"></i></div>
+            <div class="nav-card-title">Stock Spreadsheet</div>
+            <p class="nav-card-desc">Enter chemical stock register rows</p>
+        </a>
+    </div>
+    <div class="col-md-6 col-sm-6">
+        <a href="{% url 'inventory:chemical_stock_list' %}" class="nav-card">
+            <div class="nav-card-icon"><i class="bi bi-database"></i></div>
+            <div class="nav-card-title">Saved Stock</div>
+            <p class="nav-card-desc">Browse database rows and export Excel</p>
+        </a>
+    </div>
+</div>
+
+{% include "receiving/_layout_close.html" %}
+{% endblock %}

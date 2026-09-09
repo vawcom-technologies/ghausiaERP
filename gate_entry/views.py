@@ -10,6 +10,7 @@ from django.views.generic import DetailView, ListView, UpdateView
 
 from accounts.mixins import AuditUpdateMixin, ERPLoginRequiredMixin, PaginatedListMixin
 from common.excel import build_data_export_response, build_template_response, read_sheet_rows
+from common.selective_export import filter_queryset_by_ids, ordered_by_ids, parse_selected_ids
 from common.views import apply_search
 from gate_entry.forms import GateEntryForm
 from gate_entry.models import GateEntry
@@ -166,14 +167,25 @@ class GateEntryTemplateDownloadView(ERPLoginRequiredMixin, View):
 
 
 class GateEntryExportView(ERPLoginRequiredMixin, View):
-    """Download saved gate entry rows as Excel."""
+    """Download gate entry rows as Excel. Supports selected ids via POST."""
 
     def get(self, request):
+        return self._export(request)
+
+    def post(self, request):
+        return self._export(request)
+
+    def _export(self, request):
+        ids = parse_selected_ids(request)
+        if ids is not None and len(ids) == 0:
+            messages.error(request, "Select at least one row to export.")
+            return redirect("gate_entry:list")
+
         qs = GateEntry.objects.annotate(
             _gate_seq=Cast(Substr("gate_number", 2), IntegerField())
         ).order_by("_gate_seq", "id")
-        search = request.GET.get("q", "").strip()
-        if search:
+        search = (request.POST.get("q") or request.GET.get("q") or "").strip()
+        if search and ids is None:
             qs = apply_search(
                 qs,
                 search,
@@ -189,9 +201,12 @@ class GateEntryExportView(ERPLoginRequiredMixin, View):
                 ],
             )
 
+        qs = filter_queryset_by_ids(qs, ids)
+        entries = ordered_by_ids(qs, ids) if ids is not None else list(qs)
+
         rows = []
         image_paths: list[str | None] = []
-        for entry in qs:
+        for entry in entries:
             rows.append(entry_to_excel_row(entry))
             if entry.entry_image:
                 try:

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Chemical Issue Slip - Ghausia Dyeing{% endblock %}
+{% block content %}
+{% include "receiving/_layout_open.html" with rcv_title="Issue Slip" rcv_subtitle="Chemicals — spreadsheet entry" rcv_urdu="ایشو سلپ" rcv_wide=True %}
+
+<nav class="rcv-actions" aria-label="Issue slip actions">
+    <a href="{% url 'inventory:chemical_issue_slip_list' %}?export_select=1" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-file-earmark-excel"></i> Export Excel
+    </a>
+    <a href="{% url 'inventory:chemical_issue_slip_list' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-list-ul"></i> Saved Rows
+    </a>
+    <a href="{% url 'inventory:stock_chemicals' %}" class="rcv-btn rcv-btn-ghost">
+        <i class="bi bi-arrow-left"></i> Back to Chemicals
+    </a>
+</nav>
+
+<div class="rcv-hint">
+    <i class="bi bi-info-circle"></i>
+    <div>
+        Fill <strong>Date</strong>, <strong>Issue Slip Number</strong>, <strong>Name</strong>, and <strong>Department</strong>.
+        Other columns accept alphanumeric values (letters, numbers, spaces, <code>/</code> <code>.</code> <code>-</code>).
+    </div>
+</div>
+
+<form method="post" data-simple-sheet data-row-template="issue-slip-row-template" class="rcv-sheet-form">
+    {% csrf_token %}
+    <div class="sheet-toolbar rcv-sheet-toolbar">
+        <button type="button" class="rcv-btn rcv-btn-secondary" data-sheet-add-row>
+            <i class="bi bi-plus-lg"></i> Add Row
+        </button>
+        <button type="submit" class="rcv-btn rcv-btn-primary">
+            <i class="bi bi-check-lg"></i> Save All Rows
+        </button>
+    </div>
+    <div class="sheet-wrap rcv-panel rcv-sheet-wrap">
+        <table class="table sheet-table chemical-issue-sheet">
+            <thead>
+                <tr>
+                    <th>Date<span class="th-urdu">تاریخ</span></th>
+                    <th>Issue Slip Number<span class="th-urdu">ایشو سلپ نمبر</span></th>
+                    <th>Name<span class="th-urdu">نام</span></th>
+                    <th>Department<span class="th-urdu">ڈیپارٹمنٹ</span></th>
+                    <th>Weight (kgs)<span class="th-urdu">وزن (کلو)</span></th>
+                    <th>LOT NO.<span class="th-urdu">لاٹ نمبر</span></th>
+                    <th>Jet No.<span class="th-urdu">جیٹ نمبر</span></th>
+                    <th>Jigar No.<span class="th-urdu">جگر نمبر</span></th>
+                    <th>Total Issued<span class="th-urdu">کل جاری شدہ</span></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody data-sheet-body>
+                {% for row in sheet_rows %}
+                <tr class="{% if row.is_invalid %}sheet-row-invalid{% endif %}" data-sheet-row>
+                    <td><input type="date" name="issue_date" class="form-control" value="{{ row.issue_date }}"></td>
+                    <td><input type="text" name="issue_slip_number" class="form-control" value="{{ row.issue_slip_number }}" autocomplete="off"></td>
+                    <td><input type="text" name="name" class="form-control" value="{{ row.name }}" autocomplete="off"></td>
+                    <td><input type="text" name="department" class="form-control" value="{{ row.department }}" autocomplete="off"></td>
+                    <td><input type="text" name="weight_kgs" class="form-control" value="{{ row.weight_kgs }}" autocomplete="off"></td>
+                    <td><input type="text" name="lot_number" class="form-control" value="{{ row.lot_number }}" autocomplete="off"></td>
+                    <td><input type="text" name="jet_number" class="form-control" value="{{ row.jet_number }}" autocomplete="off"></td>
+                    <td><input type="text" name="jigar_number" class="form-control" value="{{ row.jigar_number }}" autocomplete="off"></td>
+                    <td><input type="text" name="total_issued" class="form-control" value="{{ row.total_issued }}" autocomplete="off"></td>
+                    <td class="sheet-row-actions">
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-sheet-remove-row title="Remove row">&times;</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="rcv-actions rcv-actions-inline mt-3">
+        <button type="submit" class="rcv-btn rcv-btn-primary">
+            <i class="bi bi-check-lg"></i> Save All Rows
+        </button>
+    </div>
+</form>
+
+{% include "receiving/_layout_close.html" %}
+
+<template id="issue-slip-row-template">
+    <tr data-sheet-row>
+        <td><input type="date" name="issue_date" class="form-control" value="{{ today }}"></td>
+        <td><input type="text" name="issue_slip_number" class="form-control" autocomplete="off"></td>
+        <td><input type="text" name="name" class="form-control" autocomplete="off"></td>
+        <td><input type="text" name="department" class="form-control" autocomplete="off"></td>
+        <td><input type="text" name="weight_kgs" class="form-control" autocomplete="off"></td>
+        <td><input type="text" name="lot_number" class="form-control" autocomplete="off"></td>
+        <td><input type="text" name="jet_number" class="form-control" autocomplete="off"></td>
+        <td><input type="text" name="jigar_number" class="form-control" autocomplete="off"></td>
+        <td><input type="text" name="total_issued" class="form-control" autocomplete="off"></td>
+        <td class="sheet-row-actions">
+            <button type="button" class="btn btn-sm btn-outline-danger" data-sheet-remove-row title="Remove row">&times;</button>
+        </td>
+    </tr>
+</template>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/simple_sheet.js' %}"></script>
+{% endblock %}

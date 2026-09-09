@@ -1,12 +1,38 @@
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
+from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
 from accounts.mixins import AuditCreateMixin, AuditUpdateMixin, CancelRecordView, ERPLoginRequiredMixin, PaginatedListMixin
+from common.selective_export import selective_excel_response
 from common.views import apply_search
 from electricity.forms import DailyElectricityReadingForm, ElectricityMeterForm
 from electricity.models import DailyElectricityReading, ElectricityMeter
+
+READING_EXPORT_HEADERS = [
+    "Date",
+    "Meter",
+    "Opening",
+    "Closing",
+    "Multiplier",
+    "Units",
+    "Entered By",
+    "Remarks",
+]
+
+
+def _reading_excel_row(obj: DailyElectricityReading) -> list:
+    return [
+        obj.reading_date.isoformat() if obj.reading_date else "",
+        str(obj.meter) if obj.meter_id else "",
+        str(obj.opening_reading),
+        str(obj.closing_reading),
+        str(obj.multiplier),
+        str(obj.units_consumed),
+        str(obj.entered_by) if obj.entered_by_id else "",
+        obj.remarks or "",
+    ]
 
 
 class ElectricityMeterListView(ERPLoginRequiredMixin, PaginatedListMixin, ListView):
@@ -36,6 +62,29 @@ class ElectricityReadingListView(ERPLoginRequiredMixin, PaginatedListMixin, List
         if search:
             qs = qs.filter(meter__name__icontains=search)
         return qs.order_by("-reading_date")
+
+
+class ElectricityReadingExportView(ERPLoginRequiredMixin, View):
+    def get(self, request):
+        return self._export(request)
+
+    def post(self, request):
+        return self._export(request)
+
+    def _export(self, request):
+        qs = DailyElectricityReading.objects.select_related("meter").order_by("-reading_date", "-id")
+        search = (request.POST.get("q") or request.GET.get("q") or "").strip()
+        if search:
+            qs = qs.filter(meter__name__icontains=search)
+        return selective_excel_response(
+            request,
+            queryset=qs,
+            headers=READING_EXPORT_HEADERS,
+            row_builder=_reading_excel_row,
+            filename="electricity_readings_export.xlsx",
+            sheet_title="Readings",
+            list_redirect="electricity:reading_list",
+        )
 
 
 class ElectricityReadingCreateView(ERPLoginRequiredMixin, AuditCreateMixin, CreateView):

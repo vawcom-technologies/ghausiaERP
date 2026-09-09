@@ -6,6 +6,7 @@ app_name = "production"
 
 urlpatterns = [
     path("lots/", views.ProductionLotListView.as_view(), name="lot_list"),
+    path("lots/export/", views.ProductionLotExportView.as_view(), name="lot_export"),
     path("lots/<int:pk>/", views.ProductionLotDetailView.as_view(), name="lot_detail"),
     path("lots/<int:pk>/complete-dyeing/", views.CompleteDyeingView.as_view(), name="complete_dyeing"),
     path("singeing/", views.SingeingListView.as_view(), name="singeing_list"),

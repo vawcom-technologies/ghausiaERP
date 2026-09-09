@@ -6,6 +6,7 @@ app_name = "maintenance"
 
 urlpatterns = [
     path("", views.MaintenanceJobListView.as_view(), name="list"),
+    path("export/", views.MaintenanceJobExportView.as_view(), name="export"),
     path("new/", views.MaintenanceJobCreateView.as_view(), name="create"),
     path("<int:pk>/", views.MaintenanceJobDetailView.as_view(), name="detail"),
     path("<int:pk>/edit/", views.MaintenanceJobUpdateView.as_view(), name="edit"),

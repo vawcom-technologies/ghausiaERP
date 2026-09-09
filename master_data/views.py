@@ -11,10 +11,37 @@ from accounts.mixins import (
     ERPLoginRequiredMixin,
     PaginatedListMixin,
 )
+from common.selective_export import selective_excel_response
 from common.views import apply_search
 from inventory.services.stock import reverse_material_transaction
 from master_data.forms import ClothTypeForm, EmployeeForm, MachineForm, MaterialForm, VendorForm
 from master_data.models import ClothType, Employee, Machine, Material, Vendor
+
+
+def _master_export_view(model, headers, row_builder, filename, sheet_title, list_name, search_fields):
+    class ExportView(ERPLoginRequiredMixin, View):
+        def get(self, request):
+            return self._export(request)
+
+        def post(self, request):
+            return self._export(request)
+
+        def _export(self, request):
+            qs = model.objects.all().order_by("id")
+            search = (request.POST.get("q") or request.GET.get("q") or "").strip()
+            if search:
+                qs = apply_search(qs, search, search_fields)
+            return selective_excel_response(
+                request,
+                queryset=qs,
+                headers=headers,
+                row_builder=row_builder,
+                filename=filename,
+                sheet_title=sheet_title,
+                list_redirect=list_name,
+            )
+
+    return ExportView
 
 
 # --- Vendor ---
@@ -28,8 +55,25 @@ class VendorListView(ERPLoginRequiredMixin, PaginatedListMixin, ListView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx.update({"model_name": "Vendors", "create_url": "master_data:vendor_create", "detail_url": "master_data:vendor_detail", "edit_url": "master_data:vendor_edit"})
+        ctx.update({
+            "model_name": "Vendors",
+            "create_url": "master_data:vendor_create",
+            "detail_url": "master_data:vendor_detail",
+            "edit_url": "master_data:vendor_edit",
+            "export_url": "master_data:vendor_export",
+        })
         return ctx
+
+
+VendorExportView = _master_export_view(
+    Vendor,
+    ["Name", "Contact Person", "Phone", "Address", "Active"],
+    lambda o: [o.name, o.contact_person, o.phone, o.address, "Yes" if o.is_active else "No"],
+    "vendors_export.xlsx",
+    "Vendors",
+    "master_data:vendor_list",
+    ["name", "phone"],
+)
 
 
 class VendorCreateView(ERPLoginRequiredMixin, AuditCreateMixin, CreateView):
@@ -72,8 +116,25 @@ class ClothTypeListView(ERPLoginRequiredMixin, PaginatedListMixin, ListView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx.update({"model_name": "Cloth Types", "create_url": "master_data:clothtype_create", "detail_url": "master_data:clothtype_detail", "edit_url": "master_data:clothtype_edit"})
+        ctx.update({
+            "model_name": "Cloth Types",
+            "create_url": "master_data:clothtype_create",
+            "detail_url": "master_data:clothtype_detail",
+            "edit_url": "master_data:clothtype_edit",
+            "export_url": "master_data:clothtype_export",
+        })
         return ctx
+
+
+ClothTypeExportView = _master_export_view(
+    ClothType,
+    ["Name", "Code", "Default Unit", "Description", "Active"],
+    lambda o: [o.name, o.code, o.default_unit, o.description, "Yes" if o.is_active else "No"],
+    "cloth_types_export.xlsx",
+    "Cloth Types",
+    "master_data:clothtype_list",
+    ["name", "code"],
+)
 
 
 class ClothTypeCreateView(ERPLoginRequiredMixin, AuditCreateMixin, CreateView):
@@ -112,8 +173,25 @@ class EmployeeListView(ERPLoginRequiredMixin, PaginatedListMixin, ListView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx.update({"model_name": "Employees", "create_url": "master_data:employee_create", "detail_url": "master_data:employee_detail", "edit_url": "master_data:employee_edit"})
+        ctx.update({
+            "model_name": "Employees",
+            "create_url": "master_data:employee_create",
+            "detail_url": "master_data:employee_detail",
+            "edit_url": "master_data:employee_edit",
+            "export_url": "master_data:employee_export",
+        })
         return ctx
+
+
+EmployeeExportView = _master_export_view(
+    Employee,
+    ["Name", "Code", "Department", "Role", "Phone", "Active"],
+    lambda o: [o.name, o.employee_code, o.department, o.role, o.phone, "Yes" if o.is_active else "No"],
+    "employees_export.xlsx",
+    "Employees",
+    "master_data:employee_list",
+    ["name", "employee_code"],
+)
 
 
 class EmployeeCreateView(ERPLoginRequiredMixin, AuditCreateMixin, CreateView):
@@ -154,8 +232,25 @@ class MachineListView(ERPLoginRequiredMixin, PaginatedListMixin, ListView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx.update({"model_name": "Machines", "create_url": "master_data:machine_create", "detail_url": "master_data:machine_detail", "edit_url": "master_data:machine_edit"})
+        ctx.update({
+            "model_name": "Machines",
+            "create_url": "master_data:machine_create",
+            "detail_url": "master_data:machine_detail",
+            "edit_url": "master_data:machine_edit",
+            "export_url": "master_data:machine_export",
+        })
         return ctx
+
+
+MachineExportView = _master_export_view(
+    Machine,
+    ["Name", "Code", "Type", "Department", "Status", "Active"],
+    lambda o: [o.name, o.code, o.machine_type, o.department, o.status, "Yes" if o.is_active else "No"],
+    "machines_export.xlsx",
+    "Machines",
+    "master_data:machine_list",
+    ["name", "code"],
+)
 
 
 class MachineCreateView(ERPLoginRequiredMixin, AuditCreateMixin, CreateView):
@@ -195,8 +290,32 @@ class MaterialListView(ERPLoginRequiredMixin, PaginatedListMixin, ListView):
         ctx["items"] = [
             {"material": m, "stock": get_material_stock(m.id)} for m in ctx["objects"]
         ]
-        ctx.update({"model_name": "Materials", "create_url": "master_data:material_create", "detail_url": "master_data:material_detail", "edit_url": "master_data:material_edit"})
+        ctx.update({
+            "model_name": "Materials",
+            "create_url": "master_data:material_create",
+            "detail_url": "master_data:material_detail",
+            "edit_url": "master_data:material_edit",
+            "export_url": "master_data:material_export",
+        })
         return ctx
+
+
+MaterialExportView = _master_export_view(
+    Material,
+    ["Name", "Code", "Category", "Unit", "Minimum Stock", "Active"],
+    lambda o: [
+        o.name,
+        o.code,
+        o.category,
+        o.unit,
+        str(o.minimum_stock),
+        "Yes" if o.is_active else "No",
+    ],
+    "materials_export.xlsx",
+    "Materials",
+    "master_data:material_list",
+    ["name", "code"],
+)
 
 
 class MaterialCreateView(ERPLoginRequiredMixin, AuditCreateMixin, CreateView):

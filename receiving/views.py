@@ -15,6 +15,7 @@ from accounts.mixins import (
     PaginatedListMixin,
 )
 from common.excel import build_data_export_response, build_template_response, read_sheet_rows
+from common.selective_export import filter_queryset_by_ids, ordered_by_ids, parse_selected_ids
 from common.views import apply_search
 from master_data.models import ClothType, Vendor
 from receiving.forms import ClothReceiptForm
@@ -231,24 +232,35 @@ class ReceivingTemplateDownloadView(ERPLoginRequiredMixin, View):
 
 
 class ReceivingExportView(ERPLoginRequiredMixin, View):
-    """Download all saved cloth receiving rows as Excel (values + photos)."""
+    """Download cloth receiving rows as Excel (values + photos). Supports selected ids."""
 
     def get(self, request):
-        qs = (
-            ClothReceipt.objects.select_related("vendor")
-            .order_by("-receipt_date", "-id")
-        )
-        search = request.GET.get("q", "").strip()
-        if search:
+        return self._export(request)
+
+    def post(self, request):
+        return self._export(request)
+
+    def _export(self, request):
+        ids = parse_selected_ids(request)
+        if ids is not None and len(ids) == 0:
+            messages.error(request, "Select at least one row to export.")
+            return redirect("receiving:list")
+
+        qs = ClothReceipt.objects.select_related("vendor").order_by("-receipt_date", "-id")
+        search = (request.POST.get("q") or request.GET.get("q") or "").strip()
+        if search and ids is None:
             qs = apply_search(
                 qs, search, ["receipt_number", "production_lot_number", "vendor_challan_number"]
             )
             qs = qs | ClothReceipt.objects.filter(vendor__name__icontains=search)
             qs = qs.distinct().order_by("-receipt_date", "-id")
 
+        qs = filter_queryset_by_ids(qs, ids)
+        receipts = ordered_by_ids(qs, ids) if ids is not None else list(qs)
+
         rows = []
         image_paths: list[str | None] = []
-        for receipt in qs:
+        for receipt in receipts:
             rows.append(receipt_to_excel_row(receipt))
             if receipt.receipt_image:
                 try:

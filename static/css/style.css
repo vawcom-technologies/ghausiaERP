@@ -1543,6 +1543,40 @@ body.gate-stock-modal-open {
     cursor: default;
 }
 
+.chemical-issue-sheet {
+    min-width: 1100px;
+}
+
+.chemical-issue-sheet thead th,
+.chemical-stock-sheet thead th {
+    padding: 0.4rem 0.35rem;
+    font-size: 0.7rem;
+    white-space: nowrap;
+}
+
+.chemical-issue-sheet input,
+.chemical-stock-sheet input {
+    min-height: 28px;
+    padding: 0.2rem 0.3rem;
+    font-size: 0.78rem;
+}
+
+.chemical-stock-sheet {
+    min-width: 980px;
+}
+
+.chemical-stock-sheet .stock-calc {
+    font-weight: 700;
+    background: #f1f5f9;
+    cursor: default;
+    text-align: center;
+}
+
+.chemical-stock-sheet .stock-qty {
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
 .attendance-sheet-table tbody tr.is-absent > th,
 .attendance-sheet-table tbody tr.is-absent > td {
     background: #fee2e2;
@@ -2243,4 +2277,197 @@ body.sheet-photo-modal-open {
     .rcv-search { max-width: none; }
     .rcv-actions { gap: 0.4rem; }
     .rcv-btn { padding: 0.45rem 0.85rem; font-size: 0.82rem; }
+}
+
+/* Selective Excel export — compact spreadsheet selection grid */
+.export-select-toolbar {
+    margin: 0 0 0.55rem;
+}
+.export-select-toolbar-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.55rem;
+    padding: 0.45rem 0.65rem;
+    border: 1px solid rgba(26, 58, 92, 0.18);
+    border-radius: 8px;
+    background: linear-gradient(180deg, #f4f8fc 0%, #eef4fa 100%);
+}
+.export-select-toolbar-inner .rcv-btn {
+    padding: 0.28rem 0.65rem;
+    font-size: 0.78rem;
+    border-radius: 7px;
+}
+.export-select-hint {
+    color: #1a3a5c;
+    font-size: 0.78rem;
+    font-weight: 500;
+}
+.export-select-count {
+    margin-right: auto;
+    font-size: 0.76rem;
+    color: #4a6278;
+    font-variant-numeric: tabular-nums;
+}
+.export-select-col {
+    width: 1.75rem;
+    min-width: 1.75rem;
+    max-width: 1.75rem;
+    text-align: center;
+    vertical-align: middle !important;
+    user-select: none;
+    padding-left: 0.2rem !important;
+    padding-right: 0.2rem !important;
+}
+.export-select-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    cursor: pointer;
+}
+.export-select-checkbox {
+    width: 0.85rem;
+    height: 0.85rem;
+    cursor: pointer;
+    accent-color: #1a3a5c;
+}
+tr[data-export-id].is-export-selected > * {
+    background: rgba(26, 58, 92, 0.1) !important;
+}
+.is-export-selecting tr[data-export-id] {
+    cursor: cell;
+}
+.is-export-selecting tr[data-export-id]:hover > * {
+    background: rgba(26, 58, 92, 0.05);
+}
+
+/* Slim spreadsheet rows while selecting — content-width, centered */
+.is-export-selecting > .export-select-toolbar,
+.is-export-selecting > .rcv-panel,
+.is-export-selecting > .card,
+.is-export-selecting > .table-wrap {
+    width: max-content;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+.is-export-selecting .export-select-sheet,
+table.export-select-sheet {
+    border-collapse: collapse;
+    table-layout: auto !important;
+    /* Hug column content — don't stretch fixed % widths after checkbox insert */
+    width: max-content !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    font-variant-numeric: tabular-nums;
+}
+.is-export-selecting .table-responsive,
+.is-export-selecting .rcv-list-wrap,
+.is-export-selecting .gate-list-wrap,
+.is-export-selecting .table-wrap {
+    width: max-content;
+    max-width: 100%;
+}
+/* Checkbox insert shifts nth-child width rules — clear them in select mode */
+.is-export-selecting .export-select-sheet thead th,
+.is-export-selecting .export-select-sheet tbody td,
+.is-export-selecting .export-select-sheet tbody th,
+table.export-select-sheet thead th,
+table.export-select-sheet tbody td,
+table.export-select-sheet tbody th {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+}
+.is-export-selecting .export-select-sheet .export-select-col,
+table.export-select-sheet .export-select-col {
+    width: 1.6rem !important;
+    min-width: 1.6rem !important;
+    max-width: 1.6rem !important;
+}
+.is-export-selecting .export-select-sheet thead th,
+table.export-select-sheet thead th {
+    padding: 0.28rem 0.45rem !important;
+    font-size: 0.68rem !important;
+    letter-spacing: 0.02em;
+    line-height: 1.15;
+    white-space: nowrap;
+}
+.is-export-selecting .export-select-sheet thead th .rcv-th-urdu,
+.is-export-selecting .export-select-sheet thead th .th-urdu,
+table.export-select-sheet thead th .rcv-th-urdu,
+table.export-select-sheet thead th .th-urdu {
+    display: none;
+}
+.is-export-selecting .export-select-sheet tbody td,
+.is-export-selecting .export-select-sheet tbody th,
+table.export-select-sheet tbody td,
+table.export-select-sheet tbody th {
+    padding: 0.12rem 0.45rem !important;
+    font-size: 0.74rem !important;
+    line-height: 1.2;
+    vertical-align: middle !important;
+    height: 1.55rem;
+    max-height: 1.7rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-bottom: 1px solid #e4eaf1;
+}
+.is-export-selecting .export-select-sheet tbody tr:nth-child(even):not(.is-export-selected) > * {
+    background: #fafcfe;
+}
+.is-export-selecting .export-select-sheet .gate-stock-block,
+.is-export-selecting .export-select-sheet .gate-stock-text {
+    padding: 0 !important;
+    margin: 0;
+    min-height: 0 !important;
+    height: auto !important;
+    font-size: 0.72rem !important;
+    line-height: 1.15;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 7rem;
+    pointer-events: none;
+}
+.is-export-selecting .export-select-sheet .gate-action-box,
+.is-export-selecting .export-select-sheet .gate-actions-cell {
+    gap: 0.15rem;
+    padding: 0 !important;
+}
+.is-export-selecting .export-select-sheet .gate-action-btn,
+.is-export-selecting .export-select-sheet .btn,
+.is-export-selecting .export-select-sheet .rcv-link {
+    padding: 0.05rem 0.3rem !important;
+    font-size: 0.66rem !important;
+    line-height: 1.2;
+    border-radius: 3px;
+    min-height: 0;
+}
+.is-export-selecting .export-select-sheet .badge,
+.is-export-selecting .export-select-sheet .rcv-chip {
+    font-size: 0.62rem;
+    padding: 0.05rem 0.28rem;
+    vertical-align: middle;
+}
+.is-export-selecting .export-select-sheet .rcv-lot-link {
+    font-size: inherit;
+}
+.is-export-selecting .rcv-panel,
+.is-export-selecting .card,
+.is-export-selecting .table-wrap {
+    border-radius: 8px;
+    width: max-content;
+    max-width: 100%;
+}
+.is-export-selecting .table-responsive,
+.is-export-selecting .rcv-list-wrap,
+.is-export-selecting .gate-list-wrap {
+    max-height: min(70vh, 640px);
+    overflow: auto;
 }

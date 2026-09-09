@@ -96,3 +96,45 @@ class MaterialTransaction(AuditModel):
             raise ValidationError("At least one quantity must be greater than zero.")
         if self.quantity_in < 0 or self.quantity_out < 0:
             raise ValidationError("Quantity cannot be negative.")
+
+
+class ChemicalIssueSlip(AuditModel):
+    """Chemicals issue slip row — all values stored as alphanumeric text."""
+
+    issue_date = models.CharField("Date", max_length=50)
+    issue_slip_number = models.CharField("Issue Slip Number", max_length=100)
+    name = models.CharField("Name", max_length=200)
+    department = models.CharField("Department", max_length=200)
+    weight_kgs = models.CharField("Weight (kgs)", max_length=100, blank=True, default="")
+    lot_number = models.CharField("LOT NO.", max_length=100, blank=True, default="")
+    jet_number = models.CharField("Jet No.", max_length=100, blank=True, default="")
+    jigar_number = models.CharField("Jigar No.", max_length=100, blank=True, default="")
+    total_issued = models.CharField("Total Issued", max_length=100, blank=True, default="")
+
+    class Meta:
+        ordering = ["-id"]
+        verbose_name = "Chemical Issue Slip"
+        verbose_name_plural = "Chemical Issue Slips"
+
+    def __str__(self) -> str:
+        return self.issue_slip_number or f"Issue #{self.pk}"
+
+
+class ChemicalStock(AuditModel):
+    """Chemicals stock register row."""
+
+    stock_date = models.CharField("Date", max_length=50)
+    name = models.CharField("Name", max_length=200)
+    closing_stock = models.CharField("Closing Stock", max_length=100, blank=True, default="")
+    new_stock = models.CharField("New Stock", max_length=100, blank=True, default="")
+    total_stock = models.CharField("Total Stock", max_length=100, blank=True, default="")
+    issued_stock = models.CharField("Issued Stock", max_length=100, blank=True, default="")
+    remaining_stock = models.CharField("Remaining Stock", max_length=100, blank=True, default="")
+
+    class Meta:
+        ordering = ["-id"]
+        verbose_name = "Chemical Stock"
+        verbose_name_plural = "Chemical Stock"
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.stock_date})"

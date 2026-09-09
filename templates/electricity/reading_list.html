@@ -1,9 +1,40 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Electricity Readings{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between page-header"><h1>Electricity Readings</h1><a href="{% url 'electricity:reading_create' %}" class="btn btn-save btn-lg-action">+ New Reading</a></div>
-<div class="card"><table class="table mb-0"><thead><tr><th>Date</th><th>Meter</th><th>Opening</th><th>Closing</th><th>Units</th><th>Entered By</th><th></th></tr></thead>
-<tbody>{% for obj in objects %}<tr><td>{{ obj.reading_date }}</td><td>{{ obj.meter }}</td><td>{{ obj.opening_reading }}</td><td>{{ obj.closing_reading }}</td><td>{{ obj.units_consumed }}</td><td>{{ obj.entered_by }}</td>
-<td><a href="{% url 'electricity:reading_detail' obj.pk %}" class="btn btn-sm btn-primary">View</a></td></tr>{% empty %}<tr><td colspan="7" class="text-center">No readings.</td></tr>{% endfor %}</tbody></table></div>
+<div data-export-select>
+{% csrf_token %}
+<div class="d-flex flex-wrap justify-content-between page-header gap-2">
+    <h1 class="mb-0">Electricity Readings</h1>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'electricity:reading_export' %}"
+           class="btn btn-outline-success"
+           data-export-select-trigger
+           data-export-url="{% url 'electricity:reading_export' %}">Export Excel</a>
+        <a href="{% url 'electricity:reading_create' %}" class="btn btn-save btn-lg-action">+ New Reading</a>
+    </div>
+</div>
+<div class="card"><table class="table mb-0" data-export-select-table>
+    <thead><tr><th>Date</th><th>Meter</th><th>Opening</th><th>Closing</th><th>Units</th><th>Entered By</th><th></th></tr></thead>
+    <tbody>
+    {% for obj in objects %}
+    <tr data-export-id="{{ obj.pk }}">
+        <td>{{ obj.reading_date }}</td>
+        <td>{{ obj.meter }}</td>
+        <td>{{ obj.opening_reading }}</td>
+        <td>{{ obj.closing_reading }}</td>
+        <td>{{ obj.units_consumed }}</td>
+        <td>{{ obj.entered_by }}</td>
+        <td><a href="{% url 'electricity:reading_detail' obj.pk %}" class="btn btn-sm btn-primary">View</a></td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="7" class="text-center">No readings.</td></tr>
+    {% endfor %}
+    </tbody>
+</table></div>
 {% include "includes/pagination.html" %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/export_select.js' %}?v=3"></script>
 {% endblock %}

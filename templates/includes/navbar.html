@@ -23,7 +23,7 @@
                         <i class="bi bi-box-arrow-in-down"></i>
                         <span class="nav-link-main">Cloth Receiving</span>
                         <span class="nav-link-urdu">غزانہ</span>
-                    </a>
+                    </a> 
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Production</a>
@@ -41,9 +41,8 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Stock</a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{% url 'master_data:material_list' %}">Materials</a></li>
-                        <li><a class="dropdown-item" href="{% url 'inventory:home' %}">Transactions</a></li>
-                        <li><a class="dropdown-item" href="{% url 'inventory:stock_overview' %}">Current Stock</a></li>
+                        <li><a class="dropdown-item" href="{% url 'inventory:stock_chemicals' %}">Chemicals</a></li>
+                        <li><a class="dropdown-item" href="{% url 'inventory:stock_mechanical_electrical' %}">Mechanical, Electrical</a></li>
                     </ul>
                 </li>
                 <li class="nav-item">

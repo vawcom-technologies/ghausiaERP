@@ -1,23 +1,32 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Materials - Ghausia Dyeing{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center page-header">
-    <h1>Materials</h1>
-    <a href="{% url 'master_data:material_create' %}" class="btn btn-save btn-lg-action">+ Add Material</a>
+<div data-export-select>
+{% csrf_token %}
+<div class="d-flex flex-wrap justify-content-between align-items-center page-header gap-2">
+    <h1 class="mb-0">Materials</h1>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'master_data:material_export' %}"
+           class="btn btn-outline-success"
+           data-export-select-trigger
+           data-export-url="{% url 'master_data:material_export' %}">Export Excel</a>
+        <a href="{% url 'master_data:material_create' %}" class="btn btn-save btn-lg-action">+ Add Material</a>
+    </div>
 </div>
 <form method="get" class="mb-3">
     <div class="input-group">
-        <input type="text" name="q" class="form-control" placeholder="Search materials..." value="{{ search_query }}">
+        <input type="text" name="q" class="form-control" placeholder="Search materials..." value="{{ request.GET.q }}">
         <button class="btn btn-primary" type="submit">Search</button>
     </div>
 </form>
 <div class="card">
     <div class="table-responsive">
-        <table class="table table-hover mb-0">
+        <table class="table table-hover mb-0" data-export-select-table>
             <thead><tr><th>Name</th><th>Category</th><th>Current Stock</th><th>Minimum</th><th>Actions</th></tr></thead>
             <tbody>
             {% for item in items %}
-            <tr>
+            <tr data-export-id="{{ item.material.pk }}">
                 <td>{{ item.material.name }} ({{ item.material.code }})</td>
                 <td>{{ item.material.category }}</td>
                 <td>{{ item.stock }} {{ item.material.unit }}</td>
@@ -32,4 +41,8 @@
     </div>
 </div>
 {% include "includes/pagination.html" %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/export_select.js' %}?v=3"></script>
 {% endblock %}

@@ -228,4 +228,12 @@
 
   setActiveTab(activeDay);
   loadDayIntoVisible(activeDay);
+
+  // Flush active day into hidden stores before POST save.
+  var form = root.closest("form");
+  if (form) {
+    form.addEventListener("submit", function () {
+      saveVisibleToDay(activeDay);
+    });
+  }
 })();
