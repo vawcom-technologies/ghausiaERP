@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Reading Detail{% endblock %}
 {% block content %}
+<div class="record">
 <div class="page-header-block">
     <h1 class="page-title">Reading — {{ object.meter }}</h1>
     <p class="page-subtitle">{{ object.reading_date }}</p>
@@ -19,4 +20,5 @@
     <a href="{% url 'electricity:reading_cancel' object.pk %}" class="btn btn-cancel-record">Cancel</a>
 </div>
 {% endif %}
+</div>
 {% endblock %}

@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Mixture {{ object.mixture_number }}{% endblock %}
 {% block content %}
+<div class="record">
 <h1>{{ object.mixture_number }} - {{ object.name }}</h1>
 <div class="card mb-3"><div class="card-body">
     <p><strong>Batch:</strong> <a href="{% url 'production:dyeing_detail' object.dyeing_batch.pk %}">{{ object.dyeing_batch.batch_number }}</a></p>
@@ -16,5 +17,6 @@
     {% if can_cancel_records and not object.is_cancelled %}
     <a href="{% url 'production:mixture_cancel' object.pk %}" class="btn btn-cancel-record">Cancel Mixture</a>
     {% endif %}
+</div>
 </div>
 {% endblock %}

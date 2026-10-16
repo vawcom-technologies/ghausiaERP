@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Inventory - Ghausia Dyeing{% endblock %}
 {% block content %}
+<div class="record">
 <div class="page-header-block">
     <h1 class="page-title">Material Transactions</h1>
     <p class="page-subtitle">Record purchases, adjustments, and view current stock levels</p>
@@ -66,4 +67,5 @@
 <a href="{% url 'inventory:transaction_list' %}" class="btn btn-primary btn-lg-action">
     <i class="bi bi-clock-history me-1"></i> View Transaction History
 </a>
+</div>
 {% endblock %}

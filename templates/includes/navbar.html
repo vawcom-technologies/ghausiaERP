@@ -1,146 +1,138 @@
-<nav class="navbar navbar-expand-lg navbar-dark erp-navbar">
-    <div class="container-fluid px-3 px-lg-4">
-        <a class="navbar-brand" href="{% url 'accounts:home' %}">
-            <span class="brand-icon"><i class="bi bi-building-gear"></i></span>
-            Ghausia Dyeing
+{% if user.is_authenticated %}
+<nav class="topbar" aria-label="Factory">
+    <div class="topbar-inner">
+        <a class="topbar-brand" href="{% url 'accounts:home' %}">
+            <span class="topbar-brand-name">Ghausia</span>
+            <span class="topbar-brand-sub">Dyeing</span>
         </a>
-        <div class="collapse navbar-collapse d-none d-lg-flex" id="mainNav">
-            {% if user.is_authenticated %}
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'accounts:home' %}"><i class="bi bi-house-door"></i><span>Home</span></a>
-                </li>
-                {% if "gate_entry" in allowed_modules %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'gate_entry:list' %}">
-                        <i class="bi bi-door-open"></i><span>Gate Entry</span>
-                    </a>
-                </li>
-                {% endif %}
-                {% if "receiving" in allowed_modules %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'receiving:list' %}">
-                        <i class="bi bi-box-arrow-in-down"></i>
-                        <span class="nav-link-main">Cloth Receiving</span>
-                        <span class="nav-link-urdu">غزانہ</span>
-                    </a>
-                </li>
-                {% endif %}
-                {% if "production_lots" in allowed_modules or "singeing" in allowed_modules or "dyeing" in allowed_modules or "six_chamber" in allowed_modules or "calender" in allowed_modules or "comfort" in allowed_modules or "finished_stock" in allowed_modules %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Production</a>
-                    <ul class="dropdown-menu">
-                        {% if "production_lots" in allowed_modules %}
-                        <li><a class="dropdown-item" href="{% url 'production:lot_list' %}">Production Lots</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        {% endif %}
-                        {% if "singeing" in allowed_modules %}<li><a class="dropdown-item" href="{% url 'production:singeing_list' %}">Singeing</a></li>{% endif %}
-                        {% if "dyeing" in allowed_modules %}<li><a class="dropdown-item" href="{% url 'production:dyeing_list' %}">Dyeing</a></li>{% endif %}
-                        {% if "six_chamber" in allowed_modules %}<li><a class="dropdown-item" href="{% url 'production:sixchamber_list' %}">Six Chamber</a></li>{% endif %}
-                        {% if "calender" in allowed_modules %}<li><a class="dropdown-item" href="{% url 'production:calender_list' %}">Calender</a></li>{% endif %}
-                        {% if "comfort" in allowed_modules %}<li><a class="dropdown-item" href="{% url 'production:comfort_list' %}">Comfort</a></li>{% endif %}
-                        {% if "finished_stock" in allowed_modules %}<li><a class="dropdown-item" href="{% url 'production:finished_list' %}">Finished Stock</a></li>{% endif %}
-                    </ul>
-                </li>
-                {% endif %}
-                {% if "inventory" in allowed_modules or "chemicals" in allowed_modules %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Stock</a>
-                    <ul class="dropdown-menu">
-                        {% if "inventory" in allowed_modules %}
-                        <li><a class="dropdown-item" href="{% url 'inventory:home' %}">Purchases & Adjustments</a></li>
-                        <li><a class="dropdown-item" href="{% url 'inventory:transaction_list' %}">Transaction History</a></li>
-                        <li><a class="dropdown-item" href="{% url 'inventory:stock_overview' %}">Current Stock</a></li>
-                        {% endif %}
-                        {% if "inventory" in allowed_modules and "chemicals" in allowed_modules %}
-                        <li><hr class="dropdown-divider"></li>
-                        {% endif %}
-                        {% if "chemicals" in allowed_modules %}
-                        <li><a class="dropdown-item" href="{% url 'inventory:stock_chemicals' %}">Chemicals</a></li>
-                        {% endif %}
-                        {% if "inventory" in allowed_modules %}
-                        <li><a class="dropdown-item" href="{% url 'inventory:stock_mechanical_electrical' %}">Mechanical, Electrical</a></li>
-                        {% endif %}
-                    </ul>
-                </li>
-                {% endif %}
-                {% if "electricity" in allowed_modules %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-lightning-charge"></i><span>Electricity</span>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{% url 'electricity:hub' %}">WAPDA &amp; Solar</a></li>
-                        <li><a class="dropdown-item" href="{% url 'electricity:daily_list' %}">Daily readings</a></li>
-                        <li><a class="dropdown-item" href="{% url 'electricity:monthly' %}">Monthly readings</a></li>
-                        {% if is_manager %}
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url 'electricity:meter_list' %}">Meters</a></li>
-                        <li><a class="dropdown-item" href="{% url 'electricity:reading_list' %}">Meter readings</a></li>
-                        {% endif %}
-                    </ul>
-                </li>
-                {% endif %}
-                {% if "fuel" in allowed_modules %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-fuel-pump"></i><span>Fuel</span>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{% url 'fuel:hub' %}">All boilers</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url 'fuel:steam_boiler' %}">Steam Boiler</a></li>
-                        <li><a class="dropdown-item" href="{% url 'fuel:oil_boiler' %}">Oil Boiler</a></li>
-                    </ul>
-                </li>
-                {% endif %}
-                {% if "maintenance" in allowed_modules %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'maintenance:list' %}"><i class="bi bi-tools"></i><span>Maintenance</span></a>
-                </li>
-                {% endif %}
-                {% if "attendance" in allowed_modules %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-calendar-check"></i><span>Attendance</span>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{% url 'attendance:hub' %}">All departments</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url 'attendance:department' 'admin' %}">Admin</a></li>
-                        <li><a class="dropdown-item" href="{% url 'attendance:department' 'kora' %}">Kora</a></li>
-                        <li><a class="dropdown-item" href="{% url 'attendance:department' 'singeing' %}">Singeing</a></li>
-                        <li><a class="dropdown-item" href="{% url 'attendance:department' 'dyeing' %}">Dyeing</a></li>
-                    </ul>
-                </li>
-                {% endif %}
-                {% if can_manage_setup %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Setup</a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{% url 'master_data:setup' %}">Basic Setup</a></li>
-                        {% if is_administrator %}
-                        <li><a class="dropdown-item" href="/admin/">Django Admin</a></li>
-                        {% endif %}
-                    </ul>
-                </li>
-                {% endif %}
-            </ul>
-            <ul class="navbar-nav align-items-lg-center gap-lg-1">
-                <li class="nav-item">
-                    <a class="nav-link user-badge" href="{% url 'accounts:profile' %}" title="Open profile">
-                        <i class="bi bi-person-circle me-1"></i>
-                        <span class="user-badge-text">
-                            <span class="user-badge-name">{{ user.get_full_name|default:user.username }}</span>
-                            <span class="user-badge-meta">
-                                @{{ user.username }}
-                                {% if erp_role_label %} · {{ erp_role_label }}{% endif %}
-                            </span>
-                        </span>
-                    </a>
-                </li>
-            </ul>
+        <div class="topbar-links">
+            <a class="topbar-link{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'home' %} is-active{% endif %}" href="{% url 'accounts:home' %}">Home</a>
+            {% if "gate_entry" in allowed_modules %}
+            <a class="topbar-link{% if request.resolver_match.namespace == 'gate_entry' %} is-active{% endif %}" href="{% url 'gate_entry:list' %}">Gate entry</a>
+            {% endif %}
+            {% if "receiving" in allowed_modules %}
+            <a class="topbar-link{% if request.resolver_match.namespace == 'receiving' %} is-active{% endif %}" href="{% url 'receiving:list' %}">
+                Cloth receiving
+                <span class="topbar-ur" dir="rtl" lang="ur">غزانہ</span>
+            </a>
+            {% endif %}
+
+            {% if "production_lots" in allowed_modules or "singeing" in allowed_modules or "dyeing" in allowed_modules or "six_chamber" in allowed_modules or "calender" in allowed_modules or "comfort" in allowed_modules or "finished_stock" in allowed_modules %}
+            <div class="dropdown">
+                <button type="button" class="topbar-link dropdown-toggle{% if request.resolver_match.namespace == 'production' %} is-active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">Production</button>
+                <ul class="dropdown-menu topbar-menu">
+                    {% if "production_lots" in allowed_modules %}
+                    <li><a class="dropdown-item{% if '/production/lots/' in request.path %} is-active{% endif %}" href="{% url 'production:lot_list' %}">Production lots</a></li>
+                    {% endif %}
+                    {% if "singeing" in allowed_modules %}
+                    <li><a class="dropdown-item{% if '/production/singeing/' in request.path %} is-active{% endif %}" href="{% url 'production:singeing_list' %}">Singeing</a></li>
+                    {% endif %}
+                    {% if "dyeing" in allowed_modules %}
+                    <li><a class="dropdown-item{% if '/production/dyeing/' in request.path or '/production/mixtures/' in request.path %} is-active{% endif %}" href="{% url 'production:dyeing_list' %}">Dyeing</a></li>
+                    {% endif %}
+                    {% if "six_chamber" in allowed_modules %}
+                    <li><a class="dropdown-item{% if '/production/six-chamber/' in request.path %} is-active{% endif %}" href="{% url 'production:sixchamber_list' %}">Six chamber</a></li>
+                    {% endif %}
+                    {% if "calender" in allowed_modules %}
+                    <li><a class="dropdown-item{% if '/production/calender/' in request.path %} is-active{% endif %}" href="{% url 'production:calender_list' %}">Calender</a></li>
+                    {% endif %}
+                    {% if "comfort" in allowed_modules %}
+                    <li><a class="dropdown-item{% if '/production/comfort/' in request.path %} is-active{% endif %}" href="{% url 'production:comfort_list' %}">Comfort</a></li>
+                    {% endif %}
+                    {% if "finished_stock" in allowed_modules %}
+                    <li><a class="dropdown-item{% if '/production/finished/' in request.path %} is-active{% endif %}" href="{% url 'production:finished_list' %}">Finished stock</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if "inventory" in allowed_modules or "chemicals" in allowed_modules %}
+            <div class="dropdown">
+                <button type="button" class="topbar-link dropdown-toggle{% if request.resolver_match.namespace == 'inventory' %} is-active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">Stock</button>
+                <ul class="dropdown-menu topbar-menu">
+                    {% if "inventory" in allowed_modules %}
+                    <li><a class="dropdown-item{% if request.resolver_match.url_name == 'home' and request.resolver_match.namespace == 'inventory' %} is-active{% endif %}" href="{% url 'inventory:home' %}">Purchases &amp; adjustments</a></li>
+                    <li><a class="dropdown-item{% if '/inventory/transactions/' in request.path %} is-active{% endif %}" href="{% url 'inventory:transaction_list' %}">Transaction history</a></li>
+                    <li><a class="dropdown-item{% if request.path == '/inventory/stock/' %} is-active{% endif %}" href="{% url 'inventory:stock_overview' %}">Current stock</a></li>
+                    {% endif %}
+                    {% if "inventory" in allowed_modules and "chemicals" in allowed_modules %}
+                    <li><hr class="dropdown-divider"></li>
+                    {% endif %}
+                    {% if "chemicals" in allowed_modules %}
+                    <li><a class="dropdown-item{% if '/inventory/stock/chemicals/' in request.path %} is-active{% endif %}" href="{% url 'inventory:stock_chemicals' %}">Chemicals</a></li>
+                    {% endif %}
+                    {% if "inventory" in allowed_modules %}
+                    <li><a class="dropdown-item{% if '/inventory/stock/mechanical-electrical/' in request.path %} is-active{% endif %}" href="{% url 'inventory:stock_mechanical_electrical' %}">Mechanical, electrical</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if "electricity" in allowed_modules %}
+            <div class="dropdown">
+                <button type="button" class="topbar-link dropdown-toggle{% if request.resolver_match.namespace == 'electricity' %} is-active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">Electricity</button>
+                <ul class="dropdown-menu topbar-menu">
+                    <li><a class="dropdown-item{% if request.resolver_match.url_name == 'hub' and request.resolver_match.namespace == 'electricity' %} is-active{% endif %}" href="{% url 'electricity:hub' %}">WAPDA &amp; solar</a></li>
+                    <li><a class="dropdown-item{% if '/electricity/daily/' in request.path %} is-active{% endif %}" href="{% url 'electricity:daily_list' %}">Daily readings</a></li>
+                    <li><a class="dropdown-item{% if request.path == '/electricity/monthly/' %} is-active{% endif %}" href="{% url 'electricity:monthly' %}">Monthly readings</a></li>
+                    {% if is_manager %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item{% if '/electricity/meters/' in request.path %} is-active{% endif %}" href="{% url 'electricity:meter_list' %}">Meters</a></li>
+                    <li><a class="dropdown-item{% if '/electricity/readings/' in request.path %} is-active{% endif %}" href="{% url 'electricity:reading_list' %}">Meter readings</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if "fuel" in allowed_modules %}
+            <div class="dropdown">
+                <button type="button" class="topbar-link dropdown-toggle{% if request.resolver_match.namespace == 'fuel' %} is-active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">Fuel</button>
+                <ul class="dropdown-menu topbar-menu">
+                    <li><a class="dropdown-item{% if request.resolver_match.url_name == 'hub' and request.resolver_match.namespace == 'fuel' %} is-active{% endif %}" href="{% url 'fuel:hub' %}">All boilers</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item{% if 'steam' in request.path %} is-active{% endif %}" href="{% url 'fuel:steam_boiler' %}">Steam boiler</a></li>
+                    <li><a class="dropdown-item{% if 'oil' in request.path %} is-active{% endif %}" href="{% url 'fuel:oil_boiler' %}">Oil boiler</a></li>
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if "maintenance" in allowed_modules %}
+            <a class="topbar-link{% if request.resolver_match.namespace == 'maintenance' %} is-active{% endif %}" href="{% url 'maintenance:list' %}">Maintenance</a>
+            {% endif %}
+
+            {% if "attendance" in allowed_modules %}
+            <div class="dropdown">
+                <button type="button" class="topbar-link dropdown-toggle{% if request.resolver_match.namespace == 'attendance' %} is-active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">Attendance</button>
+                <ul class="dropdown-menu topbar-menu">
+                    <li><a class="dropdown-item{% if request.resolver_match.url_name == 'hub' and request.resolver_match.namespace == 'attendance' %} is-active{% endif %}" href="{% url 'attendance:hub' %}">All departments</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item{% if '/attendance/admin' in request.path %} is-active{% endif %}" href="{% url 'attendance:department' 'admin' %}">Admin</a></li>
+                    <li><a class="dropdown-item{% if '/attendance/kora' in request.path %} is-active{% endif %}" href="{% url 'attendance:department' 'kora' %}">Kora</a></li>
+                    <li><a class="dropdown-item{% if '/attendance/singeing' in request.path %} is-active{% endif %}" href="{% url 'attendance:department' 'singeing' %}">Singeing</a></li>
+                    <li><a class="dropdown-item{% if '/attendance/dyeing' in request.path %} is-active{% endif %}" href="{% url 'attendance:department' 'dyeing' %}">Dyeing</a></li>
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if can_manage_setup %}
+            <div class="dropdown">
+                <button type="button" class="topbar-link dropdown-toggle{% if request.resolver_match.namespace == 'master_data' or '/admin/' in request.path %} is-active{% endif %}" data-bs-toggle="dropdown" aria-expanded="false">Setup</button>
+                <ul class="dropdown-menu topbar-menu dropdown-menu-end">
+                    <li><a class="dropdown-item{% if request.resolver_match.namespace == 'master_data' %} is-active{% endif %}" href="{% url 'master_data:setup' %}">Basic setup</a></li>
+                    {% if is_administrator %}
+                    <li><a class="dropdown-item{% if '/admin/' in request.path %} is-active{% endif %}" href="/admin/">Django admin</a></li>
+                    {% endif %}
+                </ul>
+            </div>
             {% endif %}
         </div>
+        <a class="topbar-user{% if request.resolver_match.url_name == 'profile' %} is-active{% endif %}" href="{% url 'accounts:profile' %}">
+            <span class="topbar-user-mark" aria-hidden="true">{{ user.get_full_name|default:user.username|slice:":1"|upper }}</span>
+            <span class="topbar-user-text">
+                <span class="topbar-user-name">{{ user.get_full_name|default:user.username }}</span>
+                <span class="topbar-user-meta">{% if erp_role_label %}{{ erp_role_label }}{% else %}@{{ user.username }}{% endif %}</span>
+            </span>
+        </a>
     </div>
 </nav>
+{% endif %}

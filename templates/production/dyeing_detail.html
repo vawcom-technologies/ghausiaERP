@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Dyeing {{ object.batch_number }}{% endblock %}
 {% block content %}
+<div class="record">
 <h1 class="page-header">Dyeing Batch: {{ object.batch_number }}</h1>
 <div class="card mb-3"><div class="card-body">
     <p><strong>Lot:</strong> <a href="{% url 'production:lot_detail' object.production_lot.pk %}">{{ object.production_lot.lot_number }}</a></p>
@@ -22,5 +23,6 @@
     {% if can_cancel_records and not object.is_cancelled %}
     <a href="{% url 'production:dyeing_cancel' object.pk %}" class="btn btn-cancel-record">Cancel Batch</a>
     {% endif %}
+</div>
 </div>
 {% endblock %}

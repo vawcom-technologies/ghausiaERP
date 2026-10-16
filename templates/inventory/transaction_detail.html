@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Transaction {{ object.transaction_number }}{% endblock %}
 {% block content %}
+<div class="record">
 <h1>{{ object.transaction_number }}</h1>
 <div class="card"><div class="card-body">
     <p><strong>Material:</strong> {{ object.material }}</p><p><strong>Type:</strong> {{ object.transaction_type }}</p>
@@ -12,5 +13,6 @@
     {% if can_cancel_records and not object.is_cancelled and object.transaction_type != "Reversal" %}
     <a href="{% url 'inventory:transaction_cancel' object.pk %}" class="btn btn-cancel-record">Cancel</a>
     {% endif %}
+</div>
 </div>
 {% endblock %}

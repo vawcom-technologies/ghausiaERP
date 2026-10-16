@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Lot {{ lot.lot_number }}{% endblock %}
 {% block content %}
+<div class="record">
 <h1 class="page-header">Production Lot: {{ lot.lot_number }}</h1>
 <div class="row mb-4">
     <div class="col-md-6"><div class="card"><div class="card-body">
@@ -52,5 +53,6 @@
     <a href="{% url 'production:calender_create' %}?lot_id={{ lot.pk }}" class="btn btn-outline-primary">Calender</a>
     <a href="{% url 'production:comfort_create' %}?lot_id={{ lot.pk }}" class="btn btn-outline-primary">Comfort</a>
     <a href="{% url 'production:finished_create' %}?lot_id={{ lot.pk }}" class="btn btn-outline-primary">Finished Stock</a>
+</div>
 </div>
 {% endblock %}

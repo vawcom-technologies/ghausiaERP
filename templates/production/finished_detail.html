@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Finished Stock Detail{% endblock %}
 {% block content %}
+<div class="record">
 <h1>Finished Stock - {{ object.production_lot.lot_number }}</h1>
 <div class="card"><div class="card-body">
     <p><strong>Final Metres:</strong> {{ object.final_metres }}</p>
@@ -14,5 +15,6 @@
     {% if can_cancel_records and not object.is_cancelled %}
     <a href="{% url 'production:finished_cancel' object.pk %}" class="btn btn-cancel-record">Cancel</a>
     {% endif %}
+</div>
 </div>
 {% endblock %}

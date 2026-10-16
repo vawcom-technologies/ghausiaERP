@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Process Entry{% endblock %}
 {% block content %}
+<div class="record">
 <h1 class="page-header">{{ object }}</h1>
 <div class="card mb-3"><div class="card-body">
     <p><strong>Lot:</strong> <a href="{% url 'production:lot_detail' object.production_lot.pk %}">{{ object.production_lot.lot_number }}</a></p>
@@ -15,5 +16,6 @@
     {% if can_cancel_records and cancel_url_name and not object.is_cancelled %}
     <a href="{% url cancel_url_name object.pk %}" class="btn btn-cancel-record">Cancel</a>
     {% endif %}
+</div>
 </div>
 {% endblock %}

@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ department.name }} Attendance - Ghausia Dyeing{% endblock %}
 {% block content %}
+<div class="record">
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb mb-0">
         <li class="breadcrumb-item"><a href="{% url 'attendance:hub' %}">Attendance</a></li>
@@ -23,5 +24,6 @@
         </a>
     </div>
     {% endfor %}
+</div>
 </div>
 {% endblock %}

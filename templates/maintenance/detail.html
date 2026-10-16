@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Maintenance {{ object.job_number }}{% endblock %}
 {% block content %}
+<div class="record">
 <h1 class="page-header">Job {{ object.job_number }}</h1>
 <div class="row">
 <div class="col-md-6"><div class="card mb-3"><div class="card-body">
@@ -23,4 +24,5 @@
 </div>
 <a href="{% url 'maintenance:edit' object.pk %}" class="btn btn-primary btn-lg-action">Edit</a>
 {% if can_cancel_records and not object.is_cancelled %}<a href="{% url 'maintenance:cancel' object.pk %}" class="btn btn-cancel-record btn-lg-action ms-2">Cancel</a>{% endif %}
+</div>
 {% endblock %}

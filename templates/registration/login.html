@@ -1,57 +1,48 @@
 {% extends "base.html" %}
-{% block title %}Sign In - Ghausia Dyeing{% endblock %}
+{% block title %}Sign in - Ghausia Dyeing{% endblock %}
 {% block content %}
-<div class="login-page">
-    <div class="login-card card">
-        <div class="login-header">
-            <div class="mb-2"><i class="bi bi-building-gear" style="font-size:2.5rem;"></i></div>
-            <h1>Ghausia Dyeing</h1>
-            <p>Sign in to manage production and inventory</p>
-        </div>
-        <div class="login-body">
+<div class="gate">
+    <section class="gate-brand">
+        <p class="gate-kicker">Cloth processing</p>
+        <h1 class="gate-title">Ghausia<span>Dyeing</span></h1>
+        <p class="gate-line">From the gate, through the floor, into finished stock.</p>
+    </section>
+    <section class="gate-form">
+        <div>
             <form method="post" action="{% url 'accounts:login' %}">
                 {% csrf_token %}
                 {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+                <h2>Sign in</h2>
                 {% if form.errors %}
                 <div class="alert alert-danger py-2">
-                    <i class="bi bi-exclamation-triangle me-1"></i>
                     {% if form.non_field_errors %}{{ form.non_field_errors|striptags }}
-                    {% else %}Invalid username or password. Please try again.{% endif %}
+                    {% else %}That username or password is not right.{% endif %}
                 </div>
                 {% endif %}
                 <div class="mb-3">
                     <label class="form-label" for="id_username">Username</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-person"></i></span>
-                        <input type="text" name="username" id="id_username" class="form-control" placeholder="Enter your username" value="{{ form.username.value|default:'' }}" autocomplete="username" required autofocus>
-                    </div>
+                    <input type="text" name="username" id="id_username" class="form-control" value="{{ form.username.value|default:'' }}" autocomplete="username" required autofocus>
                 </div>
                 <div class="mb-4">
                     <label class="form-label" for="id_password">Password</label>
                     <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                        <input type="password" name="password" id="id_password" class="form-control" placeholder="Enter your password" autocomplete="current-password" required>
+                        <input type="password" name="password" id="id_password" class="form-control" autocomplete="current-password" required>
                         <button type="button" class="btn btn-outline-secondary login-toggle-password" data-target="id_password" aria-label="Show password">
                             <i class="bi bi-eye"></i>
                         </button>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary btn-lg w-100">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
-                </button>
+                <button type="submit" class="btn btn-primary w-100">Sign in</button>
             </form>
-            <p class="small text-muted text-center mt-3 mb-0">
-                New staff accounts are created after sign-in
-                (Profile → Data-entry staff). There is no public sign-up.
-            </p>
-            <div class="login-demo mt-3">
-                <div class="small text-muted mb-1">Demo accounts</div>
-                <div class="small"><code>admin</code> / <code>admin123</code></div>
-                <div class="small"><code>supervisor</code> / <code>super123</code></div>
-                <div class="small"><code>dataentry</code> / <code>data123</code></div>
+            <p class="gate-note">Staff accounts are created by an administrator. There is no public sign-up.</p>
+            <div class="gate-demo">
+                <div>Demo accounts</div>
+                <div><code>admin</code> / <code>admin123</code></div>
+                <div><code>supervisor</code> / <code>super123</code></div>
+                <div><code>dataentry</code> / <code>data123</code></div>
             </div>
         </div>
-    </div>
+    </section>
 </div>
 {% endblock %}
 {% block extra_js %}

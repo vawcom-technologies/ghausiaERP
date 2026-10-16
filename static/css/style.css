@@ -1,21 +1,39 @@
 /* Textile Factory ERP — clean factory-friendly UI */
 
 :root {
-    --erp-primary: #1a3a5c;
-    --erp-primary-dark: #0f2740;
-    --erp-primary-light: #2a5280;
-    --erp-accent: #0d6efd;
-    --erp-success: #198754;
-    --erp-danger: #dc3545;
-    --erp-warning: #f0ad4e;
-    --erp-bg: #eef1f6;
-    --erp-surface: #ffffff;
-    --erp-border: #d8dee9;
-    --erp-text: #1e293b;
-    --erp-text-muted: #64748b;
-    --erp-radius: 10px;
-    --erp-shadow: 0 2px 8px rgba(26, 58, 92, 0.08);
-    --erp-shadow-lg: 0 8px 24px rgba(26, 58, 92, 0.12);
+    --erp-primary: #1c3148;
+    --erp-primary-dark: #121e2c;
+    --erp-primary-light: #2c4a66;
+    --erp-accent: #8a6840;
+    --erp-success: #2c5c45;
+    --erp-danger: #8f3a2f;
+    --erp-warning: #9a5b16;
+    --erp-bg: #f4f0e6;
+    --erp-surface: #fbf8f2;
+    --erp-border: #e2d9c8;
+    --erp-text: #1c1915;
+    --erp-text-muted: #6f675c;
+    --erp-radius: 2px;
+    --erp-shadow: none;
+    --erp-shadow-lg: 0 10px 28px rgba(28, 25, 21, 0.12);
+    --bs-primary: #1c3148;
+    --bs-primary-rgb: 28, 49, 72;
+    --bs-link-color: #1c3148;
+    --bs-link-color-rgb: 28, 49, 72;
+    --bs-link-hover-color: #8a6840;
+    --bs-link-hover-color-rgb: 138, 104, 64;
+    --bs-body-color: #1c1915;
+    --bs-body-bg: #f4f0e6;
+    --bs-border-color: #e2d9c8;
+    --bs-secondary-color: #6f675c;
+    --bs-tertiary-bg: #efe8da;
+    --bs-success: #2c5c45;
+    --bs-success-rgb: 44, 92, 69;
+    --bs-danger: #8f3a2f;
+    --bs-danger-rgb: 143, 58, 47;
+    --bs-warning: #9a5b16;
+    --bs-border-radius: 2px;
+    --bs-font-sans-serif: "IBM Plex Sans", "Segoe UI", sans-serif;
 }
 
 * {
@@ -25,7 +43,8 @@
 body {
     background-color: var(--erp-bg);
     color: var(--erp-text);
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+    font-variant-numeric: tabular-nums;
     font-size: 15px;
     line-height: 1.5;
     min-height: 100vh;
@@ -1879,10 +1898,10 @@ body.sheet-photo-modal-open {
 
 /* ── Cloth Receiving module (centered, premium, lightweight) ── */
 .rcv {
-    --rcv-ink: #0f2740;
-    --rcv-mist: #f3f6fa;
-    --rcv-line: rgba(15, 39, 64, 0.1);
-    --rcv-accent: #1a6bb5;
+    --rcv-ink: #1c1915;
+    --rcv-mist: #efe8da;
+    --rcv-line: #e2d9c8;
+    --rcv-accent: #1c3148;
     margin: -0.5rem auto 0;
     max-width: 100%;
 }
